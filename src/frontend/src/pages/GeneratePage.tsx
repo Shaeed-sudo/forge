@@ -1,60 +1,137 @@
-import ProtectedRoute from "@/components/ProtectedRoute";
-import { Button } from "@/components/ui/button";
 import { useGetSite } from "@/hooks/useQueries";
-import type { GeneratedSite } from "@/types";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import {
-  ArrowRight,
-  CheckCircle,
-  Code2,
-  FileText,
-  LayoutDashboard,
+  Cpu,
+  Image,
+  LayoutTemplate,
   Palette,
+  PencilLine,
+  Rocket,
+  Search,
+  Smartphone,
   Sparkles,
-  Zap,
 } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 
-// ─── Loading steps ────────────────────────────────────────────────────────────
-const LOADING_STEPS = [
-  { message: "Analyzing your business...", icon: Zap },
-  { message: "Designing your layout...", icon: Palette },
-  { message: "Writing your content...", icon: FileText },
-  { message: "Building your pages...", icon: Code2 },
-  { message: "Almost there...", icon: Sparkles },
-];
+// ─── Log steps config ─────────────────────────────────────────────────────────
+const LOG_STEPS = [
+  {
+    icon: Cpu,
+    label: "Analysing your brief",
+    sub: "Reading project type, niche, and desired features",
+  },
+  {
+    icon: LayoutTemplate,
+    label: "Designing page layout",
+    sub: "Selecting sections and visual hierarchy",
+  },
+  {
+    icon: Palette,
+    label: "Applying visual style",
+    sub: "Typography, colours, and spacing",
+  },
+  {
+    icon: PencilLine,
+    label: "Writing copy",
+    sub: "Headlines, descriptions, and CTAs",
+  },
+  {
+    icon: Image,
+    label: "Building sections",
+    sub: "Adding requested features and components",
+  },
+  {
+    icon: Search,
+    label: "Configuring SEO",
+    sub: "Meta title, description, Open Graph tags",
+  },
+  {
+    icon: Smartphone,
+    label: "Optimising for mobile",
+    sub: "Responsive breakpoints and touch interactions",
+  },
+  {
+    icon: Rocket,
+    label: "Preparing preview",
+    sub: "Compiling and rendering your site",
+  },
+] as const;
 
-// ─── Orbiting particle ────────────────────────────────────────────────────────
-function OrbitRing({
-  radius,
-  duration,
-  color,
-}: { radius: number; duration: number; color: string }) {
+type StepState = "pending" | "running" | "done";
+
+// ─── Shimmer skeleton ─────────────────────────────────────────────────────────
+function SkeletonBlock({
+  w,
+  h,
+  delay = 0,
+}: { w: string; h: string; delay?: number }) {
   return (
-    <motion.div
-      className="absolute rounded-full border opacity-20"
-      style={{
-        width: radius * 2,
-        height: radius * 2,
-        borderColor: color,
-        top: "50%",
-        left: "50%",
-        marginTop: -radius,
-        marginLeft: -radius,
-      }}
-      animate={{ rotate: 360 }}
-      transition={{
-        duration,
-        repeat: Number.POSITIVE_INFINITY,
-        ease: "linear",
-      }}
+    <div
+      className="rounded bg-primary/10 animate-pulse"
+      style={{ width: w, height: h, animationDelay: `${delay}ms` }}
+    />
+  );
+}
+
+// ─── Mini site preview ────────────────────────────────────────────────────────
+function MiniSitePreview({ siteTitle }: { siteTitle: string }) {
+  return (
+    <div
+      className="absolute inset-0 overflow-hidden"
+      data-ocid="generate.preview_panel"
     >
-      <div
-        className="absolute w-2 h-2 rounded-full -translate-x-1/2 -translate-y-1/2"
-        style={{ backgroundColor: color, top: 0, left: "50%" }}
-      />
-    </motion.div>
+      <div className="bg-primary/5 border-b border-border p-3 flex items-center justify-between">
+        <span className="font-display font-extrabold text-xs text-primary">
+          {siteTitle}
+        </span>
+        <div className="flex gap-3">
+          <span className="text-[9px] text-muted-foreground font-display font-medium">
+            Work
+          </span>
+          <span className="text-[9px] text-muted-foreground font-display font-medium">
+            About
+          </span>
+          <span className="bg-primary text-primary-foreground text-[8px] font-bold font-display px-2 py-0.5 rounded">
+            Contact
+          </span>
+        </div>
+      </div>
+      <div className="p-4 bg-gradient-to-br from-primary/5 to-background">
+        <p className="font-display font-black text-foreground leading-tight text-lg mb-2">
+          {siteTitle}
+        </p>
+        <p className="text-[10px] text-muted-foreground leading-relaxed mb-3 max-w-[200px]">
+          Crafted with care — ready to impress your visitors.
+        </p>
+        <div className="flex gap-2">
+          <span className="bg-primary text-primary-foreground text-[9px] font-bold font-display px-2.5 py-1 rounded">
+            View work
+          </span>
+          <span className="border border-primary text-primary text-[9px] font-semibold font-display px-2.5 py-1 rounded">
+            Download CV
+          </span>
+        </div>
+      </div>
+      <div className="px-4 pb-3 grid grid-cols-3 gap-2">
+        {["Case Studies", "Recognition", "Available"].map((label) => (
+          <div key={label} className="bg-card border border-border rounded p-2">
+            <div className="w-4 h-4 rounded bg-primary/20 mb-1.5" />
+            <p className="text-[9px] font-bold font-display text-foreground">
+              {label}
+            </p>
+            <p className="text-[8px] text-muted-foreground mt-0.5">
+              Details here
+            </p>
+          </div>
+        ))}
+      </div>
+      <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-primary/10 border border-primary/30 rounded-full px-2 py-0.5">
+        <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+        <span className="text-[8px] font-bold font-display text-primary">
+          Generated in 8.3s
+        </span>
+      </div>
+    </div>
   );
 }
 
@@ -63,335 +140,284 @@ export default function GeneratePage() {
   const { siteId } = useParams({ from: "/generate/$siteId" });
   const navigate = useNavigate();
   const parsedId = BigInt(siteId);
+  const { data: site } = useGetSite(parsedId);
 
-  const { data: site, isLoading } = useGetSite(parsedId);
-
-  const [stepIndex, setStepIndex] = useState(0);
+  const [stepStates, setStepStates] = useState<StepState[]>(
+    Array(8).fill("pending"),
+  );
   const [progress, setProgress] = useState(0);
-  const [revealed, setRevealed] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
+  const [showCta, setShowCta] = useState(false);
+  const animationDone = useRef(false);
 
-  const generatedData = site?.generatedData as GeneratedSite | undefined;
-  const isReady = !isLoading && !!generatedData;
+  const siteTitle = site?.name ?? "My Site";
 
-  // Cycle through loading steps every 1.5s
   useEffect(() => {
-    if (revealed) return;
-    intervalRef.current = setInterval(() => {
-      setStepIndex((i) => (i + 1) % LOADING_STEPS.length);
-    }, 1500);
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+    if (animationDone.current) return;
+    animationDone.current = true;
+
+    const runStep = (index: number) => {
+      if (index >= LOG_STEPS.length) {
+        // All done
+        setTimeout(() => {
+          setShowPreview(true);
+          setTimeout(() => setShowCta(true), 1500);
+        }, 700);
+        return;
+      }
+
+      // Mark running
+      setStepStates((prev) => {
+        const next = [...prev];
+        next[index] = "running";
+        return next;
+      });
+
+      const stepDuration = 380 + Math.random() * 280;
+
+      setTimeout(() => {
+        // Mark done
+        setStepStates((prev) => {
+          const next = [...prev];
+          next[index] = "done";
+          return next;
+        });
+        setProgress(Math.round(((index + 1) / LOG_STEPS.length) * 100));
+        runStep(index + 1);
+      }, stepDuration);
     };
-  }, [revealed]);
 
-  // Animate the progress bar
-  useEffect(() => {
-    if (revealed) return;
-    const target = isReady ? 100 : Math.min(progress + 2, 92);
-    const timer = setTimeout(() => setProgress(target), isReady ? 0 : 80);
-    return () => clearTimeout(timer);
-  });
-
-  // Trigger reveal when data is ready
-  useEffect(() => {
-    if (!isReady || revealed) return;
-    setProgress(100);
-    const timer = setTimeout(() => {
-      setRevealed(true);
-      setTimeout(() => setShowSuccess(true), 200);
-    }, 600);
-    return () => clearTimeout(timer);
-  }, [isReady, revealed]);
-
-  const StepIcon = LOADING_STEPS[stepIndex].icon;
+    setTimeout(() => runStep(0), 500);
+  }, []);
 
   return (
-    <ProtectedRoute>
-      <div
-        data-ocid="generate.page"
-        className="min-h-screen bg-background flex items-center justify-center relative overflow-hidden"
-      >
-        {/* Background ambient glow */}
-        <div className="absolute inset-0 pointer-events-none" aria-hidden>
-          <motion.div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full"
-            style={{
-              background:
-                "radial-gradient(circle, oklch(0.65 0.25 300 / 0.12) 0%, transparent 70%)",
-            }}
-            animate={
-              showSuccess
-                ? { scale: [1, 1.3, 1], opacity: [0.12, 0.28, 0.18] }
-                : { scale: [1, 1.08, 1] }
-            }
-            transition={
-              showSuccess
-                ? { duration: 1.2, ease: "easeOut" }
-                : {
-                    duration: 4,
-                    repeat: Number.POSITIVE_INFINITY,
-                    ease: "easeInOut",
-                  }
-            }
-          />
+    <div
+      data-ocid="generate.page"
+      className="min-h-screen bg-background flex flex-col"
+    >
+      {/* Nav */}
+      <nav className="bg-card border-b border-border px-6 h-14 flex items-center justify-between">
+        <span className="font-display font-extrabold text-lg text-foreground">
+          Forge<span className="text-primary">.</span>
+        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground font-display">
+            Building your site…
+          </span>
+        </div>
+      </nav>
+
+      {/* 2-panel body */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Left: log panel */}
+        <div className="w-[360px] flex-shrink-0 bg-card border-r border-border flex flex-col">
+          {/* Header */}
+          <div className="px-6 pt-6 pb-4 border-b border-border">
+            <h2 className="font-display font-bold text-[17px] text-foreground mb-1">
+              Building your site…
+            </h2>
+            <p className="text-[13px] text-muted-foreground">
+              Under 10 seconds. Watch it come together.
+            </p>
+            <div className="mt-3 inline-flex items-center gap-1.5 bg-primary/5 border border-primary/30 rounded-full px-3 py-1.5">
+              <Sparkles className="w-3 h-3 text-primary" />
+              <span className="text-[12px] font-display font-semibold text-primary">
+                {siteTitle}
+              </span>
+            </div>
+          </div>
+
+          {/* Log items */}
+          <div className="flex-1 overflow-y-auto px-4 py-3 flex flex-col gap-2">
+            {LOG_STEPS.map((step, i) => {
+              const state = stepStates[i];
+              const Icon = step.icon;
+              return (
+                <div
+                  key={step.label}
+                  data-ocid={`generate.log_item.${i + 1}`}
+                  className={`flex items-start gap-3 transition-all duration-300 ${
+                    state === "pending" ? "opacity-40" : "opacity-100"
+                  }`}
+                >
+                  {/* Step icon circle */}
+                  <div
+                    className={`w-[30px] h-[30px] rounded-full flex-shrink-0 flex items-center justify-center border transition-all duration-300 mt-0.5 ${
+                      state === "done"
+                        ? "bg-accent border-accent"
+                        : state === "running"
+                          ? "bg-primary/10 border-primary"
+                          : "bg-card border-border"
+                    }`}
+                  >
+                    {state === "done" ? (
+                      <svg
+                        role="img"
+                        aria-label="Done"
+                        className="w-3 h-3 text-accent-foreground"
+                        viewBox="0 0 12 12"
+                        fill="none"
+                      >
+                        <path
+                          d="M2 6l3 3 5-5"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    ) : (
+                      <Icon
+                        className={`w-3.5 h-3.5 ${
+                          state === "running"
+                            ? "text-primary animate-spin"
+                            : "text-muted-foreground"
+                        }`}
+                        style={
+                          state === "running" ? { animationDuration: "1s" } : {}
+                        }
+                      />
+                    )}
+                  </div>
+                  <div className="min-w-0 pt-0.5">
+                    <p
+                      className={`font-display text-[12px] leading-tight ${
+                        state === "running"
+                          ? "font-bold text-foreground"
+                          : "font-semibold text-foreground"
+                      }`}
+                    >
+                      {step.label}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">
+                      {step.sub}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Progress bar */}
+          <div className="px-5 py-4 border-t border-border">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[12px] font-display font-semibold text-muted-foreground">
+                Progress
+              </span>
+              <span
+                className="text-[12px] font-display font-bold text-primary"
+                data-ocid="generate.progress_pct"
+              >
+                {progress}%
+              </span>
+            </div>
+            <div className="h-1 bg-border rounded-full overflow-hidden">
+              <div
+                data-ocid="generate.progress_bar"
+                className="h-full bg-primary rounded-full transition-all duration-700"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+          </div>
         </div>
 
-        <AnimatePresence mode="wait">
-          {!revealed ? (
-            /* ─── Loading State ─────────────────────────────────────── */
-            <motion.div
-              key="loading"
-              data-ocid="generate.loading_state"
-              className="flex flex-col items-center gap-8 px-6 text-center max-w-md w-full"
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.4 }}
+        {/* Right: browser preview */}
+        <div className="flex-1 bg-card/50 flex items-center justify-center p-8">
+          <div className="w-full max-w-[640px]">
+            <p className="text-[11px] font-display font-bold tracking-widest text-muted-foreground uppercase text-center mb-4">
+              Live preview
+            </p>
+            <div
+              data-ocid="generate.browser_window"
+              className="bg-card border border-border rounded-xl overflow-hidden shadow-browser"
             >
-              {/* Orbital animation */}
-              <div className="relative flex items-center justify-center w-32 h-32">
-                <OrbitRing
-                  radius={64}
-                  duration={8}
-                  color="oklch(0.65 0.25 300)"
-                />
-                <OrbitRing
-                  radius={48}
-                  duration={5}
-                  color="oklch(0.75 0.18 55)"
-                />
-                <OrbitRing
-                  radius={32}
-                  duration={3}
-                  color="oklch(0.65 0.25 300)"
-                />
-
-                {/* Center icon — cycles with step */}
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={stepIndex}
-                    className="relative z-10 w-14 h-14 rounded-2xl bg-primary/20 border border-primary/40 flex items-center justify-center"
-                    initial={{ scale: 0.7, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.7, opacity: 0 }}
-                    transition={{ duration: 0.25 }}
-                  >
-                    <StepIcon className="w-6 h-6 text-primary" />
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-
-              {/* Brand */}
-              <div className="flex flex-col gap-1">
-                <h1 className="font-display text-2xl font-bold text-foreground tracking-tight">
-                  Forge is building your site
-                </h1>
-                <p className="text-muted-foreground text-sm">
-                  AI is designing every detail — won't take long
-                </p>
-              </div>
-
-              {/* Step message */}
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={LOADING_STEPS[stepIndex].message}
-                  className="flex items-center gap-2 px-4 py-2 rounded-full bg-card border border-border"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                  <span className="text-sm font-medium text-foreground">
-                    {LOADING_STEPS[stepIndex].message}
-                  </span>
-                </motion.div>
-              </AnimatePresence>
-
-              {/* Progress bar */}
-              <div className="w-full">
-                <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
-                  <motion.div
-                    className="h-full rounded-full"
-                    style={{
-                      background:
-                        "linear-gradient(90deg, oklch(0.65 0.25 300), oklch(0.75 0.18 55))",
-                    }}
-                    animate={{ width: `${progress}%` }}
-                    transition={{ duration: 0.5, ease: "easeOut" }}
-                  />
+              {/* Browser bar */}
+              <div className="bg-card border-b border-border px-3 py-2.5 flex items-center gap-2">
+                <div className="flex gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f57]" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#28c840]" />
                 </div>
-                <p className="mt-2 text-xs text-muted-foreground text-right">
-                  {Math.round(progress)}%
-                </p>
-              </div>
-
-              {/* Step dots */}
-              <div className="flex gap-2">
-                {LOADING_STEPS.map((step, i) => (
-                  <motion.div
-                    key={step.message}
-                    className="rounded-full"
-                    animate={{
-                      width: i === stepIndex ? 20 : 6,
-                      backgroundColor:
-                        i === stepIndex
-                          ? "oklch(0.65 0.25 300)"
-                          : "oklch(0.28 0.02 260)",
-                    }}
-                    style={{ height: 6 }}
-                    transition={{ duration: 0.3 }}
-                  />
-                ))}
-              </div>
-            </motion.div>
-          ) : (
-            /* ─── Success State ─────────────────────────────────────── */
-            <motion.div
-              key="success"
-              data-ocid="generate.success_state"
-              className="flex flex-col items-center gap-8 px-6 text-center max-w-lg w-full"
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            >
-              {/* Checkmark with glow */}
-              <motion.div
-                className="relative"
-                initial={{ scale: 0.5, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{
-                  delay: 0.1,
-                  duration: 0.5,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
-              >
-                {/* Glow ring */}
-                <motion.div
-                  className="absolute inset-0 rounded-full"
-                  style={{
-                    boxShadow: "0 0 60px 20px oklch(0.65 0.25 300 / 0.35)",
-                  }}
-                  animate={{ opacity: [0.4, 0.8, 0.4] }}
-                  transition={{
-                    duration: 2.5,
-                    repeat: Number.POSITIVE_INFINITY,
-                    ease: "easeInOut",
-                  }}
-                />
-                <div className="w-20 h-20 rounded-full bg-primary/20 border-2 border-primary/60 flex items-center justify-center">
-                  <CheckCircle className="w-10 h-10 text-primary" />
+                <div className="flex-1 bg-background border border-border rounded px-3 py-1 font-mono text-[11px] text-muted-foreground">
+                  forge.app/preview/{siteId.slice(0, 8)}
                 </div>
-              </motion.div>
-
-              {/* Headline */}
-              <motion.div
-                className="flex flex-col gap-2"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.4 }}
-              >
-                <h1 className="font-display text-4xl font-bold text-foreground tracking-tight">
-                  Your site is ready!
-                </h1>
-                <p className="text-muted-foreground text-base">
-                  Forge has built your site from scratch — review and publish
-                  when you're ready.
-                </p>
-              </motion.div>
-
-              {/* Site card */}
-              {generatedData && (
-                <motion.div
-                  data-ocid="generate.card"
-                  className="w-full rounded-2xl bg-card border border-border p-6 text-left relative overflow-hidden"
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3, duration: 0.4 }}
-                >
-                  {/* Violet shimmer stripe */}
+              </div>
+              {/* Browser content */}
+              <div className="relative" style={{ minHeight: 320 }}>
+                {/* Skeleton */}
+                {!showPreview && (
                   <div
-                    className="absolute top-0 left-0 right-0 h-0.5"
-                    style={{
-                      background:
-                        "linear-gradient(90deg, transparent, oklch(0.65 0.25 300), oklch(0.75 0.18 55), transparent)",
-                    }}
-                  />
-                  <div className="flex items-start gap-3">
-                    <div className="mt-1 w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
-                      <Sparkles className="w-4 h-4 text-primary" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest mb-1">
-                        Site Generated
-                      </p>
-                      <h2 className="font-display text-xl font-bold text-foreground truncate">
-                        {generatedData.siteTitle}
-                      </h2>
-                      <p className="text-muted-foreground text-sm mt-1 line-clamp-2">
-                        {generatedData.tagline}
-                      </p>
-                      <div className="flex items-center gap-4 mt-3">
-                        <span className="text-xs text-muted-foreground">
-                          {generatedData.sections.length} sections
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {generatedData.layout.contentWidth} layout
-                        </span>
-                        <span className="inline-flex items-center gap-1 text-xs font-medium text-primary">
-                          <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                          Ready to edit
-                        </span>
+                    className="absolute inset-0 p-5 flex flex-col gap-3"
+                    data-ocid="generate.skeleton"
+                  >
+                    <div className="flex items-center justify-between">
+                      <SkeletonBlock w="80px" h="10px" />
+                      <div className="flex gap-2">
+                        <SkeletonBlock w="36px" h="8px" delay={200} />
+                        <SkeletonBlock w="36px" h="8px" delay={400} />
+                        <SkeletonBlock w="52px" h="20px" delay={600} />
                       </div>
                     </div>
+                    <SkeletonBlock w="65%" h="22px" delay={100} />
+                    <SkeletonBlock w="50%" h="13px" delay={200} />
+                    <SkeletonBlock w="42%" h="13px" delay={300} />
+                    <div className="flex gap-2 mt-1">
+                      <SkeletonBlock w="90px" h="26px" delay={400} />
+                      <SkeletonBlock w="80px" h="26px" delay={500} />
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 mt-2">
+                      <SkeletonBlock w="100%" h="58px" delay={300} />
+                      <SkeletonBlock w="100%" h="58px" delay={450} />
+                      <SkeletonBlock w="100%" h="58px" delay={600} />
+                    </div>
                   </div>
-                </motion.div>
-              )}
-
-              {/* CTAs */}
-              <motion.div
-                className="flex flex-col sm:flex-row gap-3 w-full"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.45, duration: 0.4 }}
-              >
-                <Button
-                  data-ocid="generate.open_editor_button"
-                  size="lg"
-                  className="flex-1 font-semibold gap-2 transition-smooth"
-                  onClick={() =>
-                    navigate({ to: "/editor/$siteId", params: { siteId } })
-                  }
-                >
-                  Open Editor
-                  <ArrowRight className="w-4 h-4" />
-                </Button>
-                <Button
-                  data-ocid="generate.dashboard_button"
-                  size="lg"
-                  variant="outline"
-                  className="flex-1 font-semibold gap-2 transition-smooth"
-                  onClick={() => navigate({ to: "/dashboard" })}
-                >
-                  <LayoutDashboard className="w-4 h-4" />
-                  Back to Dashboard
-                </Button>
-              </motion.div>
-
-              <motion.p
-                className="text-xs text-muted-foreground"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.6 }}
-              >
-                You can preview and publish from the editor at any time.
-              </motion.p>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                )}
+                {/* Real preview */}
+                {showPreview && (
+                  <div className="animate-fade-in">
+                    <MiniSitePreview siteTitle={siteTitle} />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-    </ProtectedRoute>
+
+      {/* CTA bar — slides up */}
+      <div
+        data-ocid="generate.cta_bar"
+        className={`bg-card border-t border-border px-6 py-4 flex items-center justify-between transition-all duration-500 ${
+          showCta
+            ? "opacity-100 translate-y-0"
+            : "opacity-0 translate-y-4 pointer-events-none"
+        }`}
+      >
+        <p className="text-sm text-muted-foreground">
+          <span className="font-display font-bold text-foreground">
+            Your site is ready.
+          </span>{" "}
+          Create a free account to save it and get a live link.
+        </p>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            data-ocid="generate.view_preview_button"
+            onClick={() => navigate({ to: "/signup", search: { siteId } })}
+            className="px-4 py-2 text-[13px] font-display font-semibold border border-border rounded-lg text-foreground hover:bg-muted transition-forge"
+          >
+            View full preview
+          </button>
+          <button
+            type="button"
+            data-ocid="generate.save_site_button"
+            onClick={() => navigate({ to: "/signup", search: { siteId } })}
+            className="flex items-center gap-1.5 px-4 py-2 text-[13px] font-display font-bold bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-forge"
+          >
+            Save my site — it's free
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

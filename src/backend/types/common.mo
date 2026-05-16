@@ -6,5 +6,7 @@ module {
   public type UserProfile = {
     name : Text;
     email : Text;
+    plan : { #free; #pro };
+    createdAt : Timestamp;
   };
 };

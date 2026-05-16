@@ -1,23 +1,23 @@
 {
-  "overview": "Forge is an AI-powered website and app builder that takes anyone from a plain-language description to a live, production-ready site in minutes. A guided wizard captures site type, business description, visual style, and desired features. Forge then auto-generates the full site — design, layout, content, and functionality — in one shot. Users land in a visual editor with desktop/tablet/mobile preview, make tweaks, run automated pre-launch checks (SEO, performance, forms), and publish to a free subdomain or custom domain.",
+  "overview": "Forge is an AI website builder SaaS — describe your site in plain English and get a production-ready website in seconds. Features a guided 4-step wizard, animated build process, visual editor, one-click publishing, and a full dashboard to manage your sites.",
   "features": [
-    "Guided 4-step wizard (site type, business description, visual style, feature selection)",
-    "AI-powered site generation with simulated generation loading flow",
-    "Visual editor with desktop / tablet / mobile device preview",
-    "Inline text editing for generated site sections",
-    "Pre-launch checklist (SEO, mobile layout, performance, forms)",
-    "One-click publish to Forge subdomain",
-    "Dashboard listing all generated sites",
-    "User authentication via Internet Identity"
+    "4-step guided site wizard (type, niche, vibe, features)",
+    "Animated build log with live preview reveal",
+    "Visual editor with sections panel and properties",
+    "3-step publish flow with pre-launch checks",
+    "Dashboard with site stats and management",
+    "Pricing tiers (Free, Pro $29, Team $79)",
+    "Full landing page with testimonials and bento features",
+    "Confetti launch celebration screen",
+    "Responsive design (mobile, tablet, desktop)"
   ],
-  "category": "website-builder",
+  "category": "productivity",
   "tags": [
     "website-builder",
-    "no-code",
     "ai",
-    "site-generator",
-    "visual-editor",
-    "publish"
+    "saas",
+    "landing-page",
+    "no-code"
   ],
-  "last_updated": "2026-05-16T19:22:31.930Z"
+  "last_updated": "2026-05-16T20:52:42.071Z"
 }

@@ -1,120 +1,115 @@
 import CommonTypes "common";
 
 module {
-  // Wizard submission
   public type SiteType = {
-    #business;
     #portfolio;
-    #blog;
+    #landingPage;
     #ecommerce;
-    #landing;
+    #saas;
+    #blog;
+    #booking;
+    #restaurant;
+    #agency;
   };
 
   public type VisualStyle = {
-    primaryColor : Text;
-    secondaryColor : Text;
-    fontFamily : Text;
+    #minimal;
+    #bold;
+    #warm;
+    #luxury;
+    #playful;
   };
 
-  public type SelectedFeatures = {
-    contactForm : Bool;
-    bookings : Bool;
-    auth : Bool;
+  public type SelectedFeature = {
+    #contactForm;
+    #blog;
+    #payments;
+    #userAccounts;
+    #imageGallery;
+    #bookingCalendar;
+    #newsletter;
+    #liveChat;
+    #testimonials;
   };
 
   public type WizardInput = {
     siteType : SiteType;
-    businessDescription : Text;
-    visualStyle : VisualStyle;
-    selectedFeatures : SelectedFeatures;
+    niche : Text;
+    vibe : VisualStyle;
+    features : [SelectedFeature];
   };
 
-  // Generated site structure
-  public type SectionType = {
-    #hero;
-    #about;
-    #services;
-    #contact;
-    #footer;
-  };
-
-  public type SiteSection = {
-    sectionType : SectionType;
-    heading : Text;
-    subheading : Text;
-    content : Text;
-  };
-
-  public type ColorPalette = {
-    primary : Text;
-    secondary : Text;
-    accent : Text;
-    background : Text;
-    text : Text;
-  };
-
-  public type LayoutMetadata = {
-    fontFamily : Text;
-    layoutStyle : Text;
-    borderRadius : Text;
-  };
-
-  public type GeneratedSite = {
-    siteTitle : Text;
-    tagline : Text;
-    sections : [SiteSection];
-    colorPalette : ColorPalette;
-    layout : LayoutMetadata;
-  };
-
-  // Publish status
   public type PublishStatus = {
-    #unpublished;
-    #publishing;
-    #published;
-    #failed;
+    #draft;
+    #live;
   };
 
-  // Pre-launch check results
+  public type SiteUpdate = {
+    name : ?Text;
+    niche : ?Text;
+  };
+
   public type PreLaunchChecks = {
+    mobile : Bool;
+    mobileNote : Text;
     seo : Bool;
-    mobileReady : Bool;
-    formsValid : Bool;
-    performanceHint : Bool;
+    seoNote : Text;
+    speed : Nat;
+    speedNote : Text;
+    forms : Bool;
+    formsNote : Text;
   };
 
-  // Site record stored in backend
+  // Internal mutable site record
   public type Site = {
     id : CommonTypes.SiteId;
     owner : CommonTypes.UserId;
-    var title : Text;
-    var generatedData : ?GeneratedSite;
+    var name : Text;
+    var slug : Text;
+    siteType : SiteType;
+    var niche : Text;
+    vibe : VisualStyle;
+    features : [SelectedFeature];
     var status : PublishStatus;
-    var subdomain : ?Text;
-    var publishedUrl : ?Text;
+    var siteUrl : ?Text;
+    var visitors : Nat;
+    var formSubmissions : Nat;
+    var lighthouseScore : Nat;
     createdAt : CommonTypes.Timestamp;
     var updatedAt : CommonTypes.Timestamp;
+    var publishedAt : ?CommonTypes.Timestamp;
   };
 
-  // Public-facing (shared) site record — no var fields
+  // Shared (immutable) full site for API responses
   public type SitePublic = {
     id : CommonTypes.SiteId;
     owner : CommonTypes.UserId;
-    title : Text;
-    generatedData : ?GeneratedSite;
+    name : Text;
+    slug : Text;
+    siteType : SiteType;
+    niche : Text;
+    vibe : VisualStyle;
+    features : [SelectedFeature];
     status : PublishStatus;
-    subdomain : ?Text;
-    publishedUrl : ?Text;
+    siteUrl : ?Text;
+    visitors : Nat;
+    formSubmissions : Nat;
+    lighthouseScore : Nat;
     createdAt : CommonTypes.Timestamp;
     updatedAt : CommonTypes.Timestamp;
+    publishedAt : ?CommonTypes.Timestamp;
   };
 
   // Dashboard summary
   public type SiteSummary = {
     id : CommonTypes.SiteId;
-    title : Text;
+    name : Text;
+    slug : Text;
     status : PublishStatus;
-    subdomain : ?Text;
-    createdAt : CommonTypes.Timestamp;
+    siteUrl : ?Text;
+    visitors : Nat;
+    formSubmissions : Nat;
+    lighthouseScore : Nat;
+    updatedAt : CommonTypes.Timestamp;
   };
 };

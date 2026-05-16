@@ -2,8 +2,10 @@ import DashboardPage from "@/pages/DashboardPage";
 import EditorPage from "@/pages/EditorPage";
 import GeneratePage from "@/pages/GeneratePage";
 import LandingPage from "@/pages/LandingPage";
+import LivePage from "@/pages/LivePage";
 import LoginPage from "@/pages/LoginPage";
 import PublishPage from "@/pages/PublishPage";
+import SignupPage from "@/pages/SignupPage";
 import WizardPage from "@/pages/WizardPage";
 import {
   RouterProvider,
@@ -58,6 +60,24 @@ const publishRoute = createRoute({
   component: PublishPage,
 });
 
+const signupRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/signup",
+  component: SignupPage,
+  validateSearch: (search: Record<string, unknown>) => ({
+    siteId: typeof search.siteId === "string" ? search.siteId : undefined,
+  }),
+});
+
+const liveRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/live",
+  component: LivePage,
+  validateSearch: (search: Record<string, unknown>) => ({
+    siteUrl: typeof search.siteUrl === "string" ? search.siteUrl : undefined,
+  }),
+});
+
 // ─── Router ─────────────────────────────────────────────────────────────────
 const routeTree = rootRoute.addChildren([
   indexRoute,
@@ -67,6 +87,8 @@ const routeTree = rootRoute.addChildren([
   generateRoute,
   editorRoute,
   publishRoute,
+  signupRoute,
+  liveRoute,
 ]);
 
 const router = createRouter({ routeTree });

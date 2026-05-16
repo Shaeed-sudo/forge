@@ -1,19 +1,12 @@
 import { createActor } from "@/backend";
 import type {
-  GeneratedSite as BackendGeneratedSite,
-  SelectedFeatures as BackendSelectedFeatures,
-  SiteType as BackendSiteType,
-  VisualStyle as BackendVisualStyle,
-  backendInterface,
-} from "@/backend";
-import type {
-  GeneratedSite,
   PreLaunchChecks,
   SitePublic,
   SiteSummary,
   UserProfile,
   WizardInput,
-} from "@/types";
+  backendInterface,
+} from "@/backend";
 import { useActor } from "@caffeineai/core-infrastructure";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -34,14 +27,7 @@ export function useListMySites() {
     queryKey: ["sites"],
     queryFn: async () => {
       if (!actor) return [];
-      const sites = await asBackend(actor).listMySites();
-      return sites.map((s) => ({
-        id: s.id,
-        title: s.title,
-        status: s.status as unknown as SiteSummary["status"],
-        subdomain: s.subdomain,
-        createdAt: s.createdAt,
-      }));
+      return asBackend(actor).listMySites();
     },
     enabled: !!actor && !isFetching,
   });
@@ -53,9 +39,7 @@ export function useGetSite(id: bigint | undefined) {
     queryKey: ["site", id?.toString()],
     queryFn: async () => {
       if (!actor || id === undefined) return null;
-      const site = await asBackend(actor).getSite(id);
-      if (!site) return null;
-      return site as unknown as SitePublic;
+      return asBackend(actor).getSite(id);
     },
     enabled: !!actor && !isFetching && id !== undefined,
   });
@@ -67,44 +51,21 @@ export function useGetPreLaunchChecks(id: bigint | undefined) {
     queryKey: ["prelaunch", id?.toString()],
     queryFn: async () => {
       if (!actor || id === undefined) return null;
-      const checks = await asBackend(actor).getPreLaunchChecks(id);
-      // Map backend PreLaunchChecks fields to frontend type
-      return {
-        seoTitle: checks.seo,
-        seoDescription: checks.seo,
-        mobileLayout: checks.mobileReady,
-        performance: checks.performanceHint,
-        formsWorking: checks.formsValid,
-        customDomain: false,
-      } satisfies PreLaunchChecks;
+      return asBackend(actor).getPreLaunchChecks(id);
     },
     enabled: !!actor && !isFetching && id !== undefined,
   });
 }
 
 // ─── Sites Mutations ─────────────────────────────────────────────────────────
+// generateSite returns [SiteId, string] tuple
 export function useGenerateSite() {
   const { actor } = useActor(createActor);
   const qc = useQueryClient();
-  return useMutation<SitePublic, Error, WizardInput>({
+  return useMutation<[bigint, string], Error, WizardInput>({
     mutationFn: async (input: WizardInput) => {
       if (!actor) throw new Error("Actor not available");
-      const backendInput = {
-        siteType: input.siteType as unknown as BackendSiteType,
-        businessDescription: input.businessDescription,
-        visualStyle: {
-          primaryColor: "#6366f1",
-          secondaryColor: "#a78bfa",
-          fontFamily: input.visualStyle,
-        } satisfies BackendVisualStyle,
-        selectedFeatures: {
-          contactForm: input.selectedFeatures.contactForm,
-          bookings: input.selectedFeatures.bookings,
-          auth: input.selectedFeatures.auth,
-        } satisfies BackendSelectedFeatures,
-      };
-      const site = await asBackend(actor).generateSite(backendInput);
-      return site as unknown as SitePublic;
+      return asBackend(actor).generateSite(input);
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["sites"] }),
   });
@@ -114,25 +75,18 @@ export function useUpdateSite() {
   const { actor } = useActor(createActor);
   const qc = useQueryClient();
   return useMutation<
-    SitePublic,
+    SitePublic | null,
     Error,
-    { id: bigint; title?: string; generatedData?: GeneratedSite }
+    { id: bigint; name?: string; niche?: string }
   >({
-    mutationFn: async ({ id, title, generatedData }) => {
+    mutationFn: async ({ id, name, niche }) => {
       if (!actor) throw new Error("Actor not available");
-      // Backend expects null (not undefined) for optional params
-      const site = await asBackend(actor).updateSite(
-        id,
-        title ?? null,
-        generatedData
-          ? (generatedData as unknown as BackendGeneratedSite)
-          : null,
-      );
-      return site as unknown as SitePublic;
+      return asBackend(actor).updateSite(id, { name, niche });
     },
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: ["sites"] });
-      qc.invalidateQueries({ queryKey: ["site", data.id.toString()] });
+      if (data)
+        qc.invalidateQueries({ queryKey: ["site", data.id.toString()] });
     },
   });
 }
@@ -140,7 +94,7 @@ export function useUpdateSite() {
 export function useDeleteSite() {
   const { actor } = useActor(createActor);
   const qc = useQueryClient();
-  return useMutation<void, Error, bigint>({
+  return useMutation<boolean, Error, bigint>({
     mutationFn: async (id: bigint) => {
       if (!actor) throw new Error("Actor not available");
       return asBackend(actor).deleteSite(id);
@@ -152,15 +106,15 @@ export function useDeleteSite() {
 export function usePublishSite() {
   const { actor } = useActor(createActor);
   const qc = useQueryClient();
-  return useMutation<SitePublic, Error, bigint>({
+  return useMutation<SitePublic | null, Error, bigint>({
     mutationFn: async (id: bigint) => {
       if (!actor) throw new Error("Actor not available");
-      const site = await asBackend(actor).publishSite(id);
-      return site as unknown as SitePublic;
+      return asBackend(actor).publishSite(id);
     },
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: ["sites"] });
-      qc.invalidateQueries({ queryKey: ["site", data.id.toString()] });
+      if (data)
+        qc.invalidateQueries({ queryKey: ["site", data.id.toString()] });
     },
   });
 }
@@ -172,7 +126,7 @@ export function useGetCallerProfile() {
     queryKey: ["currentUserProfile"],
     queryFn: async () => {
       if (!actor) throw new Error("Actor not available");
-      return asBackend(actor).getCallerUserProfile();
+      return asBackend(actor).getCallerProfile();
     },
     enabled: !!actor && !actorFetching,
     retry: false,
@@ -187,10 +141,10 @@ export function useGetCallerProfile() {
 export function useSaveCallerProfile() {
   const { actor } = useActor(createActor);
   const qc = useQueryClient();
-  return useMutation<void, Error, UserProfile>({
-    mutationFn: async (profile: UserProfile) => {
+  return useMutation<UserProfile, Error, { name: string; email: string }>({
+    mutationFn: async ({ name, email }) => {
       if (!actor) throw new Error("Actor not available");
-      return asBackend(actor).saveCallerUserProfile(profile);
+      return asBackend(actor).saveCallerProfile(name, email);
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["currentUserProfile"] }),
   });

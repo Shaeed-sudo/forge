@@ -27451,2695 +27451,6 @@ function checkDCE() {
 }
 var clientExports = client.exports;
 const ReactDOM = /* @__PURE__ */ getDefaultExportFromCjs(clientExports);
-function setRef$1(ref, value) {
-  if (typeof ref === "function") {
-    return ref(value);
-  } else if (ref !== null && ref !== void 0) {
-    ref.current = value;
-  }
-}
-function composeRefs$1(...refs) {
-  return (node) => {
-    let hasCleanup = false;
-    const cleanups = refs.map((ref) => {
-      const cleanup = setRef$1(ref, node);
-      if (!hasCleanup && typeof cleanup == "function") {
-        hasCleanup = true;
-      }
-      return cleanup;
-    });
-    if (hasCleanup) {
-      return () => {
-        for (let i = 0; i < cleanups.length; i++) {
-          const cleanup = cleanups[i];
-          if (typeof cleanup == "function") {
-            cleanup();
-          } else {
-            setRef$1(refs[i], null);
-          }
-        }
-      };
-    }
-  };
-}
-function useComposedRefs$1(...refs) {
-  return reactExports.useCallback(composeRefs$1(...refs), refs);
-}
-var REACT_LAZY_TYPE = Symbol.for("react.lazy");
-var use = React$5[" use ".trim().toString()];
-function isPromiseLike(value) {
-  return typeof value === "object" && value !== null && "then" in value;
-}
-function isLazyComponent(element) {
-  return element != null && typeof element === "object" && "$$typeof" in element && element.$$typeof === REACT_LAZY_TYPE && "_payload" in element && isPromiseLike(element._payload);
-}
-// @__NO_SIDE_EFFECTS__
-function createSlot$1(ownerName) {
-  const SlotClone = /* @__PURE__ */ createSlotClone$1(ownerName);
-  const Slot2 = reactExports.forwardRef((props, forwardedRef) => {
-    let { children, ...slotProps } = props;
-    if (isLazyComponent(children) && typeof use === "function") {
-      children = use(children._payload);
-    }
-    const childrenArray = reactExports.Children.toArray(children);
-    const slottable = childrenArray.find(isSlottable$1);
-    if (slottable) {
-      const newElement = slottable.props.children;
-      const newChildren = childrenArray.map((child) => {
-        if (child === slottable) {
-          if (reactExports.Children.count(newElement) > 1) return reactExports.Children.only(null);
-          return reactExports.isValidElement(newElement) ? newElement.props.children : null;
-        } else {
-          return child;
-        }
-      });
-      return /* @__PURE__ */ jsxRuntimeExports.jsx(SlotClone, { ...slotProps, ref: forwardedRef, children: reactExports.isValidElement(newElement) ? reactExports.cloneElement(newElement, void 0, newChildren) : null });
-    }
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(SlotClone, { ...slotProps, ref: forwardedRef, children });
-  });
-  Slot2.displayName = `${ownerName}.Slot`;
-  return Slot2;
-}
-var Slot$1 = /* @__PURE__ */ createSlot$1("Slot");
-// @__NO_SIDE_EFFECTS__
-function createSlotClone$1(ownerName) {
-  const SlotClone = reactExports.forwardRef((props, forwardedRef) => {
-    let { children, ...slotProps } = props;
-    if (isLazyComponent(children) && typeof use === "function") {
-      children = use(children._payload);
-    }
-    if (reactExports.isValidElement(children)) {
-      const childrenRef = getElementRef$2(children);
-      const props2 = mergeProps$1(slotProps, children.props);
-      if (children.type !== reactExports.Fragment) {
-        props2.ref = forwardedRef ? composeRefs$1(forwardedRef, childrenRef) : childrenRef;
-      }
-      return reactExports.cloneElement(children, props2);
-    }
-    return reactExports.Children.count(children) > 1 ? reactExports.Children.only(null) : null;
-  });
-  SlotClone.displayName = `${ownerName}.SlotClone`;
-  return SlotClone;
-}
-var SLOTTABLE_IDENTIFIER$1 = Symbol("radix.slottable");
-function isSlottable$1(child) {
-  return reactExports.isValidElement(child) && typeof child.type === "function" && "__radixId" in child.type && child.type.__radixId === SLOTTABLE_IDENTIFIER$1;
-}
-function mergeProps$1(slotProps, childProps) {
-  const overrideProps = { ...childProps };
-  for (const propName in childProps) {
-    const slotPropValue = slotProps[propName];
-    const childPropValue = childProps[propName];
-    const isHandler = /^on[A-Z]/.test(propName);
-    if (isHandler) {
-      if (slotPropValue && childPropValue) {
-        overrideProps[propName] = (...args) => {
-          const result = childPropValue(...args);
-          slotPropValue(...args);
-          return result;
-        };
-      } else if (slotPropValue) {
-        overrideProps[propName] = slotPropValue;
-      }
-    } else if (propName === "style") {
-      overrideProps[propName] = { ...slotPropValue, ...childPropValue };
-    } else if (propName === "className") {
-      overrideProps[propName] = [slotPropValue, childPropValue].filter(Boolean).join(" ");
-    }
-  }
-  return { ...slotProps, ...overrideProps };
-}
-function getElementRef$2(element) {
-  var _a3, _b3;
-  let getter = (_a3 = Object.getOwnPropertyDescriptor(element.props, "ref")) == null ? void 0 : _a3.get;
-  let mayWarn = getter && "isReactWarning" in getter && getter.isReactWarning;
-  if (mayWarn) {
-    return element.ref;
-  }
-  getter = (_b3 = Object.getOwnPropertyDescriptor(element, "ref")) == null ? void 0 : _b3.get;
-  mayWarn = getter && "isReactWarning" in getter && getter.isReactWarning;
-  if (mayWarn) {
-    return element.props.ref;
-  }
-  return element.props.ref || element.ref;
-}
-function r(e) {
-  var t, f, n = "";
-  if ("string" == typeof e || "number" == typeof e) n += e;
-  else if ("object" == typeof e) if (Array.isArray(e)) {
-    var o2 = e.length;
-    for (t = 0; t < o2; t++) e[t] && (f = r(e[t])) && (n && (n += " "), n += f);
-  } else for (f in e) e[f] && (n && (n += " "), n += f);
-  return n;
-}
-function clsx() {
-  for (var e, t, f = 0, n = "", o2 = arguments.length; f < o2; f++) (e = arguments[f]) && (t = r(e)) && (n && (n += " "), n += t);
-  return n;
-}
-const falsyToString = (value) => typeof value === "boolean" ? `${value}` : value === 0 ? "0" : value;
-const cx = clsx;
-const cva = (base, config) => (props) => {
-  var _config_compoundVariants;
-  if ((config === null || config === void 0 ? void 0 : config.variants) == null) return cx(base, props === null || props === void 0 ? void 0 : props.class, props === null || props === void 0 ? void 0 : props.className);
-  const { variants, defaultVariants } = config;
-  const getVariantClassNames = Object.keys(variants).map((variant) => {
-    const variantProp = props === null || props === void 0 ? void 0 : props[variant];
-    const defaultVariantProp = defaultVariants === null || defaultVariants === void 0 ? void 0 : defaultVariants[variant];
-    if (variantProp === null) return null;
-    const variantKey = falsyToString(variantProp) || falsyToString(defaultVariantProp);
-    return variants[variant][variantKey];
-  });
-  const propsWithoutUndefined = props && Object.entries(props).reduce((acc, param) => {
-    let [key, value] = param;
-    if (value === void 0) {
-      return acc;
-    }
-    acc[key] = value;
-    return acc;
-  }, {});
-  const getCompoundVariantClassNames = config === null || config === void 0 ? void 0 : (_config_compoundVariants = config.compoundVariants) === null || _config_compoundVariants === void 0 ? void 0 : _config_compoundVariants.reduce((acc, param) => {
-    let { class: cvClass, className: cvClassName, ...compoundVariantOptions } = param;
-    return Object.entries(compoundVariantOptions).every((param2) => {
-      let [key, value] = param2;
-      return Array.isArray(value) ? value.includes({
-        ...defaultVariants,
-        ...propsWithoutUndefined
-      }[key]) : {
-        ...defaultVariants,
-        ...propsWithoutUndefined
-      }[key] === value;
-    }) ? [
-      ...acc,
-      cvClass,
-      cvClassName
-    ] : acc;
-  }, []);
-  return cx(base, getVariantClassNames, getCompoundVariantClassNames, props === null || props === void 0 ? void 0 : props.class, props === null || props === void 0 ? void 0 : props.className);
-};
-const CLASS_PART_SEPARATOR = "-";
-const createClassGroupUtils = (config) => {
-  const classMap = createClassMap(config);
-  const {
-    conflictingClassGroups,
-    conflictingClassGroupModifiers
-  } = config;
-  const getClassGroupId = (className) => {
-    const classParts = className.split(CLASS_PART_SEPARATOR);
-    if (classParts[0] === "" && classParts.length !== 1) {
-      classParts.shift();
-    }
-    return getGroupRecursive(classParts, classMap) || getGroupIdForArbitraryProperty(className);
-  };
-  const getConflictingClassGroupIds = (classGroupId, hasPostfixModifier) => {
-    const conflicts = conflictingClassGroups[classGroupId] || [];
-    if (hasPostfixModifier && conflictingClassGroupModifiers[classGroupId]) {
-      return [...conflicts, ...conflictingClassGroupModifiers[classGroupId]];
-    }
-    return conflicts;
-  };
-  return {
-    getClassGroupId,
-    getConflictingClassGroupIds
-  };
-};
-const getGroupRecursive = (classParts, classPartObject) => {
-  var _a3;
-  if (classParts.length === 0) {
-    return classPartObject.classGroupId;
-  }
-  const currentClassPart = classParts[0];
-  const nextClassPartObject = classPartObject.nextPart.get(currentClassPart);
-  const classGroupFromNextClassPart = nextClassPartObject ? getGroupRecursive(classParts.slice(1), nextClassPartObject) : void 0;
-  if (classGroupFromNextClassPart) {
-    return classGroupFromNextClassPart;
-  }
-  if (classPartObject.validators.length === 0) {
-    return void 0;
-  }
-  const classRest = classParts.join(CLASS_PART_SEPARATOR);
-  return (_a3 = classPartObject.validators.find(({
-    validator
-  }) => validator(classRest))) == null ? void 0 : _a3.classGroupId;
-};
-const arbitraryPropertyRegex = /^\[(.+)\]$/;
-const getGroupIdForArbitraryProperty = (className) => {
-  if (arbitraryPropertyRegex.test(className)) {
-    const arbitraryPropertyClassName = arbitraryPropertyRegex.exec(className)[1];
-    const property = arbitraryPropertyClassName == null ? void 0 : arbitraryPropertyClassName.substring(0, arbitraryPropertyClassName.indexOf(":"));
-    if (property) {
-      return "arbitrary.." + property;
-    }
-  }
-};
-const createClassMap = (config) => {
-  const {
-    theme,
-    prefix: prefix2
-  } = config;
-  const classMap = {
-    nextPart: /* @__PURE__ */ new Map(),
-    validators: []
-  };
-  const prefixedClassGroupEntries = getPrefixedClassGroupEntries(Object.entries(config.classGroups), prefix2);
-  prefixedClassGroupEntries.forEach(([classGroupId, classGroup]) => {
-    processClassesRecursively(classGroup, classMap, classGroupId, theme);
-  });
-  return classMap;
-};
-const processClassesRecursively = (classGroup, classPartObject, classGroupId, theme) => {
-  classGroup.forEach((classDefinition) => {
-    if (typeof classDefinition === "string") {
-      const classPartObjectToEdit = classDefinition === "" ? classPartObject : getPart(classPartObject, classDefinition);
-      classPartObjectToEdit.classGroupId = classGroupId;
-      return;
-    }
-    if (typeof classDefinition === "function") {
-      if (isThemeGetter(classDefinition)) {
-        processClassesRecursively(classDefinition(theme), classPartObject, classGroupId, theme);
-        return;
-      }
-      classPartObject.validators.push({
-        validator: classDefinition,
-        classGroupId
-      });
-      return;
-    }
-    Object.entries(classDefinition).forEach(([key, classGroup2]) => {
-      processClassesRecursively(classGroup2, getPart(classPartObject, key), classGroupId, theme);
-    });
-  });
-};
-const getPart = (classPartObject, path) => {
-  let currentClassPartObject = classPartObject;
-  path.split(CLASS_PART_SEPARATOR).forEach((pathPart) => {
-    if (!currentClassPartObject.nextPart.has(pathPart)) {
-      currentClassPartObject.nextPart.set(pathPart, {
-        nextPart: /* @__PURE__ */ new Map(),
-        validators: []
-      });
-    }
-    currentClassPartObject = currentClassPartObject.nextPart.get(pathPart);
-  });
-  return currentClassPartObject;
-};
-const isThemeGetter = (func) => func.isThemeGetter;
-const getPrefixedClassGroupEntries = (classGroupEntries, prefix2) => {
-  if (!prefix2) {
-    return classGroupEntries;
-  }
-  return classGroupEntries.map(([classGroupId, classGroup]) => {
-    const prefixedClassGroup = classGroup.map((classDefinition) => {
-      if (typeof classDefinition === "string") {
-        return prefix2 + classDefinition;
-      }
-      if (typeof classDefinition === "object") {
-        return Object.fromEntries(Object.entries(classDefinition).map(([key, value]) => [prefix2 + key, value]));
-      }
-      return classDefinition;
-    });
-    return [classGroupId, prefixedClassGroup];
-  });
-};
-const createLruCache = (maxCacheSize) => {
-  if (maxCacheSize < 1) {
-    return {
-      get: () => void 0,
-      set: () => {
-      }
-    };
-  }
-  let cacheSize = 0;
-  let cache = /* @__PURE__ */ new Map();
-  let previousCache = /* @__PURE__ */ new Map();
-  const update = (key, value) => {
-    cache.set(key, value);
-    cacheSize++;
-    if (cacheSize > maxCacheSize) {
-      cacheSize = 0;
-      previousCache = cache;
-      cache = /* @__PURE__ */ new Map();
-    }
-  };
-  return {
-    get(key) {
-      let value = cache.get(key);
-      if (value !== void 0) {
-        return value;
-      }
-      if ((value = previousCache.get(key)) !== void 0) {
-        update(key, value);
-        return value;
-      }
-    },
-    set(key, value) {
-      if (cache.has(key)) {
-        cache.set(key, value);
-      } else {
-        update(key, value);
-      }
-    }
-  };
-};
-const IMPORTANT_MODIFIER = "!";
-const createParseClassName = (config) => {
-  const {
-    separator,
-    experimentalParseClassName
-  } = config;
-  const isSeparatorSingleCharacter = separator.length === 1;
-  const firstSeparatorCharacter = separator[0];
-  const separatorLength = separator.length;
-  const parseClassName = (className) => {
-    const modifiers = [];
-    let bracketDepth = 0;
-    let modifierStart = 0;
-    let postfixModifierPosition;
-    for (let index2 = 0; index2 < className.length; index2++) {
-      let currentCharacter = className[index2];
-      if (bracketDepth === 0) {
-        if (currentCharacter === firstSeparatorCharacter && (isSeparatorSingleCharacter || className.slice(index2, index2 + separatorLength) === separator)) {
-          modifiers.push(className.slice(modifierStart, index2));
-          modifierStart = index2 + separatorLength;
-          continue;
-        }
-        if (currentCharacter === "/") {
-          postfixModifierPosition = index2;
-          continue;
-        }
-      }
-      if (currentCharacter === "[") {
-        bracketDepth++;
-      } else if (currentCharacter === "]") {
-        bracketDepth--;
-      }
-    }
-    const baseClassNameWithImportantModifier = modifiers.length === 0 ? className : className.substring(modifierStart);
-    const hasImportantModifier = baseClassNameWithImportantModifier.startsWith(IMPORTANT_MODIFIER);
-    const baseClassName = hasImportantModifier ? baseClassNameWithImportantModifier.substring(1) : baseClassNameWithImportantModifier;
-    const maybePostfixModifierPosition = postfixModifierPosition && postfixModifierPosition > modifierStart ? postfixModifierPosition - modifierStart : void 0;
-    return {
-      modifiers,
-      hasImportantModifier,
-      baseClassName,
-      maybePostfixModifierPosition
-    };
-  };
-  if (experimentalParseClassName) {
-    return (className) => experimentalParseClassName({
-      className,
-      parseClassName
-    });
-  }
-  return parseClassName;
-};
-const sortModifiers = (modifiers) => {
-  if (modifiers.length <= 1) {
-    return modifiers;
-  }
-  const sortedModifiers = [];
-  let unsortedModifiers = [];
-  modifiers.forEach((modifier) => {
-    const isArbitraryVariant = modifier[0] === "[";
-    if (isArbitraryVariant) {
-      sortedModifiers.push(...unsortedModifiers.sort(), modifier);
-      unsortedModifiers = [];
-    } else {
-      unsortedModifiers.push(modifier);
-    }
-  });
-  sortedModifiers.push(...unsortedModifiers.sort());
-  return sortedModifiers;
-};
-const createConfigUtils = (config) => ({
-  cache: createLruCache(config.cacheSize),
-  parseClassName: createParseClassName(config),
-  ...createClassGroupUtils(config)
-});
-const SPLIT_CLASSES_REGEX = /\s+/;
-const mergeClassList = (classList, configUtils) => {
-  const {
-    parseClassName,
-    getClassGroupId,
-    getConflictingClassGroupIds
-  } = configUtils;
-  const classGroupsInConflict = [];
-  const classNames = classList.trim().split(SPLIT_CLASSES_REGEX);
-  let result = "";
-  for (let index2 = classNames.length - 1; index2 >= 0; index2 -= 1) {
-    const originalClassName = classNames[index2];
-    const {
-      modifiers,
-      hasImportantModifier,
-      baseClassName,
-      maybePostfixModifierPosition
-    } = parseClassName(originalClassName);
-    let hasPostfixModifier = Boolean(maybePostfixModifierPosition);
-    let classGroupId = getClassGroupId(hasPostfixModifier ? baseClassName.substring(0, maybePostfixModifierPosition) : baseClassName);
-    if (!classGroupId) {
-      if (!hasPostfixModifier) {
-        result = originalClassName + (result.length > 0 ? " " + result : result);
-        continue;
-      }
-      classGroupId = getClassGroupId(baseClassName);
-      if (!classGroupId) {
-        result = originalClassName + (result.length > 0 ? " " + result : result);
-        continue;
-      }
-      hasPostfixModifier = false;
-    }
-    const variantModifier = sortModifiers(modifiers).join(":");
-    const modifierId = hasImportantModifier ? variantModifier + IMPORTANT_MODIFIER : variantModifier;
-    const classId = modifierId + classGroupId;
-    if (classGroupsInConflict.includes(classId)) {
-      continue;
-    }
-    classGroupsInConflict.push(classId);
-    const conflictGroups = getConflictingClassGroupIds(classGroupId, hasPostfixModifier);
-    for (let i = 0; i < conflictGroups.length; ++i) {
-      const group = conflictGroups[i];
-      classGroupsInConflict.push(modifierId + group);
-    }
-    result = originalClassName + (result.length > 0 ? " " + result : result);
-  }
-  return result;
-};
-function twJoin() {
-  let index2 = 0;
-  let argument;
-  let resolvedValue;
-  let string = "";
-  while (index2 < arguments.length) {
-    if (argument = arguments[index2++]) {
-      if (resolvedValue = toValue$1(argument)) {
-        string && (string += " ");
-        string += resolvedValue;
-      }
-    }
-  }
-  return string;
-}
-const toValue$1 = (mix2) => {
-  if (typeof mix2 === "string") {
-    return mix2;
-  }
-  let resolvedValue;
-  let string = "";
-  for (let k2 = 0; k2 < mix2.length; k2++) {
-    if (mix2[k2]) {
-      if (resolvedValue = toValue$1(mix2[k2])) {
-        string && (string += " ");
-        string += resolvedValue;
-      }
-    }
-  }
-  return string;
-};
-function createTailwindMerge(createConfigFirst, ...createConfigRest) {
-  let configUtils;
-  let cacheGet;
-  let cacheSet;
-  let functionToCall = initTailwindMerge;
-  function initTailwindMerge(classList) {
-    const config = createConfigRest.reduce((previousConfig, createConfigCurrent) => createConfigCurrent(previousConfig), createConfigFirst());
-    configUtils = createConfigUtils(config);
-    cacheGet = configUtils.cache.get;
-    cacheSet = configUtils.cache.set;
-    functionToCall = tailwindMerge;
-    return tailwindMerge(classList);
-  }
-  function tailwindMerge(classList) {
-    const cachedResult = cacheGet(classList);
-    if (cachedResult) {
-      return cachedResult;
-    }
-    const result = mergeClassList(classList, configUtils);
-    cacheSet(classList, result);
-    return result;
-  }
-  return function callTailwindMerge() {
-    return functionToCall(twJoin.apply(null, arguments));
-  };
-}
-const fromTheme = (key) => {
-  const themeGetter = (theme) => theme[key] || [];
-  themeGetter.isThemeGetter = true;
-  return themeGetter;
-};
-const arbitraryValueRegex = /^\[(?:([a-z-]+):)?(.+)\]$/i;
-const fractionRegex = /^\d+\/\d+$/;
-const stringLengths = /* @__PURE__ */ new Set(["px", "full", "screen"]);
-const tshirtUnitRegex = /^(\d+(\.\d+)?)?(xs|sm|md|lg|xl)$/;
-const lengthUnitRegex = /\d+(%|px|r?em|[sdl]?v([hwib]|min|max)|pt|pc|in|cm|mm|cap|ch|ex|r?lh|cq(w|h|i|b|min|max))|\b(calc|min|max|clamp)\(.+\)|^0$/;
-const colorFunctionRegex = /^(rgba?|hsla?|hwb|(ok)?(lab|lch)|color-mix)\(.+\)$/;
-const shadowRegex = /^(inset_)?-?((\d+)?\.?(\d+)[a-z]+|0)_-?((\d+)?\.?(\d+)[a-z]+|0)/;
-const imageRegex = /^(url|image|image-set|cross-fade|element|(repeating-)?(linear|radial|conic)-gradient)\(.+\)$/;
-const isLength = (value) => isNumber(value) || stringLengths.has(value) || fractionRegex.test(value);
-const isArbitraryLength = (value) => getIsArbitraryValue(value, "length", isLengthOnly);
-const isNumber = (value) => Boolean(value) && !Number.isNaN(Number(value));
-const isArbitraryNumber = (value) => getIsArbitraryValue(value, "number", isNumber);
-const isInteger = (value) => Boolean(value) && Number.isInteger(Number(value));
-const isPercent = (value) => value.endsWith("%") && isNumber(value.slice(0, -1));
-const isArbitraryValue = (value) => arbitraryValueRegex.test(value);
-const isTshirtSize = (value) => tshirtUnitRegex.test(value);
-const sizeLabels = /* @__PURE__ */ new Set(["length", "size", "percentage"]);
-const isArbitrarySize = (value) => getIsArbitraryValue(value, sizeLabels, isNever);
-const isArbitraryPosition = (value) => getIsArbitraryValue(value, "position", isNever);
-const imageLabels = /* @__PURE__ */ new Set(["image", "url"]);
-const isArbitraryImage = (value) => getIsArbitraryValue(value, imageLabels, isImage);
-const isArbitraryShadow = (value) => getIsArbitraryValue(value, "", isShadow);
-const isAny = () => true;
-const getIsArbitraryValue = (value, label, testValue) => {
-  const result = arbitraryValueRegex.exec(value);
-  if (result) {
-    if (result[1]) {
-      return typeof label === "string" ? result[1] === label : label.has(result[1]);
-    }
-    return testValue(result[2]);
-  }
-  return false;
-};
-const isLengthOnly = (value) => (
-  // `colorFunctionRegex` check is necessary because color functions can have percentages in them which which would be incorrectly classified as lengths.
-  // For example, `hsl(0 0% 0%)` would be classified as a length without this check.
-  // I could also use lookbehind assertion in `lengthUnitRegex` but that isn't supported widely enough.
-  lengthUnitRegex.test(value) && !colorFunctionRegex.test(value)
-);
-const isNever = () => false;
-const isShadow = (value) => shadowRegex.test(value);
-const isImage = (value) => imageRegex.test(value);
-const getDefaultConfig = () => {
-  const colors = fromTheme("colors");
-  const spacing = fromTheme("spacing");
-  const blur = fromTheme("blur");
-  const brightness = fromTheme("brightness");
-  const borderColor = fromTheme("borderColor");
-  const borderRadius = fromTheme("borderRadius");
-  const borderSpacing = fromTheme("borderSpacing");
-  const borderWidth = fromTheme("borderWidth");
-  const contrast = fromTheme("contrast");
-  const grayscale = fromTheme("grayscale");
-  const hueRotate = fromTheme("hueRotate");
-  const invert2 = fromTheme("invert");
-  const gap = fromTheme("gap");
-  const gradientColorStops = fromTheme("gradientColorStops");
-  const gradientColorStopPositions = fromTheme("gradientColorStopPositions");
-  const inset = fromTheme("inset");
-  const margin = fromTheme("margin");
-  const opacity = fromTheme("opacity");
-  const padding = fromTheme("padding");
-  const saturate = fromTheme("saturate");
-  const scale2 = fromTheme("scale");
-  const sepia = fromTheme("sepia");
-  const skew = fromTheme("skew");
-  const space = fromTheme("space");
-  const translate = fromTheme("translate");
-  const getOverscroll = () => ["auto", "contain", "none"];
-  const getOverflow = () => ["auto", "hidden", "clip", "visible", "scroll"];
-  const getSpacingWithAutoAndArbitrary = () => ["auto", isArbitraryValue, spacing];
-  const getSpacingWithArbitrary = () => [isArbitraryValue, spacing];
-  const getLengthWithEmptyAndArbitrary = () => ["", isLength, isArbitraryLength];
-  const getNumberWithAutoAndArbitrary = () => ["auto", isNumber, isArbitraryValue];
-  const getPositions = () => ["bottom", "center", "left", "left-bottom", "left-top", "right", "right-bottom", "right-top", "top"];
-  const getLineStyles = () => ["solid", "dashed", "dotted", "double", "none"];
-  const getBlendModes = () => ["normal", "multiply", "screen", "overlay", "darken", "lighten", "color-dodge", "color-burn", "hard-light", "soft-light", "difference", "exclusion", "hue", "saturation", "color", "luminosity"];
-  const getAlign = () => ["start", "end", "center", "between", "around", "evenly", "stretch"];
-  const getZeroAndEmpty = () => ["", "0", isArbitraryValue];
-  const getBreaks = () => ["auto", "avoid", "all", "avoid-page", "page", "left", "right", "column"];
-  const getNumberAndArbitrary = () => [isNumber, isArbitraryValue];
-  return {
-    cacheSize: 500,
-    separator: ":",
-    theme: {
-      colors: [isAny],
-      spacing: [isLength, isArbitraryLength],
-      blur: ["none", "", isTshirtSize, isArbitraryValue],
-      brightness: getNumberAndArbitrary(),
-      borderColor: [colors],
-      borderRadius: ["none", "", "full", isTshirtSize, isArbitraryValue],
-      borderSpacing: getSpacingWithArbitrary(),
-      borderWidth: getLengthWithEmptyAndArbitrary(),
-      contrast: getNumberAndArbitrary(),
-      grayscale: getZeroAndEmpty(),
-      hueRotate: getNumberAndArbitrary(),
-      invert: getZeroAndEmpty(),
-      gap: getSpacingWithArbitrary(),
-      gradientColorStops: [colors],
-      gradientColorStopPositions: [isPercent, isArbitraryLength],
-      inset: getSpacingWithAutoAndArbitrary(),
-      margin: getSpacingWithAutoAndArbitrary(),
-      opacity: getNumberAndArbitrary(),
-      padding: getSpacingWithArbitrary(),
-      saturate: getNumberAndArbitrary(),
-      scale: getNumberAndArbitrary(),
-      sepia: getZeroAndEmpty(),
-      skew: getNumberAndArbitrary(),
-      space: getSpacingWithArbitrary(),
-      translate: getSpacingWithArbitrary()
-    },
-    classGroups: {
-      // Layout
-      /**
-       * Aspect Ratio
-       * @see https://tailwindcss.com/docs/aspect-ratio
-       */
-      aspect: [{
-        aspect: ["auto", "square", "video", isArbitraryValue]
-      }],
-      /**
-       * Container
-       * @see https://tailwindcss.com/docs/container
-       */
-      container: ["container"],
-      /**
-       * Columns
-       * @see https://tailwindcss.com/docs/columns
-       */
-      columns: [{
-        columns: [isTshirtSize]
-      }],
-      /**
-       * Break After
-       * @see https://tailwindcss.com/docs/break-after
-       */
-      "break-after": [{
-        "break-after": getBreaks()
-      }],
-      /**
-       * Break Before
-       * @see https://tailwindcss.com/docs/break-before
-       */
-      "break-before": [{
-        "break-before": getBreaks()
-      }],
-      /**
-       * Break Inside
-       * @see https://tailwindcss.com/docs/break-inside
-       */
-      "break-inside": [{
-        "break-inside": ["auto", "avoid", "avoid-page", "avoid-column"]
-      }],
-      /**
-       * Box Decoration Break
-       * @see https://tailwindcss.com/docs/box-decoration-break
-       */
-      "box-decoration": [{
-        "box-decoration": ["slice", "clone"]
-      }],
-      /**
-       * Box Sizing
-       * @see https://tailwindcss.com/docs/box-sizing
-       */
-      box: [{
-        box: ["border", "content"]
-      }],
-      /**
-       * Display
-       * @see https://tailwindcss.com/docs/display
-       */
-      display: ["block", "inline-block", "inline", "flex", "inline-flex", "table", "inline-table", "table-caption", "table-cell", "table-column", "table-column-group", "table-footer-group", "table-header-group", "table-row-group", "table-row", "flow-root", "grid", "inline-grid", "contents", "list-item", "hidden"],
-      /**
-       * Floats
-       * @see https://tailwindcss.com/docs/float
-       */
-      float: [{
-        float: ["right", "left", "none", "start", "end"]
-      }],
-      /**
-       * Clear
-       * @see https://tailwindcss.com/docs/clear
-       */
-      clear: [{
-        clear: ["left", "right", "both", "none", "start", "end"]
-      }],
-      /**
-       * Isolation
-       * @see https://tailwindcss.com/docs/isolation
-       */
-      isolation: ["isolate", "isolation-auto"],
-      /**
-       * Object Fit
-       * @see https://tailwindcss.com/docs/object-fit
-       */
-      "object-fit": [{
-        object: ["contain", "cover", "fill", "none", "scale-down"]
-      }],
-      /**
-       * Object Position
-       * @see https://tailwindcss.com/docs/object-position
-       */
-      "object-position": [{
-        object: [...getPositions(), isArbitraryValue]
-      }],
-      /**
-       * Overflow
-       * @see https://tailwindcss.com/docs/overflow
-       */
-      overflow: [{
-        overflow: getOverflow()
-      }],
-      /**
-       * Overflow X
-       * @see https://tailwindcss.com/docs/overflow
-       */
-      "overflow-x": [{
-        "overflow-x": getOverflow()
-      }],
-      /**
-       * Overflow Y
-       * @see https://tailwindcss.com/docs/overflow
-       */
-      "overflow-y": [{
-        "overflow-y": getOverflow()
-      }],
-      /**
-       * Overscroll Behavior
-       * @see https://tailwindcss.com/docs/overscroll-behavior
-       */
-      overscroll: [{
-        overscroll: getOverscroll()
-      }],
-      /**
-       * Overscroll Behavior X
-       * @see https://tailwindcss.com/docs/overscroll-behavior
-       */
-      "overscroll-x": [{
-        "overscroll-x": getOverscroll()
-      }],
-      /**
-       * Overscroll Behavior Y
-       * @see https://tailwindcss.com/docs/overscroll-behavior
-       */
-      "overscroll-y": [{
-        "overscroll-y": getOverscroll()
-      }],
-      /**
-       * Position
-       * @see https://tailwindcss.com/docs/position
-       */
-      position: ["static", "fixed", "absolute", "relative", "sticky"],
-      /**
-       * Top / Right / Bottom / Left
-       * @see https://tailwindcss.com/docs/top-right-bottom-left
-       */
-      inset: [{
-        inset: [inset]
-      }],
-      /**
-       * Right / Left
-       * @see https://tailwindcss.com/docs/top-right-bottom-left
-       */
-      "inset-x": [{
-        "inset-x": [inset]
-      }],
-      /**
-       * Top / Bottom
-       * @see https://tailwindcss.com/docs/top-right-bottom-left
-       */
-      "inset-y": [{
-        "inset-y": [inset]
-      }],
-      /**
-       * Start
-       * @see https://tailwindcss.com/docs/top-right-bottom-left
-       */
-      start: [{
-        start: [inset]
-      }],
-      /**
-       * End
-       * @see https://tailwindcss.com/docs/top-right-bottom-left
-       */
-      end: [{
-        end: [inset]
-      }],
-      /**
-       * Top
-       * @see https://tailwindcss.com/docs/top-right-bottom-left
-       */
-      top: [{
-        top: [inset]
-      }],
-      /**
-       * Right
-       * @see https://tailwindcss.com/docs/top-right-bottom-left
-       */
-      right: [{
-        right: [inset]
-      }],
-      /**
-       * Bottom
-       * @see https://tailwindcss.com/docs/top-right-bottom-left
-       */
-      bottom: [{
-        bottom: [inset]
-      }],
-      /**
-       * Left
-       * @see https://tailwindcss.com/docs/top-right-bottom-left
-       */
-      left: [{
-        left: [inset]
-      }],
-      /**
-       * Visibility
-       * @see https://tailwindcss.com/docs/visibility
-       */
-      visibility: ["visible", "invisible", "collapse"],
-      /**
-       * Z-Index
-       * @see https://tailwindcss.com/docs/z-index
-       */
-      z: [{
-        z: ["auto", isInteger, isArbitraryValue]
-      }],
-      // Flexbox and Grid
-      /**
-       * Flex Basis
-       * @see https://tailwindcss.com/docs/flex-basis
-       */
-      basis: [{
-        basis: getSpacingWithAutoAndArbitrary()
-      }],
-      /**
-       * Flex Direction
-       * @see https://tailwindcss.com/docs/flex-direction
-       */
-      "flex-direction": [{
-        flex: ["row", "row-reverse", "col", "col-reverse"]
-      }],
-      /**
-       * Flex Wrap
-       * @see https://tailwindcss.com/docs/flex-wrap
-       */
-      "flex-wrap": [{
-        flex: ["wrap", "wrap-reverse", "nowrap"]
-      }],
-      /**
-       * Flex
-       * @see https://tailwindcss.com/docs/flex
-       */
-      flex: [{
-        flex: ["1", "auto", "initial", "none", isArbitraryValue]
-      }],
-      /**
-       * Flex Grow
-       * @see https://tailwindcss.com/docs/flex-grow
-       */
-      grow: [{
-        grow: getZeroAndEmpty()
-      }],
-      /**
-       * Flex Shrink
-       * @see https://tailwindcss.com/docs/flex-shrink
-       */
-      shrink: [{
-        shrink: getZeroAndEmpty()
-      }],
-      /**
-       * Order
-       * @see https://tailwindcss.com/docs/order
-       */
-      order: [{
-        order: ["first", "last", "none", isInteger, isArbitraryValue]
-      }],
-      /**
-       * Grid Template Columns
-       * @see https://tailwindcss.com/docs/grid-template-columns
-       */
-      "grid-cols": [{
-        "grid-cols": [isAny]
-      }],
-      /**
-       * Grid Column Start / End
-       * @see https://tailwindcss.com/docs/grid-column
-       */
-      "col-start-end": [{
-        col: ["auto", {
-          span: ["full", isInteger, isArbitraryValue]
-        }, isArbitraryValue]
-      }],
-      /**
-       * Grid Column Start
-       * @see https://tailwindcss.com/docs/grid-column
-       */
-      "col-start": [{
-        "col-start": getNumberWithAutoAndArbitrary()
-      }],
-      /**
-       * Grid Column End
-       * @see https://tailwindcss.com/docs/grid-column
-       */
-      "col-end": [{
-        "col-end": getNumberWithAutoAndArbitrary()
-      }],
-      /**
-       * Grid Template Rows
-       * @see https://tailwindcss.com/docs/grid-template-rows
-       */
-      "grid-rows": [{
-        "grid-rows": [isAny]
-      }],
-      /**
-       * Grid Row Start / End
-       * @see https://tailwindcss.com/docs/grid-row
-       */
-      "row-start-end": [{
-        row: ["auto", {
-          span: [isInteger, isArbitraryValue]
-        }, isArbitraryValue]
-      }],
-      /**
-       * Grid Row Start
-       * @see https://tailwindcss.com/docs/grid-row
-       */
-      "row-start": [{
-        "row-start": getNumberWithAutoAndArbitrary()
-      }],
-      /**
-       * Grid Row End
-       * @see https://tailwindcss.com/docs/grid-row
-       */
-      "row-end": [{
-        "row-end": getNumberWithAutoAndArbitrary()
-      }],
-      /**
-       * Grid Auto Flow
-       * @see https://tailwindcss.com/docs/grid-auto-flow
-       */
-      "grid-flow": [{
-        "grid-flow": ["row", "col", "dense", "row-dense", "col-dense"]
-      }],
-      /**
-       * Grid Auto Columns
-       * @see https://tailwindcss.com/docs/grid-auto-columns
-       */
-      "auto-cols": [{
-        "auto-cols": ["auto", "min", "max", "fr", isArbitraryValue]
-      }],
-      /**
-       * Grid Auto Rows
-       * @see https://tailwindcss.com/docs/grid-auto-rows
-       */
-      "auto-rows": [{
-        "auto-rows": ["auto", "min", "max", "fr", isArbitraryValue]
-      }],
-      /**
-       * Gap
-       * @see https://tailwindcss.com/docs/gap
-       */
-      gap: [{
-        gap: [gap]
-      }],
-      /**
-       * Gap X
-       * @see https://tailwindcss.com/docs/gap
-       */
-      "gap-x": [{
-        "gap-x": [gap]
-      }],
-      /**
-       * Gap Y
-       * @see https://tailwindcss.com/docs/gap
-       */
-      "gap-y": [{
-        "gap-y": [gap]
-      }],
-      /**
-       * Justify Content
-       * @see https://tailwindcss.com/docs/justify-content
-       */
-      "justify-content": [{
-        justify: ["normal", ...getAlign()]
-      }],
-      /**
-       * Justify Items
-       * @see https://tailwindcss.com/docs/justify-items
-       */
-      "justify-items": [{
-        "justify-items": ["start", "end", "center", "stretch"]
-      }],
-      /**
-       * Justify Self
-       * @see https://tailwindcss.com/docs/justify-self
-       */
-      "justify-self": [{
-        "justify-self": ["auto", "start", "end", "center", "stretch"]
-      }],
-      /**
-       * Align Content
-       * @see https://tailwindcss.com/docs/align-content
-       */
-      "align-content": [{
-        content: ["normal", ...getAlign(), "baseline"]
-      }],
-      /**
-       * Align Items
-       * @see https://tailwindcss.com/docs/align-items
-       */
-      "align-items": [{
-        items: ["start", "end", "center", "baseline", "stretch"]
-      }],
-      /**
-       * Align Self
-       * @see https://tailwindcss.com/docs/align-self
-       */
-      "align-self": [{
-        self: ["auto", "start", "end", "center", "stretch", "baseline"]
-      }],
-      /**
-       * Place Content
-       * @see https://tailwindcss.com/docs/place-content
-       */
-      "place-content": [{
-        "place-content": [...getAlign(), "baseline"]
-      }],
-      /**
-       * Place Items
-       * @see https://tailwindcss.com/docs/place-items
-       */
-      "place-items": [{
-        "place-items": ["start", "end", "center", "baseline", "stretch"]
-      }],
-      /**
-       * Place Self
-       * @see https://tailwindcss.com/docs/place-self
-       */
-      "place-self": [{
-        "place-self": ["auto", "start", "end", "center", "stretch"]
-      }],
-      // Spacing
-      /**
-       * Padding
-       * @see https://tailwindcss.com/docs/padding
-       */
-      p: [{
-        p: [padding]
-      }],
-      /**
-       * Padding X
-       * @see https://tailwindcss.com/docs/padding
-       */
-      px: [{
-        px: [padding]
-      }],
-      /**
-       * Padding Y
-       * @see https://tailwindcss.com/docs/padding
-       */
-      py: [{
-        py: [padding]
-      }],
-      /**
-       * Padding Start
-       * @see https://tailwindcss.com/docs/padding
-       */
-      ps: [{
-        ps: [padding]
-      }],
-      /**
-       * Padding End
-       * @see https://tailwindcss.com/docs/padding
-       */
-      pe: [{
-        pe: [padding]
-      }],
-      /**
-       * Padding Top
-       * @see https://tailwindcss.com/docs/padding
-       */
-      pt: [{
-        pt: [padding]
-      }],
-      /**
-       * Padding Right
-       * @see https://tailwindcss.com/docs/padding
-       */
-      pr: [{
-        pr: [padding]
-      }],
-      /**
-       * Padding Bottom
-       * @see https://tailwindcss.com/docs/padding
-       */
-      pb: [{
-        pb: [padding]
-      }],
-      /**
-       * Padding Left
-       * @see https://tailwindcss.com/docs/padding
-       */
-      pl: [{
-        pl: [padding]
-      }],
-      /**
-       * Margin
-       * @see https://tailwindcss.com/docs/margin
-       */
-      m: [{
-        m: [margin]
-      }],
-      /**
-       * Margin X
-       * @see https://tailwindcss.com/docs/margin
-       */
-      mx: [{
-        mx: [margin]
-      }],
-      /**
-       * Margin Y
-       * @see https://tailwindcss.com/docs/margin
-       */
-      my: [{
-        my: [margin]
-      }],
-      /**
-       * Margin Start
-       * @see https://tailwindcss.com/docs/margin
-       */
-      ms: [{
-        ms: [margin]
-      }],
-      /**
-       * Margin End
-       * @see https://tailwindcss.com/docs/margin
-       */
-      me: [{
-        me: [margin]
-      }],
-      /**
-       * Margin Top
-       * @see https://tailwindcss.com/docs/margin
-       */
-      mt: [{
-        mt: [margin]
-      }],
-      /**
-       * Margin Right
-       * @see https://tailwindcss.com/docs/margin
-       */
-      mr: [{
-        mr: [margin]
-      }],
-      /**
-       * Margin Bottom
-       * @see https://tailwindcss.com/docs/margin
-       */
-      mb: [{
-        mb: [margin]
-      }],
-      /**
-       * Margin Left
-       * @see https://tailwindcss.com/docs/margin
-       */
-      ml: [{
-        ml: [margin]
-      }],
-      /**
-       * Space Between X
-       * @see https://tailwindcss.com/docs/space
-       */
-      "space-x": [{
-        "space-x": [space]
-      }],
-      /**
-       * Space Between X Reverse
-       * @see https://tailwindcss.com/docs/space
-       */
-      "space-x-reverse": ["space-x-reverse"],
-      /**
-       * Space Between Y
-       * @see https://tailwindcss.com/docs/space
-       */
-      "space-y": [{
-        "space-y": [space]
-      }],
-      /**
-       * Space Between Y Reverse
-       * @see https://tailwindcss.com/docs/space
-       */
-      "space-y-reverse": ["space-y-reverse"],
-      // Sizing
-      /**
-       * Width
-       * @see https://tailwindcss.com/docs/width
-       */
-      w: [{
-        w: ["auto", "min", "max", "fit", "svw", "lvw", "dvw", isArbitraryValue, spacing]
-      }],
-      /**
-       * Min-Width
-       * @see https://tailwindcss.com/docs/min-width
-       */
-      "min-w": [{
-        "min-w": [isArbitraryValue, spacing, "min", "max", "fit"]
-      }],
-      /**
-       * Max-Width
-       * @see https://tailwindcss.com/docs/max-width
-       */
-      "max-w": [{
-        "max-w": [isArbitraryValue, spacing, "none", "full", "min", "max", "fit", "prose", {
-          screen: [isTshirtSize]
-        }, isTshirtSize]
-      }],
-      /**
-       * Height
-       * @see https://tailwindcss.com/docs/height
-       */
-      h: [{
-        h: [isArbitraryValue, spacing, "auto", "min", "max", "fit", "svh", "lvh", "dvh"]
-      }],
-      /**
-       * Min-Height
-       * @see https://tailwindcss.com/docs/min-height
-       */
-      "min-h": [{
-        "min-h": [isArbitraryValue, spacing, "min", "max", "fit", "svh", "lvh", "dvh"]
-      }],
-      /**
-       * Max-Height
-       * @see https://tailwindcss.com/docs/max-height
-       */
-      "max-h": [{
-        "max-h": [isArbitraryValue, spacing, "min", "max", "fit", "svh", "lvh", "dvh"]
-      }],
-      /**
-       * Size
-       * @see https://tailwindcss.com/docs/size
-       */
-      size: [{
-        size: [isArbitraryValue, spacing, "auto", "min", "max", "fit"]
-      }],
-      // Typography
-      /**
-       * Font Size
-       * @see https://tailwindcss.com/docs/font-size
-       */
-      "font-size": [{
-        text: ["base", isTshirtSize, isArbitraryLength]
-      }],
-      /**
-       * Font Smoothing
-       * @see https://tailwindcss.com/docs/font-smoothing
-       */
-      "font-smoothing": ["antialiased", "subpixel-antialiased"],
-      /**
-       * Font Style
-       * @see https://tailwindcss.com/docs/font-style
-       */
-      "font-style": ["italic", "not-italic"],
-      /**
-       * Font Weight
-       * @see https://tailwindcss.com/docs/font-weight
-       */
-      "font-weight": [{
-        font: ["thin", "extralight", "light", "normal", "medium", "semibold", "bold", "extrabold", "black", isArbitraryNumber]
-      }],
-      /**
-       * Font Family
-       * @see https://tailwindcss.com/docs/font-family
-       */
-      "font-family": [{
-        font: [isAny]
-      }],
-      /**
-       * Font Variant Numeric
-       * @see https://tailwindcss.com/docs/font-variant-numeric
-       */
-      "fvn-normal": ["normal-nums"],
-      /**
-       * Font Variant Numeric
-       * @see https://tailwindcss.com/docs/font-variant-numeric
-       */
-      "fvn-ordinal": ["ordinal"],
-      /**
-       * Font Variant Numeric
-       * @see https://tailwindcss.com/docs/font-variant-numeric
-       */
-      "fvn-slashed-zero": ["slashed-zero"],
-      /**
-       * Font Variant Numeric
-       * @see https://tailwindcss.com/docs/font-variant-numeric
-       */
-      "fvn-figure": ["lining-nums", "oldstyle-nums"],
-      /**
-       * Font Variant Numeric
-       * @see https://tailwindcss.com/docs/font-variant-numeric
-       */
-      "fvn-spacing": ["proportional-nums", "tabular-nums"],
-      /**
-       * Font Variant Numeric
-       * @see https://tailwindcss.com/docs/font-variant-numeric
-       */
-      "fvn-fraction": ["diagonal-fractions", "stacked-fractions"],
-      /**
-       * Letter Spacing
-       * @see https://tailwindcss.com/docs/letter-spacing
-       */
-      tracking: [{
-        tracking: ["tighter", "tight", "normal", "wide", "wider", "widest", isArbitraryValue]
-      }],
-      /**
-       * Line Clamp
-       * @see https://tailwindcss.com/docs/line-clamp
-       */
-      "line-clamp": [{
-        "line-clamp": ["none", isNumber, isArbitraryNumber]
-      }],
-      /**
-       * Line Height
-       * @see https://tailwindcss.com/docs/line-height
-       */
-      leading: [{
-        leading: ["none", "tight", "snug", "normal", "relaxed", "loose", isLength, isArbitraryValue]
-      }],
-      /**
-       * List Style Image
-       * @see https://tailwindcss.com/docs/list-style-image
-       */
-      "list-image": [{
-        "list-image": ["none", isArbitraryValue]
-      }],
-      /**
-       * List Style Type
-       * @see https://tailwindcss.com/docs/list-style-type
-       */
-      "list-style-type": [{
-        list: ["none", "disc", "decimal", isArbitraryValue]
-      }],
-      /**
-       * List Style Position
-       * @see https://tailwindcss.com/docs/list-style-position
-       */
-      "list-style-position": [{
-        list: ["inside", "outside"]
-      }],
-      /**
-       * Placeholder Color
-       * @deprecated since Tailwind CSS v3.0.0
-       * @see https://tailwindcss.com/docs/placeholder-color
-       */
-      "placeholder-color": [{
-        placeholder: [colors]
-      }],
-      /**
-       * Placeholder Opacity
-       * @see https://tailwindcss.com/docs/placeholder-opacity
-       */
-      "placeholder-opacity": [{
-        "placeholder-opacity": [opacity]
-      }],
-      /**
-       * Text Alignment
-       * @see https://tailwindcss.com/docs/text-align
-       */
-      "text-alignment": [{
-        text: ["left", "center", "right", "justify", "start", "end"]
-      }],
-      /**
-       * Text Color
-       * @see https://tailwindcss.com/docs/text-color
-       */
-      "text-color": [{
-        text: [colors]
-      }],
-      /**
-       * Text Opacity
-       * @see https://tailwindcss.com/docs/text-opacity
-       */
-      "text-opacity": [{
-        "text-opacity": [opacity]
-      }],
-      /**
-       * Text Decoration
-       * @see https://tailwindcss.com/docs/text-decoration
-       */
-      "text-decoration": ["underline", "overline", "line-through", "no-underline"],
-      /**
-       * Text Decoration Style
-       * @see https://tailwindcss.com/docs/text-decoration-style
-       */
-      "text-decoration-style": [{
-        decoration: [...getLineStyles(), "wavy"]
-      }],
-      /**
-       * Text Decoration Thickness
-       * @see https://tailwindcss.com/docs/text-decoration-thickness
-       */
-      "text-decoration-thickness": [{
-        decoration: ["auto", "from-font", isLength, isArbitraryLength]
-      }],
-      /**
-       * Text Underline Offset
-       * @see https://tailwindcss.com/docs/text-underline-offset
-       */
-      "underline-offset": [{
-        "underline-offset": ["auto", isLength, isArbitraryValue]
-      }],
-      /**
-       * Text Decoration Color
-       * @see https://tailwindcss.com/docs/text-decoration-color
-       */
-      "text-decoration-color": [{
-        decoration: [colors]
-      }],
-      /**
-       * Text Transform
-       * @see https://tailwindcss.com/docs/text-transform
-       */
-      "text-transform": ["uppercase", "lowercase", "capitalize", "normal-case"],
-      /**
-       * Text Overflow
-       * @see https://tailwindcss.com/docs/text-overflow
-       */
-      "text-overflow": ["truncate", "text-ellipsis", "text-clip"],
-      /**
-       * Text Wrap
-       * @see https://tailwindcss.com/docs/text-wrap
-       */
-      "text-wrap": [{
-        text: ["wrap", "nowrap", "balance", "pretty"]
-      }],
-      /**
-       * Text Indent
-       * @see https://tailwindcss.com/docs/text-indent
-       */
-      indent: [{
-        indent: getSpacingWithArbitrary()
-      }],
-      /**
-       * Vertical Alignment
-       * @see https://tailwindcss.com/docs/vertical-align
-       */
-      "vertical-align": [{
-        align: ["baseline", "top", "middle", "bottom", "text-top", "text-bottom", "sub", "super", isArbitraryValue]
-      }],
-      /**
-       * Whitespace
-       * @see https://tailwindcss.com/docs/whitespace
-       */
-      whitespace: [{
-        whitespace: ["normal", "nowrap", "pre", "pre-line", "pre-wrap", "break-spaces"]
-      }],
-      /**
-       * Word Break
-       * @see https://tailwindcss.com/docs/word-break
-       */
-      break: [{
-        break: ["normal", "words", "all", "keep"]
-      }],
-      /**
-       * Hyphens
-       * @see https://tailwindcss.com/docs/hyphens
-       */
-      hyphens: [{
-        hyphens: ["none", "manual", "auto"]
-      }],
-      /**
-       * Content
-       * @see https://tailwindcss.com/docs/content
-       */
-      content: [{
-        content: ["none", isArbitraryValue]
-      }],
-      // Backgrounds
-      /**
-       * Background Attachment
-       * @see https://tailwindcss.com/docs/background-attachment
-       */
-      "bg-attachment": [{
-        bg: ["fixed", "local", "scroll"]
-      }],
-      /**
-       * Background Clip
-       * @see https://tailwindcss.com/docs/background-clip
-       */
-      "bg-clip": [{
-        "bg-clip": ["border", "padding", "content", "text"]
-      }],
-      /**
-       * Background Opacity
-       * @deprecated since Tailwind CSS v3.0.0
-       * @see https://tailwindcss.com/docs/background-opacity
-       */
-      "bg-opacity": [{
-        "bg-opacity": [opacity]
-      }],
-      /**
-       * Background Origin
-       * @see https://tailwindcss.com/docs/background-origin
-       */
-      "bg-origin": [{
-        "bg-origin": ["border", "padding", "content"]
-      }],
-      /**
-       * Background Position
-       * @see https://tailwindcss.com/docs/background-position
-       */
-      "bg-position": [{
-        bg: [...getPositions(), isArbitraryPosition]
-      }],
-      /**
-       * Background Repeat
-       * @see https://tailwindcss.com/docs/background-repeat
-       */
-      "bg-repeat": [{
-        bg: ["no-repeat", {
-          repeat: ["", "x", "y", "round", "space"]
-        }]
-      }],
-      /**
-       * Background Size
-       * @see https://tailwindcss.com/docs/background-size
-       */
-      "bg-size": [{
-        bg: ["auto", "cover", "contain", isArbitrarySize]
-      }],
-      /**
-       * Background Image
-       * @see https://tailwindcss.com/docs/background-image
-       */
-      "bg-image": [{
-        bg: ["none", {
-          "gradient-to": ["t", "tr", "r", "br", "b", "bl", "l", "tl"]
-        }, isArbitraryImage]
-      }],
-      /**
-       * Background Color
-       * @see https://tailwindcss.com/docs/background-color
-       */
-      "bg-color": [{
-        bg: [colors]
-      }],
-      /**
-       * Gradient Color Stops From Position
-       * @see https://tailwindcss.com/docs/gradient-color-stops
-       */
-      "gradient-from-pos": [{
-        from: [gradientColorStopPositions]
-      }],
-      /**
-       * Gradient Color Stops Via Position
-       * @see https://tailwindcss.com/docs/gradient-color-stops
-       */
-      "gradient-via-pos": [{
-        via: [gradientColorStopPositions]
-      }],
-      /**
-       * Gradient Color Stops To Position
-       * @see https://tailwindcss.com/docs/gradient-color-stops
-       */
-      "gradient-to-pos": [{
-        to: [gradientColorStopPositions]
-      }],
-      /**
-       * Gradient Color Stops From
-       * @see https://tailwindcss.com/docs/gradient-color-stops
-       */
-      "gradient-from": [{
-        from: [gradientColorStops]
-      }],
-      /**
-       * Gradient Color Stops Via
-       * @see https://tailwindcss.com/docs/gradient-color-stops
-       */
-      "gradient-via": [{
-        via: [gradientColorStops]
-      }],
-      /**
-       * Gradient Color Stops To
-       * @see https://tailwindcss.com/docs/gradient-color-stops
-       */
-      "gradient-to": [{
-        to: [gradientColorStops]
-      }],
-      // Borders
-      /**
-       * Border Radius
-       * @see https://tailwindcss.com/docs/border-radius
-       */
-      rounded: [{
-        rounded: [borderRadius]
-      }],
-      /**
-       * Border Radius Start
-       * @see https://tailwindcss.com/docs/border-radius
-       */
-      "rounded-s": [{
-        "rounded-s": [borderRadius]
-      }],
-      /**
-       * Border Radius End
-       * @see https://tailwindcss.com/docs/border-radius
-       */
-      "rounded-e": [{
-        "rounded-e": [borderRadius]
-      }],
-      /**
-       * Border Radius Top
-       * @see https://tailwindcss.com/docs/border-radius
-       */
-      "rounded-t": [{
-        "rounded-t": [borderRadius]
-      }],
-      /**
-       * Border Radius Right
-       * @see https://tailwindcss.com/docs/border-radius
-       */
-      "rounded-r": [{
-        "rounded-r": [borderRadius]
-      }],
-      /**
-       * Border Radius Bottom
-       * @see https://tailwindcss.com/docs/border-radius
-       */
-      "rounded-b": [{
-        "rounded-b": [borderRadius]
-      }],
-      /**
-       * Border Radius Left
-       * @see https://tailwindcss.com/docs/border-radius
-       */
-      "rounded-l": [{
-        "rounded-l": [borderRadius]
-      }],
-      /**
-       * Border Radius Start Start
-       * @see https://tailwindcss.com/docs/border-radius
-       */
-      "rounded-ss": [{
-        "rounded-ss": [borderRadius]
-      }],
-      /**
-       * Border Radius Start End
-       * @see https://tailwindcss.com/docs/border-radius
-       */
-      "rounded-se": [{
-        "rounded-se": [borderRadius]
-      }],
-      /**
-       * Border Radius End End
-       * @see https://tailwindcss.com/docs/border-radius
-       */
-      "rounded-ee": [{
-        "rounded-ee": [borderRadius]
-      }],
-      /**
-       * Border Radius End Start
-       * @see https://tailwindcss.com/docs/border-radius
-       */
-      "rounded-es": [{
-        "rounded-es": [borderRadius]
-      }],
-      /**
-       * Border Radius Top Left
-       * @see https://tailwindcss.com/docs/border-radius
-       */
-      "rounded-tl": [{
-        "rounded-tl": [borderRadius]
-      }],
-      /**
-       * Border Radius Top Right
-       * @see https://tailwindcss.com/docs/border-radius
-       */
-      "rounded-tr": [{
-        "rounded-tr": [borderRadius]
-      }],
-      /**
-       * Border Radius Bottom Right
-       * @see https://tailwindcss.com/docs/border-radius
-       */
-      "rounded-br": [{
-        "rounded-br": [borderRadius]
-      }],
-      /**
-       * Border Radius Bottom Left
-       * @see https://tailwindcss.com/docs/border-radius
-       */
-      "rounded-bl": [{
-        "rounded-bl": [borderRadius]
-      }],
-      /**
-       * Border Width
-       * @see https://tailwindcss.com/docs/border-width
-       */
-      "border-w": [{
-        border: [borderWidth]
-      }],
-      /**
-       * Border Width X
-       * @see https://tailwindcss.com/docs/border-width
-       */
-      "border-w-x": [{
-        "border-x": [borderWidth]
-      }],
-      /**
-       * Border Width Y
-       * @see https://tailwindcss.com/docs/border-width
-       */
-      "border-w-y": [{
-        "border-y": [borderWidth]
-      }],
-      /**
-       * Border Width Start
-       * @see https://tailwindcss.com/docs/border-width
-       */
-      "border-w-s": [{
-        "border-s": [borderWidth]
-      }],
-      /**
-       * Border Width End
-       * @see https://tailwindcss.com/docs/border-width
-       */
-      "border-w-e": [{
-        "border-e": [borderWidth]
-      }],
-      /**
-       * Border Width Top
-       * @see https://tailwindcss.com/docs/border-width
-       */
-      "border-w-t": [{
-        "border-t": [borderWidth]
-      }],
-      /**
-       * Border Width Right
-       * @see https://tailwindcss.com/docs/border-width
-       */
-      "border-w-r": [{
-        "border-r": [borderWidth]
-      }],
-      /**
-       * Border Width Bottom
-       * @see https://tailwindcss.com/docs/border-width
-       */
-      "border-w-b": [{
-        "border-b": [borderWidth]
-      }],
-      /**
-       * Border Width Left
-       * @see https://tailwindcss.com/docs/border-width
-       */
-      "border-w-l": [{
-        "border-l": [borderWidth]
-      }],
-      /**
-       * Border Opacity
-       * @see https://tailwindcss.com/docs/border-opacity
-       */
-      "border-opacity": [{
-        "border-opacity": [opacity]
-      }],
-      /**
-       * Border Style
-       * @see https://tailwindcss.com/docs/border-style
-       */
-      "border-style": [{
-        border: [...getLineStyles(), "hidden"]
-      }],
-      /**
-       * Divide Width X
-       * @see https://tailwindcss.com/docs/divide-width
-       */
-      "divide-x": [{
-        "divide-x": [borderWidth]
-      }],
-      /**
-       * Divide Width X Reverse
-       * @see https://tailwindcss.com/docs/divide-width
-       */
-      "divide-x-reverse": ["divide-x-reverse"],
-      /**
-       * Divide Width Y
-       * @see https://tailwindcss.com/docs/divide-width
-       */
-      "divide-y": [{
-        "divide-y": [borderWidth]
-      }],
-      /**
-       * Divide Width Y Reverse
-       * @see https://tailwindcss.com/docs/divide-width
-       */
-      "divide-y-reverse": ["divide-y-reverse"],
-      /**
-       * Divide Opacity
-       * @see https://tailwindcss.com/docs/divide-opacity
-       */
-      "divide-opacity": [{
-        "divide-opacity": [opacity]
-      }],
-      /**
-       * Divide Style
-       * @see https://tailwindcss.com/docs/divide-style
-       */
-      "divide-style": [{
-        divide: getLineStyles()
-      }],
-      /**
-       * Border Color
-       * @see https://tailwindcss.com/docs/border-color
-       */
-      "border-color": [{
-        border: [borderColor]
-      }],
-      /**
-       * Border Color X
-       * @see https://tailwindcss.com/docs/border-color
-       */
-      "border-color-x": [{
-        "border-x": [borderColor]
-      }],
-      /**
-       * Border Color Y
-       * @see https://tailwindcss.com/docs/border-color
-       */
-      "border-color-y": [{
-        "border-y": [borderColor]
-      }],
-      /**
-       * Border Color S
-       * @see https://tailwindcss.com/docs/border-color
-       */
-      "border-color-s": [{
-        "border-s": [borderColor]
-      }],
-      /**
-       * Border Color E
-       * @see https://tailwindcss.com/docs/border-color
-       */
-      "border-color-e": [{
-        "border-e": [borderColor]
-      }],
-      /**
-       * Border Color Top
-       * @see https://tailwindcss.com/docs/border-color
-       */
-      "border-color-t": [{
-        "border-t": [borderColor]
-      }],
-      /**
-       * Border Color Right
-       * @see https://tailwindcss.com/docs/border-color
-       */
-      "border-color-r": [{
-        "border-r": [borderColor]
-      }],
-      /**
-       * Border Color Bottom
-       * @see https://tailwindcss.com/docs/border-color
-       */
-      "border-color-b": [{
-        "border-b": [borderColor]
-      }],
-      /**
-       * Border Color Left
-       * @see https://tailwindcss.com/docs/border-color
-       */
-      "border-color-l": [{
-        "border-l": [borderColor]
-      }],
-      /**
-       * Divide Color
-       * @see https://tailwindcss.com/docs/divide-color
-       */
-      "divide-color": [{
-        divide: [borderColor]
-      }],
-      /**
-       * Outline Style
-       * @see https://tailwindcss.com/docs/outline-style
-       */
-      "outline-style": [{
-        outline: ["", ...getLineStyles()]
-      }],
-      /**
-       * Outline Offset
-       * @see https://tailwindcss.com/docs/outline-offset
-       */
-      "outline-offset": [{
-        "outline-offset": [isLength, isArbitraryValue]
-      }],
-      /**
-       * Outline Width
-       * @see https://tailwindcss.com/docs/outline-width
-       */
-      "outline-w": [{
-        outline: [isLength, isArbitraryLength]
-      }],
-      /**
-       * Outline Color
-       * @see https://tailwindcss.com/docs/outline-color
-       */
-      "outline-color": [{
-        outline: [colors]
-      }],
-      /**
-       * Ring Width
-       * @see https://tailwindcss.com/docs/ring-width
-       */
-      "ring-w": [{
-        ring: getLengthWithEmptyAndArbitrary()
-      }],
-      /**
-       * Ring Width Inset
-       * @see https://tailwindcss.com/docs/ring-width
-       */
-      "ring-w-inset": ["ring-inset"],
-      /**
-       * Ring Color
-       * @see https://tailwindcss.com/docs/ring-color
-       */
-      "ring-color": [{
-        ring: [colors]
-      }],
-      /**
-       * Ring Opacity
-       * @see https://tailwindcss.com/docs/ring-opacity
-       */
-      "ring-opacity": [{
-        "ring-opacity": [opacity]
-      }],
-      /**
-       * Ring Offset Width
-       * @see https://tailwindcss.com/docs/ring-offset-width
-       */
-      "ring-offset-w": [{
-        "ring-offset": [isLength, isArbitraryLength]
-      }],
-      /**
-       * Ring Offset Color
-       * @see https://tailwindcss.com/docs/ring-offset-color
-       */
-      "ring-offset-color": [{
-        "ring-offset": [colors]
-      }],
-      // Effects
-      /**
-       * Box Shadow
-       * @see https://tailwindcss.com/docs/box-shadow
-       */
-      shadow: [{
-        shadow: ["", "inner", "none", isTshirtSize, isArbitraryShadow]
-      }],
-      /**
-       * Box Shadow Color
-       * @see https://tailwindcss.com/docs/box-shadow-color
-       */
-      "shadow-color": [{
-        shadow: [isAny]
-      }],
-      /**
-       * Opacity
-       * @see https://tailwindcss.com/docs/opacity
-       */
-      opacity: [{
-        opacity: [opacity]
-      }],
-      /**
-       * Mix Blend Mode
-       * @see https://tailwindcss.com/docs/mix-blend-mode
-       */
-      "mix-blend": [{
-        "mix-blend": [...getBlendModes(), "plus-lighter", "plus-darker"]
-      }],
-      /**
-       * Background Blend Mode
-       * @see https://tailwindcss.com/docs/background-blend-mode
-       */
-      "bg-blend": [{
-        "bg-blend": getBlendModes()
-      }],
-      // Filters
-      /**
-       * Filter
-       * @deprecated since Tailwind CSS v3.0.0
-       * @see https://tailwindcss.com/docs/filter
-       */
-      filter: [{
-        filter: ["", "none"]
-      }],
-      /**
-       * Blur
-       * @see https://tailwindcss.com/docs/blur
-       */
-      blur: [{
-        blur: [blur]
-      }],
-      /**
-       * Brightness
-       * @see https://tailwindcss.com/docs/brightness
-       */
-      brightness: [{
-        brightness: [brightness]
-      }],
-      /**
-       * Contrast
-       * @see https://tailwindcss.com/docs/contrast
-       */
-      contrast: [{
-        contrast: [contrast]
-      }],
-      /**
-       * Drop Shadow
-       * @see https://tailwindcss.com/docs/drop-shadow
-       */
-      "drop-shadow": [{
-        "drop-shadow": ["", "none", isTshirtSize, isArbitraryValue]
-      }],
-      /**
-       * Grayscale
-       * @see https://tailwindcss.com/docs/grayscale
-       */
-      grayscale: [{
-        grayscale: [grayscale]
-      }],
-      /**
-       * Hue Rotate
-       * @see https://tailwindcss.com/docs/hue-rotate
-       */
-      "hue-rotate": [{
-        "hue-rotate": [hueRotate]
-      }],
-      /**
-       * Invert
-       * @see https://tailwindcss.com/docs/invert
-       */
-      invert: [{
-        invert: [invert2]
-      }],
-      /**
-       * Saturate
-       * @see https://tailwindcss.com/docs/saturate
-       */
-      saturate: [{
-        saturate: [saturate]
-      }],
-      /**
-       * Sepia
-       * @see https://tailwindcss.com/docs/sepia
-       */
-      sepia: [{
-        sepia: [sepia]
-      }],
-      /**
-       * Backdrop Filter
-       * @deprecated since Tailwind CSS v3.0.0
-       * @see https://tailwindcss.com/docs/backdrop-filter
-       */
-      "backdrop-filter": [{
-        "backdrop-filter": ["", "none"]
-      }],
-      /**
-       * Backdrop Blur
-       * @see https://tailwindcss.com/docs/backdrop-blur
-       */
-      "backdrop-blur": [{
-        "backdrop-blur": [blur]
-      }],
-      /**
-       * Backdrop Brightness
-       * @see https://tailwindcss.com/docs/backdrop-brightness
-       */
-      "backdrop-brightness": [{
-        "backdrop-brightness": [brightness]
-      }],
-      /**
-       * Backdrop Contrast
-       * @see https://tailwindcss.com/docs/backdrop-contrast
-       */
-      "backdrop-contrast": [{
-        "backdrop-contrast": [contrast]
-      }],
-      /**
-       * Backdrop Grayscale
-       * @see https://tailwindcss.com/docs/backdrop-grayscale
-       */
-      "backdrop-grayscale": [{
-        "backdrop-grayscale": [grayscale]
-      }],
-      /**
-       * Backdrop Hue Rotate
-       * @see https://tailwindcss.com/docs/backdrop-hue-rotate
-       */
-      "backdrop-hue-rotate": [{
-        "backdrop-hue-rotate": [hueRotate]
-      }],
-      /**
-       * Backdrop Invert
-       * @see https://tailwindcss.com/docs/backdrop-invert
-       */
-      "backdrop-invert": [{
-        "backdrop-invert": [invert2]
-      }],
-      /**
-       * Backdrop Opacity
-       * @see https://tailwindcss.com/docs/backdrop-opacity
-       */
-      "backdrop-opacity": [{
-        "backdrop-opacity": [opacity]
-      }],
-      /**
-       * Backdrop Saturate
-       * @see https://tailwindcss.com/docs/backdrop-saturate
-       */
-      "backdrop-saturate": [{
-        "backdrop-saturate": [saturate]
-      }],
-      /**
-       * Backdrop Sepia
-       * @see https://tailwindcss.com/docs/backdrop-sepia
-       */
-      "backdrop-sepia": [{
-        "backdrop-sepia": [sepia]
-      }],
-      // Tables
-      /**
-       * Border Collapse
-       * @see https://tailwindcss.com/docs/border-collapse
-       */
-      "border-collapse": [{
-        border: ["collapse", "separate"]
-      }],
-      /**
-       * Border Spacing
-       * @see https://tailwindcss.com/docs/border-spacing
-       */
-      "border-spacing": [{
-        "border-spacing": [borderSpacing]
-      }],
-      /**
-       * Border Spacing X
-       * @see https://tailwindcss.com/docs/border-spacing
-       */
-      "border-spacing-x": [{
-        "border-spacing-x": [borderSpacing]
-      }],
-      /**
-       * Border Spacing Y
-       * @see https://tailwindcss.com/docs/border-spacing
-       */
-      "border-spacing-y": [{
-        "border-spacing-y": [borderSpacing]
-      }],
-      /**
-       * Table Layout
-       * @see https://tailwindcss.com/docs/table-layout
-       */
-      "table-layout": [{
-        table: ["auto", "fixed"]
-      }],
-      /**
-       * Caption Side
-       * @see https://tailwindcss.com/docs/caption-side
-       */
-      caption: [{
-        caption: ["top", "bottom"]
-      }],
-      // Transitions and Animation
-      /**
-       * Tranisition Property
-       * @see https://tailwindcss.com/docs/transition-property
-       */
-      transition: [{
-        transition: ["none", "all", "", "colors", "opacity", "shadow", "transform", isArbitraryValue]
-      }],
-      /**
-       * Transition Duration
-       * @see https://tailwindcss.com/docs/transition-duration
-       */
-      duration: [{
-        duration: getNumberAndArbitrary()
-      }],
-      /**
-       * Transition Timing Function
-       * @see https://tailwindcss.com/docs/transition-timing-function
-       */
-      ease: [{
-        ease: ["linear", "in", "out", "in-out", isArbitraryValue]
-      }],
-      /**
-       * Transition Delay
-       * @see https://tailwindcss.com/docs/transition-delay
-       */
-      delay: [{
-        delay: getNumberAndArbitrary()
-      }],
-      /**
-       * Animation
-       * @see https://tailwindcss.com/docs/animation
-       */
-      animate: [{
-        animate: ["none", "spin", "ping", "pulse", "bounce", isArbitraryValue]
-      }],
-      // Transforms
-      /**
-       * Transform
-       * @see https://tailwindcss.com/docs/transform
-       */
-      transform: [{
-        transform: ["", "gpu", "none"]
-      }],
-      /**
-       * Scale
-       * @see https://tailwindcss.com/docs/scale
-       */
-      scale: [{
-        scale: [scale2]
-      }],
-      /**
-       * Scale X
-       * @see https://tailwindcss.com/docs/scale
-       */
-      "scale-x": [{
-        "scale-x": [scale2]
-      }],
-      /**
-       * Scale Y
-       * @see https://tailwindcss.com/docs/scale
-       */
-      "scale-y": [{
-        "scale-y": [scale2]
-      }],
-      /**
-       * Rotate
-       * @see https://tailwindcss.com/docs/rotate
-       */
-      rotate: [{
-        rotate: [isInteger, isArbitraryValue]
-      }],
-      /**
-       * Translate X
-       * @see https://tailwindcss.com/docs/translate
-       */
-      "translate-x": [{
-        "translate-x": [translate]
-      }],
-      /**
-       * Translate Y
-       * @see https://tailwindcss.com/docs/translate
-       */
-      "translate-y": [{
-        "translate-y": [translate]
-      }],
-      /**
-       * Skew X
-       * @see https://tailwindcss.com/docs/skew
-       */
-      "skew-x": [{
-        "skew-x": [skew]
-      }],
-      /**
-       * Skew Y
-       * @see https://tailwindcss.com/docs/skew
-       */
-      "skew-y": [{
-        "skew-y": [skew]
-      }],
-      /**
-       * Transform Origin
-       * @see https://tailwindcss.com/docs/transform-origin
-       */
-      "transform-origin": [{
-        origin: ["center", "top", "top-right", "right", "bottom-right", "bottom", "bottom-left", "left", "top-left", isArbitraryValue]
-      }],
-      // Interactivity
-      /**
-       * Accent Color
-       * @see https://tailwindcss.com/docs/accent-color
-       */
-      accent: [{
-        accent: ["auto", colors]
-      }],
-      /**
-       * Appearance
-       * @see https://tailwindcss.com/docs/appearance
-       */
-      appearance: [{
-        appearance: ["none", "auto"]
-      }],
-      /**
-       * Cursor
-       * @see https://tailwindcss.com/docs/cursor
-       */
-      cursor: [{
-        cursor: ["auto", "default", "pointer", "wait", "text", "move", "help", "not-allowed", "none", "context-menu", "progress", "cell", "crosshair", "vertical-text", "alias", "copy", "no-drop", "grab", "grabbing", "all-scroll", "col-resize", "row-resize", "n-resize", "e-resize", "s-resize", "w-resize", "ne-resize", "nw-resize", "se-resize", "sw-resize", "ew-resize", "ns-resize", "nesw-resize", "nwse-resize", "zoom-in", "zoom-out", isArbitraryValue]
-      }],
-      /**
-       * Caret Color
-       * @see https://tailwindcss.com/docs/just-in-time-mode#caret-color-utilities
-       */
-      "caret-color": [{
-        caret: [colors]
-      }],
-      /**
-       * Pointer Events
-       * @see https://tailwindcss.com/docs/pointer-events
-       */
-      "pointer-events": [{
-        "pointer-events": ["none", "auto"]
-      }],
-      /**
-       * Resize
-       * @see https://tailwindcss.com/docs/resize
-       */
-      resize: [{
-        resize: ["none", "y", "x", ""]
-      }],
-      /**
-       * Scroll Behavior
-       * @see https://tailwindcss.com/docs/scroll-behavior
-       */
-      "scroll-behavior": [{
-        scroll: ["auto", "smooth"]
-      }],
-      /**
-       * Scroll Margin
-       * @see https://tailwindcss.com/docs/scroll-margin
-       */
-      "scroll-m": [{
-        "scroll-m": getSpacingWithArbitrary()
-      }],
-      /**
-       * Scroll Margin X
-       * @see https://tailwindcss.com/docs/scroll-margin
-       */
-      "scroll-mx": [{
-        "scroll-mx": getSpacingWithArbitrary()
-      }],
-      /**
-       * Scroll Margin Y
-       * @see https://tailwindcss.com/docs/scroll-margin
-       */
-      "scroll-my": [{
-        "scroll-my": getSpacingWithArbitrary()
-      }],
-      /**
-       * Scroll Margin Start
-       * @see https://tailwindcss.com/docs/scroll-margin
-       */
-      "scroll-ms": [{
-        "scroll-ms": getSpacingWithArbitrary()
-      }],
-      /**
-       * Scroll Margin End
-       * @see https://tailwindcss.com/docs/scroll-margin
-       */
-      "scroll-me": [{
-        "scroll-me": getSpacingWithArbitrary()
-      }],
-      /**
-       * Scroll Margin Top
-       * @see https://tailwindcss.com/docs/scroll-margin
-       */
-      "scroll-mt": [{
-        "scroll-mt": getSpacingWithArbitrary()
-      }],
-      /**
-       * Scroll Margin Right
-       * @see https://tailwindcss.com/docs/scroll-margin
-       */
-      "scroll-mr": [{
-        "scroll-mr": getSpacingWithArbitrary()
-      }],
-      /**
-       * Scroll Margin Bottom
-       * @see https://tailwindcss.com/docs/scroll-margin
-       */
-      "scroll-mb": [{
-        "scroll-mb": getSpacingWithArbitrary()
-      }],
-      /**
-       * Scroll Margin Left
-       * @see https://tailwindcss.com/docs/scroll-margin
-       */
-      "scroll-ml": [{
-        "scroll-ml": getSpacingWithArbitrary()
-      }],
-      /**
-       * Scroll Padding
-       * @see https://tailwindcss.com/docs/scroll-padding
-       */
-      "scroll-p": [{
-        "scroll-p": getSpacingWithArbitrary()
-      }],
-      /**
-       * Scroll Padding X
-       * @see https://tailwindcss.com/docs/scroll-padding
-       */
-      "scroll-px": [{
-        "scroll-px": getSpacingWithArbitrary()
-      }],
-      /**
-       * Scroll Padding Y
-       * @see https://tailwindcss.com/docs/scroll-padding
-       */
-      "scroll-py": [{
-        "scroll-py": getSpacingWithArbitrary()
-      }],
-      /**
-       * Scroll Padding Start
-       * @see https://tailwindcss.com/docs/scroll-padding
-       */
-      "scroll-ps": [{
-        "scroll-ps": getSpacingWithArbitrary()
-      }],
-      /**
-       * Scroll Padding End
-       * @see https://tailwindcss.com/docs/scroll-padding
-       */
-      "scroll-pe": [{
-        "scroll-pe": getSpacingWithArbitrary()
-      }],
-      /**
-       * Scroll Padding Top
-       * @see https://tailwindcss.com/docs/scroll-padding
-       */
-      "scroll-pt": [{
-        "scroll-pt": getSpacingWithArbitrary()
-      }],
-      /**
-       * Scroll Padding Right
-       * @see https://tailwindcss.com/docs/scroll-padding
-       */
-      "scroll-pr": [{
-        "scroll-pr": getSpacingWithArbitrary()
-      }],
-      /**
-       * Scroll Padding Bottom
-       * @see https://tailwindcss.com/docs/scroll-padding
-       */
-      "scroll-pb": [{
-        "scroll-pb": getSpacingWithArbitrary()
-      }],
-      /**
-       * Scroll Padding Left
-       * @see https://tailwindcss.com/docs/scroll-padding
-       */
-      "scroll-pl": [{
-        "scroll-pl": getSpacingWithArbitrary()
-      }],
-      /**
-       * Scroll Snap Align
-       * @see https://tailwindcss.com/docs/scroll-snap-align
-       */
-      "snap-align": [{
-        snap: ["start", "end", "center", "align-none"]
-      }],
-      /**
-       * Scroll Snap Stop
-       * @see https://tailwindcss.com/docs/scroll-snap-stop
-       */
-      "snap-stop": [{
-        snap: ["normal", "always"]
-      }],
-      /**
-       * Scroll Snap Type
-       * @see https://tailwindcss.com/docs/scroll-snap-type
-       */
-      "snap-type": [{
-        snap: ["none", "x", "y", "both"]
-      }],
-      /**
-       * Scroll Snap Type Strictness
-       * @see https://tailwindcss.com/docs/scroll-snap-type
-       */
-      "snap-strictness": [{
-        snap: ["mandatory", "proximity"]
-      }],
-      /**
-       * Touch Action
-       * @see https://tailwindcss.com/docs/touch-action
-       */
-      touch: [{
-        touch: ["auto", "none", "manipulation"]
-      }],
-      /**
-       * Touch Action X
-       * @see https://tailwindcss.com/docs/touch-action
-       */
-      "touch-x": [{
-        "touch-pan": ["x", "left", "right"]
-      }],
-      /**
-       * Touch Action Y
-       * @see https://tailwindcss.com/docs/touch-action
-       */
-      "touch-y": [{
-        "touch-pan": ["y", "up", "down"]
-      }],
-      /**
-       * Touch Action Pinch Zoom
-       * @see https://tailwindcss.com/docs/touch-action
-       */
-      "touch-pz": ["touch-pinch-zoom"],
-      /**
-       * User Select
-       * @see https://tailwindcss.com/docs/user-select
-       */
-      select: [{
-        select: ["none", "text", "all", "auto"]
-      }],
-      /**
-       * Will Change
-       * @see https://tailwindcss.com/docs/will-change
-       */
-      "will-change": [{
-        "will-change": ["auto", "scroll", "contents", "transform", isArbitraryValue]
-      }],
-      // SVG
-      /**
-       * Fill
-       * @see https://tailwindcss.com/docs/fill
-       */
-      fill: [{
-        fill: [colors, "none"]
-      }],
-      /**
-       * Stroke Width
-       * @see https://tailwindcss.com/docs/stroke-width
-       */
-      "stroke-w": [{
-        stroke: [isLength, isArbitraryLength, isArbitraryNumber]
-      }],
-      /**
-       * Stroke
-       * @see https://tailwindcss.com/docs/stroke
-       */
-      stroke: [{
-        stroke: [colors, "none"]
-      }],
-      // Accessibility
-      /**
-       * Screen Readers
-       * @see https://tailwindcss.com/docs/screen-readers
-       */
-      sr: ["sr-only", "not-sr-only"],
-      /**
-       * Forced Color Adjust
-       * @see https://tailwindcss.com/docs/forced-color-adjust
-       */
-      "forced-color-adjust": [{
-        "forced-color-adjust": ["auto", "none"]
-      }]
-    },
-    conflictingClassGroups: {
-      overflow: ["overflow-x", "overflow-y"],
-      overscroll: ["overscroll-x", "overscroll-y"],
-      inset: ["inset-x", "inset-y", "start", "end", "top", "right", "bottom", "left"],
-      "inset-x": ["right", "left"],
-      "inset-y": ["top", "bottom"],
-      flex: ["basis", "grow", "shrink"],
-      gap: ["gap-x", "gap-y"],
-      p: ["px", "py", "ps", "pe", "pt", "pr", "pb", "pl"],
-      px: ["pr", "pl"],
-      py: ["pt", "pb"],
-      m: ["mx", "my", "ms", "me", "mt", "mr", "mb", "ml"],
-      mx: ["mr", "ml"],
-      my: ["mt", "mb"],
-      size: ["w", "h"],
-      "font-size": ["leading"],
-      "fvn-normal": ["fvn-ordinal", "fvn-slashed-zero", "fvn-figure", "fvn-spacing", "fvn-fraction"],
-      "fvn-ordinal": ["fvn-normal"],
-      "fvn-slashed-zero": ["fvn-normal"],
-      "fvn-figure": ["fvn-normal"],
-      "fvn-spacing": ["fvn-normal"],
-      "fvn-fraction": ["fvn-normal"],
-      "line-clamp": ["display", "overflow"],
-      rounded: ["rounded-s", "rounded-e", "rounded-t", "rounded-r", "rounded-b", "rounded-l", "rounded-ss", "rounded-se", "rounded-ee", "rounded-es", "rounded-tl", "rounded-tr", "rounded-br", "rounded-bl"],
-      "rounded-s": ["rounded-ss", "rounded-es"],
-      "rounded-e": ["rounded-se", "rounded-ee"],
-      "rounded-t": ["rounded-tl", "rounded-tr"],
-      "rounded-r": ["rounded-tr", "rounded-br"],
-      "rounded-b": ["rounded-br", "rounded-bl"],
-      "rounded-l": ["rounded-tl", "rounded-bl"],
-      "border-spacing": ["border-spacing-x", "border-spacing-y"],
-      "border-w": ["border-w-s", "border-w-e", "border-w-t", "border-w-r", "border-w-b", "border-w-l"],
-      "border-w-x": ["border-w-r", "border-w-l"],
-      "border-w-y": ["border-w-t", "border-w-b"],
-      "border-color": ["border-color-s", "border-color-e", "border-color-t", "border-color-r", "border-color-b", "border-color-l"],
-      "border-color-x": ["border-color-r", "border-color-l"],
-      "border-color-y": ["border-color-t", "border-color-b"],
-      "scroll-m": ["scroll-mx", "scroll-my", "scroll-ms", "scroll-me", "scroll-mt", "scroll-mr", "scroll-mb", "scroll-ml"],
-      "scroll-mx": ["scroll-mr", "scroll-ml"],
-      "scroll-my": ["scroll-mt", "scroll-mb"],
-      "scroll-p": ["scroll-px", "scroll-py", "scroll-ps", "scroll-pe", "scroll-pt", "scroll-pr", "scroll-pb", "scroll-pl"],
-      "scroll-px": ["scroll-pr", "scroll-pl"],
-      "scroll-py": ["scroll-pt", "scroll-pb"],
-      touch: ["touch-x", "touch-y", "touch-pz"],
-      "touch-x": ["touch"],
-      "touch-y": ["touch"],
-      "touch-pz": ["touch"]
-    },
-    conflictingClassGroupModifiers: {
-      "font-size": ["leading"]
-    }
-  };
-};
-const twMerge = /* @__PURE__ */ createTailwindMerge(getDefaultConfig);
-function cn(...inputs) {
-  return twMerge(clsx(inputs));
-}
-const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
-  {
-    variants: {
-      variant: {
-        default: "bg-primary text-primary-foreground shadow-xs hover:bg-primary/90",
-        destructive: "bg-destructive text-destructive-foreground shadow-xs hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
-        outline: "border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50",
-        secondary: "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
-        link: "text-primary underline-offset-4 hover:underline"
-      },
-      size: {
-        default: "h-9 px-4 py-2 has-[>svg]:px-3",
-        sm: "h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
-        lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
-        icon: "size-9"
-      }
-    },
-    defaultVariants: {
-      variant: "default",
-      size: "default"
-    }
-  }
-);
-function Button({
-  className,
-  variant,
-  size,
-  asChild = false,
-  ...props
-}) {
-  const Comp = asChild ? Slot$1 : "button";
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(
-    Comp,
-    {
-      "data-slot": "button",
-      className: cn(buttonVariants({ variant, size, className })),
-      ...props
-    }
-  );
-}
 var prefix = "Invariant failed";
 function invariant$1(condition, message) {
   if (condition) {
@@ -31849,7 +29160,7 @@ function encode(obj, stringify = String) {
   }
   return result.toString();
 }
-function toValue(str) {
+function toValue$1(str) {
   if (!str) return "";
   if (str === "false") return false;
   if (str === "true") return true;
@@ -31861,11 +29172,11 @@ function decode(str) {
   for (const [key, value] of searchParams.entries()) {
     const previousValue = result[key];
     if (previousValue == null) {
-      result[key] = toValue(value);
+      result[key] = toValue$1(value);
     } else if (Array.isArray(previousValue)) {
-      previousValue.push(toValue(value));
+      previousValue.push(toValue$1(value));
     } else {
-      result[key] = [previousValue, toValue(value)];
+      result[key] = [previousValue, toValue$1(value)];
     }
   }
   return result;
@@ -34686,7 +31997,7 @@ const composeHandlers = (handlers) => (e) => {
     handler(e);
   }
 };
-const Link = reactExports.forwardRef(
+const Link$1 = reactExports.forwardRef(
   (props, ref) => {
     const { _asChild, ...rest } = props;
     const {
@@ -34758,7 +32069,7 @@ class Route extends BaseRoute {
     };
     this.Link = React$4.forwardRef(
       (props, ref) => {
-        return /* @__PURE__ */ jsxRuntimeExports.jsx(Link, { ref, from: this.fullPath, ...props });
+        return /* @__PURE__ */ jsxRuntimeExports.jsx(Link$1, { ref, from: this.fullPath, ...props });
       }
     );
     this.$$typeof = Symbol.for("react.memo");
@@ -34812,7 +32123,7 @@ class RootRoute extends BaseRootRoute {
     };
     this.Link = React$4.forwardRef(
       (props, ref) => {
-        return /* @__PURE__ */ jsxRuntimeExports.jsx(Link, { ref, from: this.fullPath, ...props });
+        return /* @__PURE__ */ jsxRuntimeExports.jsx(Link$1, { ref, from: this.fullPath, ...props });
       }
     );
     this.$$typeof = Symbol.for("react.memo");
@@ -35365,864 +32676,6 @@ function RouterContextProvider({
 function RouterProvider({ router: router2, ...rest }) {
   return /* @__PURE__ */ jsxRuntimeExports.jsx(RouterContextProvider, { router: router2, ...rest, children: /* @__PURE__ */ jsxRuntimeExports.jsx(Matches, {}) });
 }
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const toKebabCase = (string) => string.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
-const toCamelCase = (string) => string.replace(
-  /^([A-Z])|[\s-_]+(\w)/g,
-  (match, p1, p2) => p2 ? p2.toUpperCase() : p1.toLowerCase()
-);
-const toPascalCase = (string) => {
-  const camelCase = toCamelCase(string);
-  return camelCase.charAt(0).toUpperCase() + camelCase.slice(1);
-};
-const mergeClasses = (...classes) => classes.filter((className, index2, array) => {
-  return Boolean(className) && className.trim() !== "" && array.indexOf(className) === index2;
-}).join(" ").trim();
-const hasA11yProp = (props) => {
-  for (const prop in props) {
-    if (prop.startsWith("aria-") || prop === "role" || prop === "title") {
-      return true;
-    }
-  }
-};
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-var defaultAttributes = {
-  xmlns: "http://www.w3.org/2000/svg",
-  width: 24,
-  height: 24,
-  viewBox: "0 0 24 24",
-  fill: "none",
-  stroke: "currentColor",
-  strokeWidth: 2,
-  strokeLinecap: "round",
-  strokeLinejoin: "round"
-};
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const Icon = reactExports.forwardRef(
-  ({
-    color: color2 = "currentColor",
-    size = 24,
-    strokeWidth = 2,
-    absoluteStrokeWidth,
-    className = "",
-    children,
-    iconNode,
-    ...rest
-  }, ref) => reactExports.createElement(
-    "svg",
-    {
-      ref,
-      ...defaultAttributes,
-      width: size,
-      height: size,
-      stroke: color2,
-      strokeWidth: absoluteStrokeWidth ? Number(strokeWidth) * 24 / Number(size) : strokeWidth,
-      className: mergeClasses("lucide", className),
-      ...!children && !hasA11yProp(rest) && { "aria-hidden": "true" },
-      ...rest
-    },
-    [
-      ...iconNode.map(([tag, attrs]) => reactExports.createElement(tag, attrs)),
-      ...Array.isArray(children) ? children : [children]
-    ]
-  )
-);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const createLucideIcon = (iconName, iconNode) => {
-  const Component2 = reactExports.forwardRef(
-    ({ className, ...props }, ref) => reactExports.createElement(Icon, {
-      ref,
-      iconNode,
-      className: mergeClasses(
-        `lucide-${toKebabCase(toPascalCase(iconName))}`,
-        `lucide-${iconName}`,
-        className
-      ),
-      ...props
-    })
-  );
-  Component2.displayName = toPascalCase(iconName);
-  return Component2;
-};
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$H = [
-  ["path", { d: "m12 19-7-7 7-7", key: "1l729n" }],
-  ["path", { d: "M19 12H5", key: "x3x0zl" }]
-];
-const ArrowLeft = createLucideIcon("arrow-left", __iconNode$H);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$G = [
-  ["path", { d: "M5 12h14", key: "1ays0h" }],
-  ["path", { d: "m12 5 7 7-7 7", key: "xquz4c" }]
-];
-const ArrowRight = createLucideIcon("arrow-right", __iconNode$G);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$F = [
-  ["path", { d: "M12 7v14", key: "1akyts" }],
-  [
-    "path",
-    {
-      d: "M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z",
-      key: "ruj8y"
-    }
-  ]
-];
-const BookOpen = createLucideIcon("book-open", __iconNode$F);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$E = [
-  ["path", { d: "M8 2v4", key: "1cmpym" }],
-  ["path", { d: "M16 2v4", key: "4m81vk" }],
-  ["rect", { width: "18", height: "18", x: "3", y: "4", rx: "2", key: "1hopcy" }],
-  ["path", { d: "M3 10h18", key: "8toen8" }]
-];
-const Calendar = createLucideIcon("calendar", __iconNode$E);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$D = [["path", { d: "M20 6 9 17l-5-5", key: "1gmf2c" }]];
-const Check = createLucideIcon("check", __iconNode$D);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$C = [["path", { d: "m15 18-6-6 6-6", key: "1wnfg3" }]];
-const ChevronLeft = createLucideIcon("chevron-left", __iconNode$C);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$B = [["path", { d: "m9 18 6-6-6-6", key: "mthhwq" }]];
-const ChevronRight = createLucideIcon("chevron-right", __iconNode$B);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$A = [
-  ["path", { d: "M21.801 10A10 10 0 1 1 17 3.335", key: "yps3ct" }],
-  ["path", { d: "m9 11 3 3L22 4", key: "1pflzl" }]
-];
-const CircleCheckBig = createLucideIcon("circle-check-big", __iconNode$A);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$z = [
-  ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
-  ["path", { d: "m9 12 2 2 4-4", key: "dzmm74" }]
-];
-const CircleCheck = createLucideIcon("circle-check", __iconNode$z);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$y = [
-  ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
-  ["path", { d: "m15 9-6 6", key: "1uzhvr" }],
-  ["path", { d: "m9 9 6 6", key: "z0biqf" }]
-];
-const CircleX = createLucideIcon("circle-x", __iconNode$y);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$x = [
-  ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
-  ["polyline", { points: "12 6 12 12 16 14", key: "68esgv" }]
-];
-const Clock = createLucideIcon("clock", __iconNode$x);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$w = [
-  ["path", { d: "m18 16 4-4-4-4", key: "1inbqp" }],
-  ["path", { d: "m6 8-4 4 4 4", key: "15zrgr" }],
-  ["path", { d: "m14.5 4-5 16", key: "e7oirm" }]
-];
-const CodeXml = createLucideIcon("code-xml", __iconNode$w);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$v = [
-  ["rect", { width: "14", height: "14", x: "8", y: "8", rx: "2", ry: "2", key: "17jyea" }],
-  ["path", { d: "M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2", key: "zix9uf" }]
-];
-const Copy = createLucideIcon("copy", __iconNode$v);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$u = [
-  ["path", { d: "M15 3h6v6", key: "1q9fwt" }],
-  ["path", { d: "M10 14 21 3", key: "gplh6r" }],
-  ["path", { d: "M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6", key: "a6xqqp" }]
-];
-const ExternalLink = createLucideIcon("external-link", __iconNode$u);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$t = [
-  ["path", { d: "M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z", key: "1rqfz7" }],
-  ["path", { d: "M14 2v4a2 2 0 0 0 2 2h4", key: "tnqrlb" }],
-  ["path", { d: "M10 9H8", key: "b1mrlr" }],
-  ["path", { d: "M16 13H8", key: "t4e002" }],
-  ["path", { d: "M16 17H8", key: "z1uh3a" }]
-];
-const FileText = createLucideIcon("file-text", __iconNode$t);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$s = [
-  ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
-  ["path", { d: "M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20", key: "13o1zl" }],
-  ["path", { d: "M2 12h20", key: "9i4pu4" }]
-];
-const Globe = createLucideIcon("globe", __iconNode$s);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$r = [
-  ["circle", { cx: "9", cy: "12", r: "1", key: "1vctgf" }],
-  ["circle", { cx: "9", cy: "5", r: "1", key: "hp0tcf" }],
-  ["circle", { cx: "9", cy: "19", r: "1", key: "fkjjf6" }],
-  ["circle", { cx: "15", cy: "12", r: "1", key: "1tmaij" }],
-  ["circle", { cx: "15", cy: "5", r: "1", key: "19l28e" }],
-  ["circle", { cx: "15", cy: "19", r: "1", key: "f4zoj3" }]
-];
-const GripVertical = createLucideIcon("grip-vertical", __iconNode$r);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$q = [
-  [
-    "path",
-    {
-      d: "M18 5a2 2 0 0 1 2 2v8.526a2 2 0 0 0 .212.897l1.068 2.127a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45l1.068-2.127A2 2 0 0 0 4 15.526V7a2 2 0 0 1 2-2z",
-      key: "1pdavp"
-    }
-  ],
-  ["path", { d: "M20.054 15.987H3.946", key: "14rxg9" }]
-];
-const Laptop = createLucideIcon("laptop", __iconNode$q);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$p = [
-  [
-    "path",
-    {
-      d: "M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z",
-      key: "zw3jo"
-    }
-  ],
-  [
-    "path",
-    {
-      d: "M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12",
-      key: "1wduqc"
-    }
-  ],
-  [
-    "path",
-    {
-      d: "M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17",
-      key: "kqbvx6"
-    }
-  ]
-];
-const Layers = createLucideIcon("layers", __iconNode$p);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$o = [
-  ["rect", { width: "7", height: "9", x: "3", y: "3", rx: "1", key: "10lvy0" }],
-  ["rect", { width: "7", height: "5", x: "14", y: "3", rx: "1", key: "16une8" }],
-  ["rect", { width: "7", height: "9", x: "14", y: "12", rx: "1", key: "1hutg5" }],
-  ["rect", { width: "7", height: "5", x: "3", y: "16", rx: "1", key: "ldoo1y" }]
-];
-const LayoutDashboard = createLucideIcon("layout-dashboard", __iconNode$o);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$n = [["path", { d: "M21 12a9 9 0 1 1-6.219-8.56", key: "13zald" }]];
-const LoaderCircle = createLucideIcon("loader-circle", __iconNode$n);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$m = [
-  ["rect", { width: "18", height: "11", x: "3", y: "11", rx: "2", ry: "2", key: "1w4ew1" }],
-  ["path", { d: "M7 11V7a5 5 0 0 1 10 0v4", key: "fwvmzm" }]
-];
-const Lock = createLucideIcon("lock", __iconNode$m);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$l = [
-  ["path", { d: "m10 17 5-5-5-5", key: "1bsop3" }],
-  ["path", { d: "M15 12H3", key: "6jk70r" }],
-  ["path", { d: "M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4", key: "u53s6r" }]
-];
-const LogIn = createLucideIcon("log-in", __iconNode$l);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$k = [
-  ["path", { d: "m16 17 5-5-5-5", key: "1bji2h" }],
-  ["path", { d: "M21 12H9", key: "dn1m92" }],
-  ["path", { d: "M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4", key: "1uf3rs" }]
-];
-const LogOut = createLucideIcon("log-out", __iconNode$k);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$j = [
-  ["path", { d: "m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7", key: "132q7q" }],
-  ["rect", { x: "2", y: "4", width: "20", height: "16", rx: "2", key: "izxlao" }]
-];
-const Mail = createLucideIcon("mail", __iconNode$j);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$i = [
-  ["path", { d: "M4 12h16", key: "1lakjw" }],
-  ["path", { d: "M4 18h16", key: "19g7jn" }],
-  ["path", { d: "M4 6h16", key: "1o0s65" }]
-];
-const Menu = createLucideIcon("menu", __iconNode$i);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$h = [
-  ["rect", { width: "20", height: "14", x: "2", y: "3", rx: "2", key: "48i651" }],
-  ["line", { x1: "8", x2: "16", y1: "21", y2: "21", key: "1svkeh" }],
-  ["line", { x1: "12", x2: "12", y1: "17", y2: "21", key: "vw1qmm" }]
-];
-const Monitor = createLucideIcon("monitor", __iconNode$h);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$g = [
-  ["path", { d: "M14 4.1 12 6", key: "ita8i4" }],
-  ["path", { d: "m5.1 8-2.9-.8", key: "1go3kf" }],
-  ["path", { d: "m6 12-1.9 2", key: "mnht97" }],
-  ["path", { d: "M7.2 2.2 8 5.1", key: "1cfko1" }],
-  [
-    "path",
-    {
-      d: "M9.037 9.69a.498.498 0 0 1 .653-.653l11 4.5a.5.5 0 0 1-.074.949l-4.349 1.041a1 1 0 0 0-.74.739l-1.04 4.35a.5.5 0 0 1-.95.074z",
-      key: "s0h3yz"
-    }
-  ]
-];
-const MousePointerClick = createLucideIcon("mouse-pointer-click", __iconNode$g);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$f = [
-  [
-    "path",
-    {
-      d: "M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z",
-      key: "e79jfc"
-    }
-  ],
-  ["circle", { cx: "13.5", cy: "6.5", r: ".5", fill: "currentColor", key: "1okk4w" }],
-  ["circle", { cx: "17.5", cy: "10.5", r: ".5", fill: "currentColor", key: "f64h9f" }],
-  ["circle", { cx: "6.5", cy: "12.5", r: ".5", fill: "currentColor", key: "qy21gx" }],
-  ["circle", { cx: "8.5", cy: "7.5", r: ".5", fill: "currentColor", key: "fotxhn" }]
-];
-const Palette = createLucideIcon("palette", __iconNode$f);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$e = [
-  [
-    "path",
-    {
-      d: "M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z",
-      key: "1a8usu"
-    }
-  ]
-];
-const Pen = createLucideIcon("pen", __iconNode$e);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$d = [
-  [
-    "path",
-    {
-      d: "M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z",
-      key: "1a8usu"
-    }
-  ],
-  ["path", { d: "m15 5 4 4", key: "1mk7zo" }]
-];
-const Pencil = createLucideIcon("pencil", __iconNode$d);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$c = [
-  ["path", { d: "M5 12h14", key: "1ays0h" }],
-  ["path", { d: "M12 5v14", key: "s699le" }]
-];
-const Plus = createLucideIcon("plus", __iconNode$c);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$b = [
-  [
-    "path",
-    {
-      d: "M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z",
-      key: "m3kijz"
-    }
-  ],
-  [
-    "path",
-    {
-      d: "m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z",
-      key: "1fmvmk"
-    }
-  ],
-  ["path", { d: "M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0", key: "1f8sc4" }],
-  ["path", { d: "M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5", key: "qeys4" }]
-];
-const Rocket = createLucideIcon("rocket", __iconNode$b);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$a = [
-  ["path", { d: "m21 21-4.34-4.34", key: "14j7rj" }],
-  ["circle", { cx: "11", cy: "11", r: "8", key: "4ej97u" }]
-];
-const Search = createLucideIcon("search", __iconNode$a);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$9 = [
-  [
-    "path",
-    {
-      d: "M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z",
-      key: "oel41y"
-    }
-  ]
-];
-const Shield = createLucideIcon("shield", __iconNode$9);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$8 = [
-  ["path", { d: "M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z", key: "hou9p0" }],
-  ["path", { d: "M3 6h18", key: "d0wm0j" }],
-  ["path", { d: "M16 10a4 4 0 0 1-8 0", key: "1ltviw" }]
-];
-const ShoppingBag = createLucideIcon("shopping-bag", __iconNode$8);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$7 = [
-  ["rect", { width: "14", height: "20", x: "5", y: "2", rx: "2", ry: "2", key: "1yt0o3" }],
-  ["path", { d: "M12 18h.01", key: "mhygvu" }]
-];
-const Smartphone = createLucideIcon("smartphone", __iconNode$7);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$6 = [
-  [
-    "path",
-    {
-      d: "M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z",
-      key: "4pj2yx"
-    }
-  ],
-  ["path", { d: "M20 3v4", key: "1olli1" }],
-  ["path", { d: "M22 5h-4", key: "1gvqau" }],
-  ["path", { d: "M4 17v2", key: "vumght" }],
-  ["path", { d: "M5 18H3", key: "zchphs" }]
-];
-const Sparkles = createLucideIcon("sparkles", __iconNode$6);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$5 = [
-  ["rect", { width: "16", height: "20", x: "4", y: "2", rx: "2", ry: "2", key: "76otgf" }],
-  ["line", { x1: "12", x2: "12.01", y1: "18", y2: "18", key: "1dp563" }]
-];
-const Tablet = createLucideIcon("tablet", __iconNode$5);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$4 = [
-  ["path", { d: "M3 6h18", key: "d0wm0j" }],
-  ["path", { d: "M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6", key: "4alrt4" }],
-  ["path", { d: "M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2", key: "v07s0e" }],
-  ["line", { x1: "10", x2: "10", y1: "11", y2: "17", key: "1uufr5" }],
-  ["line", { x1: "14", x2: "14", y1: "11", y2: "17", key: "xtxkd" }]
-];
-const Trash2 = createLucideIcon("trash-2", __iconNode$4);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$3 = [
-  [
-    "path",
-    {
-      d: "m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3",
-      key: "wmoenq"
-    }
-  ],
-  ["path", { d: "M12 9v4", key: "juzpu7" }],
-  ["path", { d: "M12 17h.01", key: "p32p05" }]
-];
-const TriangleAlert = createLucideIcon("triangle-alert", __iconNode$3);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$2 = [
-  ["path", { d: "M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2", key: "975kel" }],
-  ["circle", { cx: "12", cy: "7", r: "4", key: "17ys0d" }]
-];
-const User = createLucideIcon("user", __iconNode$2);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$1 = [
-  ["path", { d: "M18 6 6 18", key: "1bl5f8" }],
-  ["path", { d: "m6 6 12 12", key: "d8bk6v" }]
-];
-const X = createLucideIcon("x", __iconNode$1);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode = [
-  [
-    "path",
-    {
-      d: "M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z",
-      key: "1xq2db"
-    }
-  ]
-];
-const Zap = createLucideIcon("zap", __iconNode);
-const NAV_LINKS = [
-  { label: "Dashboard", href: "/dashboard", authRequired: true },
-  { label: "New Project", href: "/wizard", authRequired: true }
-];
-function Layout({ children }) {
-  const { isAuthenticated, isInitializing, isLoggingIn, login, clear } = useInternetIdentity();
-  const qc = useQueryClient();
-  const [mobileOpen, setMobileOpen] = reactExports.useState(false);
-  const routerState = useRouterState();
-  const currentPath = routerState.location.pathname;
-  const handleAuth = () => {
-    if (isAuthenticated) {
-      clear();
-      qc.clear();
-    } else {
-      login();
-    }
-  };
-  const visibleLinks = NAV_LINKS.filter(
-    (l) => !l.authRequired || isAuthenticated
-  );
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "min-h-screen flex flex-col bg-background", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "sticky top-0 z-40 bg-card border-b border-border shadow-subtle", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "container mx-auto px-4 h-16 flex items-center justify-between", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(
-          Link,
-          {
-            to: "/",
-            className: "flex items-center gap-2 group",
-            "data-ocid": "nav.logo_link",
-            children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-elevated group-hover:scale-105 transition-smooth", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-                Zap,
-                {
-                  className: "w-4 h-4 text-primary-foreground",
-                  fill: "currentColor"
-                }
-              ) }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "font-display font-bold text-lg text-foreground tracking-tight", children: "Forge" })
-            ]
-          }
-        ),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("nav", { className: "hidden md:flex items-center gap-1", children: visibleLinks.map((link) => /* @__PURE__ */ jsxRuntimeExports.jsx(
-          Link,
-          {
-            to: link.href,
-            className: `px-4 py-2 rounded-md text-sm font-medium transition-smooth ${currentPath === link.href ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`,
-            "data-ocid": `nav.${link.label.toLowerCase().replace(/ /g, "_")}_link`,
-            children: link.label
-          },
-          link.href
-        )) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3", children: [
-          isAuthenticated ? /* @__PURE__ */ jsxRuntimeExports.jsxs(
-            Button,
-            {
-              variant: "ghost",
-              size: "sm",
-              onClick: handleAuth,
-              disabled: isInitializing || isLoggingIn,
-              className: "hidden md:flex items-center gap-2 text-muted-foreground hover:text-foreground",
-              "data-ocid": "nav.logout_button",
-              children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx(LogOut, { className: "w-4 h-4" }),
-                "Sign Out"
-              ]
-            }
-          ) : /* @__PURE__ */ jsxRuntimeExports.jsxs(
-            Button,
-            {
-              size: "sm",
-              onClick: handleAuth,
-              disabled: isInitializing || isLoggingIn,
-              className: "hidden md:flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground",
-              "data-ocid": "nav.login_button",
-              children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx(LogIn, { className: "w-4 h-4" }),
-                isInitializing ? "Loading…" : isLoggingIn ? "Signing in…" : "Sign In"
-              ]
-            }
-          ),
-          isAuthenticated && /* @__PURE__ */ jsxRuntimeExports.jsx(Link, { to: "/dashboard", "data-ocid": "nav.dashboard_icon_link", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { variant: "ghost", size: "icon", className: "hidden md:flex", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(LayoutDashboard, { className: "w-4 h-4" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "sr-only", children: "Dashboard" })
-          ] }) }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            "button",
-            {
-              type: "button",
-              className: "md:hidden p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-smooth",
-              onClick: () => setMobileOpen((v2) => !v2),
-              "aria-label": "Toggle menu",
-              "data-ocid": "nav.mobile_menu_button",
-              children: mobileOpen ? /* @__PURE__ */ jsxRuntimeExports.jsx(X, { className: "w-5 h-5" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(Menu, { className: "w-5 h-5" })
-            }
-          )
-        ] })
-      ] }),
-      mobileOpen && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "md:hidden border-t border-border bg-card px-4 py-3 flex flex-col gap-1 animate-slide-up", children: [
-        visibleLinks.map((link) => /* @__PURE__ */ jsxRuntimeExports.jsx(
-          Link,
-          {
-            to: link.href,
-            className: `px-4 py-2.5 rounded-md text-sm font-medium transition-smooth ${currentPath === link.href ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`,
-            onClick: () => setMobileOpen(false),
-            "data-ocid": `nav.mobile.${link.label.toLowerCase().replace(/ /g, "_")}_link`,
-            children: link.label
-          },
-          link.href
-        )),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "pt-2 border-t border-border mt-1", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-          Button,
-          {
-            variant: isAuthenticated ? "ghost" : "default",
-            size: "sm",
-            onClick: () => {
-              handleAuth();
-              setMobileOpen(false);
-            },
-            disabled: isInitializing || isLoggingIn,
-            className: "w-full justify-start gap-2",
-            "data-ocid": "nav.mobile.auth_button",
-            children: isAuthenticated ? /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(LogOut, { className: "w-4 h-4" }),
-              " Sign Out"
-            ] }) : /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(LogIn, { className: "w-4 h-4" }),
-              " Sign In"
-            ] })
-          }
-        ) })
-      ] })
-    ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx("main", { className: "flex-1 bg-background", children }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx("footer", { className: "bg-card border-t border-border", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "container mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-3", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-6 h-6 rounded-md bg-primary flex items-center justify-center", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-          Zap,
-          {
-            className: "w-3 h-3 text-primary-foreground",
-            fill: "currentColor"
-          }
-        ) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "font-display font-semibold text-sm text-foreground", children: "Forge" })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-xs text-muted-foreground", children: [
-        "© ",
-        (/* @__PURE__ */ new Date()).getFullYear(),
-        ".",
-        " ",
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "a",
-          {
-            href: `https://caffeine.ai?utm_source=caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(typeof window !== "undefined" ? window.location.hostname : "")}`,
-            target: "_blank",
-            rel: "noopener noreferrer",
-            className: "hover:text-foreground transition-smooth",
-            children: "Built with love using caffeine.ai"
-          }
-        )
-      ] })
-    ] }) })
-  ] });
-}
 function ProtectedRoute({ children }) {
   const { isAuthenticated, isInitializing } = useInternetIdentity();
   if (isInitializing) {
@@ -36236,38 +32689,6 @@ function ProtectedRoute({ children }) {
   }
   return /* @__PURE__ */ jsxRuntimeExports.jsx(jsxRuntimeExports.Fragment, { children });
 }
-const badgeVariants = cva(
-  "inline-flex items-center justify-center rounded-md border px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden",
-  {
-    variants: {
-      variant: {
-        default: "border-transparent bg-primary text-primary-foreground [a&]:hover:bg-primary/90",
-        secondary: "border-transparent bg-secondary text-secondary-foreground [a&]:hover:bg-secondary/90",
-        destructive: "border-transparent bg-destructive text-destructive-foreground [a&]:hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
-        outline: "text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground"
-      }
-    },
-    defaultVariants: {
-      variant: "default"
-    }
-  }
-);
-function Badge({
-  className,
-  variant,
-  asChild = false,
-  ...props
-}) {
-  const Comp = asChild ? Slot$1 : "span";
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(
-    Comp,
-    {
-      "data-slot": "badge",
-      className: cn(badgeVariants({ variant }), className),
-      ...props
-    }
-  );
-}
 function composeEventHandlers(originalEventHandler, ourEventHandler, { checkForDefaultPrevented = true } = {}) {
   return function handleEvent(event) {
     originalEventHandler == null ? void 0 : originalEventHandler(event);
@@ -36275,6 +32696,40 @@ function composeEventHandlers(originalEventHandler, ourEventHandler, { checkForD
       return ourEventHandler == null ? void 0 : ourEventHandler(event);
     }
   };
+}
+function setRef$1(ref, value) {
+  if (typeof ref === "function") {
+    return ref(value);
+  } else if (ref !== null && ref !== void 0) {
+    ref.current = value;
+  }
+}
+function composeRefs$1(...refs) {
+  return (node) => {
+    let hasCleanup = false;
+    const cleanups = refs.map((ref) => {
+      const cleanup = setRef$1(ref, node);
+      if (!hasCleanup && typeof cleanup == "function") {
+        hasCleanup = true;
+      }
+      return cleanup;
+    });
+    if (hasCleanup) {
+      return () => {
+        for (let i = 0; i < cleanups.length; i++) {
+          const cleanup = cleanups[i];
+          if (typeof cleanup == "function") {
+            cleanup();
+          } else {
+            setRef$1(refs[i], null);
+          }
+        }
+      };
+    }
+  };
+}
+function useComposedRefs$1(...refs) {
+  return reactExports.useCallback(composeRefs$1(...refs), refs);
 }
 function createContext2(rootComponentName, defaultContext) {
   const Context = reactExports.createContext(defaultContext);
@@ -36429,12 +32884,12 @@ function isFunction$1(value) {
   return typeof value === "function";
 }
 // @__NO_SIDE_EFFECTS__
-function createSlot(ownerName) {
-  const SlotClone = /* @__PURE__ */ createSlotClone(ownerName);
+function createSlot$1(ownerName) {
+  const SlotClone = /* @__PURE__ */ createSlotClone$1(ownerName);
   const Slot2 = reactExports.forwardRef((props, forwardedRef) => {
     const { children, ...slotProps } = props;
     const childrenArray = reactExports.Children.toArray(children);
-    const slottable = childrenArray.find(isSlottable);
+    const slottable = childrenArray.find(isSlottable$1);
     if (slottable) {
       const newElement = slottable.props.children;
       const newChildren = childrenArray.map((child) => {
@@ -36453,12 +32908,12 @@ function createSlot(ownerName) {
   return Slot2;
 }
 // @__NO_SIDE_EFFECTS__
-function createSlotClone(ownerName) {
+function createSlotClone$1(ownerName) {
   const SlotClone = reactExports.forwardRef((props, forwardedRef) => {
     const { children, ...slotProps } = props;
     if (reactExports.isValidElement(children)) {
-      const childrenRef = getElementRef$1(children);
-      const props2 = mergeProps(slotProps, children.props);
+      const childrenRef = getElementRef$2(children);
+      const props2 = mergeProps$1(slotProps, children.props);
       if (children.type !== reactExports.Fragment) {
         props2.ref = forwardedRef ? composeRefs$1(forwardedRef, childrenRef) : childrenRef;
       }
@@ -36469,11 +32924,11 @@ function createSlotClone(ownerName) {
   SlotClone.displayName = `${ownerName}.SlotClone`;
   return SlotClone;
 }
-var SLOTTABLE_IDENTIFIER = Symbol("radix.slottable");
-function isSlottable(child) {
-  return reactExports.isValidElement(child) && typeof child.type === "function" && "__radixId" in child.type && child.type.__radixId === SLOTTABLE_IDENTIFIER;
+var SLOTTABLE_IDENTIFIER$1 = Symbol("radix.slottable");
+function isSlottable$1(child) {
+  return reactExports.isValidElement(child) && typeof child.type === "function" && "__radixId" in child.type && child.type.__radixId === SLOTTABLE_IDENTIFIER$1;
 }
-function mergeProps(slotProps, childProps) {
+function mergeProps$1(slotProps, childProps) {
   const overrideProps = { ...childProps };
   for (const propName in childProps) {
     const slotPropValue = slotProps[propName];
@@ -36497,7 +32952,7 @@ function mergeProps(slotProps, childProps) {
   }
   return { ...slotProps, ...overrideProps };
 }
-function getElementRef$1(element) {
+function getElementRef$2(element) {
   var _a3, _b3;
   let getter = (_a3 = Object.getOwnPropertyDescriptor(element.props, "ref")) == null ? void 0 : _a3.get;
   let mayWarn = getter && "isReactWarning" in getter && getter.isReactWarning;
@@ -36531,7 +32986,7 @@ var NODES = [
   "ul"
 ];
 var Primitive = NODES.reduce((primitive, node) => {
-  const Slot2 = /* @__PURE__ */ createSlot(`Primitive.${node}`);
+  const Slot2 = /* @__PURE__ */ createSlot$1(`Primitive.${node}`);
   const Node2 = reactExports.forwardRef((props, forwardedRef) => {
     const { asChild, ...primitiveProps } = props;
     const Comp = asChild ? Slot2 : node;
@@ -36989,7 +33444,7 @@ var Presence = (props) => {
   const { present, children } = props;
   const presence = usePresence$1(present);
   const child = typeof children === "function" ? children({ present: presence.isPresent }) : reactExports.Children.only(children);
-  const ref = useComposedRefs$1(presence.ref, getElementRef(child));
+  const ref = useComposedRefs$1(presence.ref, getElementRef$1(child));
   const forceMount = typeof children === "function";
   return forceMount || presence.isPresent ? reactExports.cloneElement(child, { ref }) : null;
 };
@@ -37088,7 +33543,7 @@ function usePresence$1(present) {
 function getAnimationName(styles) {
   return (styles == null ? void 0 : styles.animationName) || "none";
 }
-function getElementRef(element) {
+function getElementRef$1(element) {
   var _a3, _b3;
   let getter = (_a3 = Object.getOwnPropertyDescriptor(element.props, "ref")) == null ? void 0 : _a3.get;
   let mayWarn = getter && "isReactWarning" in getter && getter.isReactWarning;
@@ -37986,7 +34441,7 @@ var DialogOverlay$1 = reactExports.forwardRef(
   }
 );
 DialogOverlay$1.displayName = OVERLAY_NAME;
-var Slot = /* @__PURE__ */ createSlot("DialogOverlay.RemoveScroll");
+var Slot$1 = /* @__PURE__ */ createSlot$1("DialogOverlay.RemoveScroll");
 var DialogOverlayImpl = reactExports.forwardRef(
   (props, forwardedRef) => {
     const { __scopeDialog, ...overlayProps } = props;
@@ -37994,7 +34449,7 @@ var DialogOverlayImpl = reactExports.forwardRef(
     return (
       // Make sure `Content` is scrollable even when it doesn't live inside `RemoveScroll`
       // ie. when `Overlay` and `Content` are siblings
-      /* @__PURE__ */ jsxRuntimeExports.jsx(ReactRemoveScroll, { as: Slot, allowPinchZoom: true, shards: [context.contentRef], children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+      /* @__PURE__ */ jsxRuntimeExports.jsx(ReactRemoveScroll, { as: Slot$1, allowPinchZoom: true, shards: [context.contentRef], children: /* @__PURE__ */ jsxRuntimeExports.jsx(
         Primitive.div,
         {
           "data-state": getState(context.open),
@@ -38211,6 +34666,3411 @@ var Content = DialogContent$1;
 var Title = DialogTitle$1;
 var Description = DialogDescription$1;
 var Close = DialogClose;
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const toKebabCase = (string) => string.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+const toCamelCase = (string) => string.replace(
+  /^([A-Z])|[\s-_]+(\w)/g,
+  (match, p1, p2) => p2 ? p2.toUpperCase() : p1.toLowerCase()
+);
+const toPascalCase = (string) => {
+  const camelCase = toCamelCase(string);
+  return camelCase.charAt(0).toUpperCase() + camelCase.slice(1);
+};
+const mergeClasses = (...classes) => classes.filter((className, index2, array) => {
+  return Boolean(className) && className.trim() !== "" && array.indexOf(className) === index2;
+}).join(" ").trim();
+const hasA11yProp = (props) => {
+  for (const prop in props) {
+    if (prop.startsWith("aria-") || prop === "role" || prop === "title") {
+      return true;
+    }
+  }
+};
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+var defaultAttributes = {
+  xmlns: "http://www.w3.org/2000/svg",
+  width: 24,
+  height: 24,
+  viewBox: "0 0 24 24",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 2,
+  strokeLinecap: "round",
+  strokeLinejoin: "round"
+};
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const Icon = reactExports.forwardRef(
+  ({
+    color: color2 = "currentColor",
+    size = 24,
+    strokeWidth = 2,
+    absoluteStrokeWidth,
+    className = "",
+    children,
+    iconNode,
+    ...rest
+  }, ref) => reactExports.createElement(
+    "svg",
+    {
+      ref,
+      ...defaultAttributes,
+      width: size,
+      height: size,
+      stroke: color2,
+      strokeWidth: absoluteStrokeWidth ? Number(strokeWidth) * 24 / Number(size) : strokeWidth,
+      className: mergeClasses("lucide", className),
+      ...!children && !hasA11yProp(rest) && { "aria-hidden": "true" },
+      ...rest
+    },
+    [
+      ...iconNode.map(([tag, attrs]) => reactExports.createElement(tag, attrs)),
+      ...Array.isArray(children) ? children : [children]
+    ]
+  )
+);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const createLucideIcon = (iconName, iconNode) => {
+  const Component2 = reactExports.forwardRef(
+    ({ className, ...props }, ref) => reactExports.createElement(Icon, {
+      ref,
+      iconNode,
+      className: mergeClasses(
+        `lucide-${toKebabCase(toPascalCase(iconName))}`,
+        `lucide-${iconName}`,
+        className
+      ),
+      ...props
+    })
+  );
+  Component2.displayName = toPascalCase(iconName);
+  return Component2;
+};
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$X = [
+  ["path", { d: "m12 19-7-7 7-7", key: "1l729n" }],
+  ["path", { d: "M19 12H5", key: "x3x0zl" }]
+];
+const ArrowLeft = createLucideIcon("arrow-left", __iconNode$X);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$W = [
+  ["path", { d: "M5 12h14", key: "1ays0h" }],
+  ["path", { d: "m12 5 7 7-7 7", key: "xquz4c" }]
+];
+const ArrowRight = createLucideIcon("arrow-right", __iconNode$W);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$V = [
+  ["path", { d: "M12 7v14", key: "1akyts" }],
+  [
+    "path",
+    {
+      d: "M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z",
+      key: "ruj8y"
+    }
+  ]
+];
+const BookOpen = createLucideIcon("book-open", __iconNode$V);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$U = [
+  [
+    "path",
+    {
+      d: "M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z",
+      key: "l5xja"
+    }
+  ],
+  [
+    "path",
+    {
+      d: "M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z",
+      key: "ep3f8r"
+    }
+  ],
+  ["path", { d: "M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4", key: "1p4c4q" }],
+  ["path", { d: "M17.599 6.5a3 3 0 0 0 .399-1.375", key: "tmeiqw" }],
+  ["path", { d: "M6.003 5.125A3 3 0 0 0 6.401 6.5", key: "105sqy" }],
+  ["path", { d: "M3.477 10.896a4 4 0 0 1 .585-.396", key: "ql3yin" }],
+  ["path", { d: "M19.938 10.5a4 4 0 0 1 .585.396", key: "1qfode" }],
+  ["path", { d: "M6 18a4 4 0 0 1-1.967-.516", key: "2e4loj" }],
+  ["path", { d: "M19.967 17.484A4 4 0 0 1 18 18", key: "159ez6" }]
+];
+const Brain = createLucideIcon("brain", __iconNode$U);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$T = [
+  ["path", { d: "M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16", key: "jecpp" }],
+  ["rect", { width: "20", height: "14", x: "2", y: "6", rx: "2", key: "i6l2r4" }]
+];
+const Briefcase = createLucideIcon("briefcase", __iconNode$T);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$S = [
+  ["path", { d: "M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z", key: "1b4qmf" }],
+  ["path", { d: "M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2", key: "i71pzd" }],
+  ["path", { d: "M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2", key: "10jefs" }],
+  ["path", { d: "M10 6h4", key: "1itunk" }],
+  ["path", { d: "M10 10h4", key: "tcdvrf" }],
+  ["path", { d: "M10 14h4", key: "kelpxr" }],
+  ["path", { d: "M10 18h4", key: "1ulq68" }]
+];
+const Building2 = createLucideIcon("building-2", __iconNode$S);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$R = [
+  ["path", { d: "M8 2v4", key: "1cmpym" }],
+  ["path", { d: "M16 2v4", key: "4m81vk" }],
+  ["rect", { width: "18", height: "18", x: "3", y: "4", rx: "2", key: "1hopcy" }],
+  ["path", { d: "M3 10h18", key: "8toen8" }],
+  ["path", { d: "m9 16 2 2 4-4", key: "19s6y9" }]
+];
+const CalendarCheck = createLucideIcon("calendar-check", __iconNode$R);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$Q = [
+  ["path", { d: "M8 2v4", key: "1cmpym" }],
+  ["path", { d: "M16 2v4", key: "4m81vk" }],
+  ["rect", { width: "18", height: "18", x: "3", y: "4", rx: "2", key: "1hopcy" }],
+  ["path", { d: "M3 10h18", key: "8toen8" }]
+];
+const Calendar = createLucideIcon("calendar", __iconNode$Q);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$P = [
+  ["line", { x1: "18", x2: "18", y1: "20", y2: "10", key: "1xfpm4" }],
+  ["line", { x1: "12", x2: "12", y1: "20", y2: "4", key: "be30l9" }],
+  ["line", { x1: "6", x2: "6", y1: "20", y2: "14", key: "1r4le6" }]
+];
+const ChartNoAxesColumn = createLucideIcon("chart-no-axes-column", __iconNode$P);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$O = [["path", { d: "M20 6 9 17l-5-5", key: "1gmf2c" }]];
+const Check = createLucideIcon("check", __iconNode$O);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$N = [["path", { d: "m15 18-6-6 6-6", key: "1wnfg3" }]];
+const ChevronLeft = createLucideIcon("chevron-left", __iconNode$N);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$M = [["path", { d: "m9 18 6-6-6-6", key: "mthhwq" }]];
+const ChevronRight = createLucideIcon("chevron-right", __iconNode$M);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$L = [
+  ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
+  ["polyline", { points: "12 6 12 12 16 14", key: "68esgv" }]
+];
+const Clock = createLucideIcon("clock", __iconNode$L);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$K = [
+  ["path", { d: "M12 20v2", key: "1lh1kg" }],
+  ["path", { d: "M12 2v2", key: "tus03m" }],
+  ["path", { d: "M17 20v2", key: "1rnc9c" }],
+  ["path", { d: "M17 2v2", key: "11trls" }],
+  ["path", { d: "M2 12h2", key: "1t8f8n" }],
+  ["path", { d: "M2 17h2", key: "7oei6x" }],
+  ["path", { d: "M2 7h2", key: "asdhe0" }],
+  ["path", { d: "M20 12h2", key: "1q8mjw" }],
+  ["path", { d: "M20 17h2", key: "1fpfkl" }],
+  ["path", { d: "M20 7h2", key: "1o8tra" }],
+  ["path", { d: "M7 20v2", key: "4gnj0m" }],
+  ["path", { d: "M7 2v2", key: "1i4yhu" }],
+  ["rect", { x: "4", y: "4", width: "16", height: "16", rx: "2", key: "1vbyd7" }],
+  ["rect", { x: "8", y: "8", width: "8", height: "8", rx: "1", key: "z9xiuo" }]
+];
+const Cpu = createLucideIcon("cpu", __iconNode$K);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$J = [
+  ["rect", { width: "20", height: "14", x: "2", y: "5", rx: "2", key: "ynyp8z" }],
+  ["line", { x1: "2", x2: "22", y1: "10", y2: "10", key: "1b3vmo" }]
+];
+const CreditCard = createLucideIcon("credit-card", __iconNode$J);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$I = [
+  ["path", { d: "M12 15V3", key: "m9g1x1" }],
+  ["path", { d: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4", key: "ih7n3h" }],
+  ["path", { d: "m7 10 5 5 5-5", key: "brsn70" }]
+];
+const Download = createLucideIcon("download", __iconNode$I);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$H = [
+  ["circle", { cx: "12", cy: "12", r: "1", key: "41hilf" }],
+  ["circle", { cx: "19", cy: "12", r: "1", key: "1wjl8i" }],
+  ["circle", { cx: "5", cy: "12", r: "1", key: "1pcz8c" }]
+];
+const Ellipsis = createLucideIcon("ellipsis", __iconNode$H);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$G = [
+  ["path", { d: "M15 3h6v6", key: "1q9fwt" }],
+  ["path", { d: "M10 14 21 3", key: "gplh6r" }],
+  ["path", { d: "M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6", key: "a6xqqp" }]
+];
+const ExternalLink = createLucideIcon("external-link", __iconNode$G);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$F = [
+  [
+    "path",
+    {
+      d: "M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0",
+      key: "1nclc0"
+    }
+  ],
+  ["circle", { cx: "12", cy: "12", r: "3", key: "1v7zrd" }]
+];
+const Eye = createLucideIcon("eye", __iconNode$F);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$E = [
+  ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
+  ["path", { d: "M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20", key: "13o1zl" }],
+  ["path", { d: "M2 12h20", key: "9i4pu4" }]
+];
+const Globe = createLucideIcon("globe", __iconNode$E);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$D = [
+  ["circle", { cx: "9", cy: "12", r: "1", key: "1vctgf" }],
+  ["circle", { cx: "9", cy: "5", r: "1", key: "hp0tcf" }],
+  ["circle", { cx: "9", cy: "19", r: "1", key: "fkjjf6" }],
+  ["circle", { cx: "15", cy: "12", r: "1", key: "1tmaij" }],
+  ["circle", { cx: "15", cy: "5", r: "1", key: "19l28e" }],
+  ["circle", { cx: "15", cy: "19", r: "1", key: "f4zoj3" }]
+];
+const GripVertical = createLucideIcon("grip-vertical", __iconNode$D);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$C = [
+  ["path", { d: "M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8", key: "1357e3" }],
+  ["path", { d: "M3 3v5h5", key: "1xhq8a" }],
+  ["path", { d: "M12 7v5l4 2", key: "1fdv2h" }]
+];
+const History = createLucideIcon("history", __iconNode$C);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$B = [
+  ["rect", { width: "18", height: "18", x: "3", y: "3", rx: "2", ry: "2", key: "1m3agn" }],
+  ["circle", { cx: "9", cy: "9", r: "2", key: "af1f0g" }],
+  ["path", { d: "m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21", key: "1xmnt7" }]
+];
+const Image = createLucideIcon("image", __iconNode$B);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$A = [
+  ["rect", { width: "7", height: "9", x: "3", y: "3", rx: "1", key: "10lvy0" }],
+  ["rect", { width: "7", height: "5", x: "14", y: "3", rx: "1", key: "16une8" }],
+  ["rect", { width: "7", height: "9", x: "14", y: "12", rx: "1", key: "1hutg5" }],
+  ["rect", { width: "7", height: "5", x: "3", y: "16", rx: "1", key: "ldoo1y" }]
+];
+const LayoutDashboard = createLucideIcon("layout-dashboard", __iconNode$A);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$z = [
+  ["rect", { width: "18", height: "7", x: "3", y: "3", rx: "1", key: "f1a2em" }],
+  ["rect", { width: "9", height: "7", x: "3", y: "14", rx: "1", key: "jqznyg" }],
+  ["rect", { width: "5", height: "7", x: "16", y: "14", rx: "1", key: "q5h2i8" }]
+];
+const LayoutTemplate = createLucideIcon("layout-template", __iconNode$z);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$y = [
+  [
+    "path",
+    {
+      d: "M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z",
+      key: "nnexq3"
+    }
+  ],
+  ["path", { d: "M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12", key: "mt58a7" }]
+];
+const Leaf = createLucideIcon("leaf", __iconNode$y);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$x = [
+  ["path", { d: "M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71", key: "1cjeqo" }],
+  ["path", { d: "M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71", key: "19qd67" }]
+];
+const Link = createLucideIcon("link", __iconNode$x);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$w = [["path", { d: "M21 12a9 9 0 1 1-6.219-8.56", key: "13zald" }]];
+const LoaderCircle = createLucideIcon("loader-circle", __iconNode$w);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$v = [
+  ["rect", { width: "18", height: "11", x: "3", y: "11", rx: "2", ry: "2", key: "1w4ew1" }],
+  ["path", { d: "M7 11V7a5 5 0 0 1 10 0v4", key: "fwvmzm" }]
+];
+const Lock = createLucideIcon("lock", __iconNode$v);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$u = [
+  ["path", { d: "m10 17 5-5-5-5", key: "1bsop3" }],
+  ["path", { d: "M15 12H3", key: "6jk70r" }],
+  ["path", { d: "M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4", key: "u53s6r" }]
+];
+const LogIn = createLucideIcon("log-in", __iconNode$u);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$t = [
+  ["path", { d: "m16 17 5-5-5-5", key: "1bji2h" }],
+  ["path", { d: "M21 12H9", key: "dn1m92" }],
+  ["path", { d: "M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4", key: "1uf3rs" }]
+];
+const LogOut = createLucideIcon("log-out", __iconNode$t);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$s = [
+  [
+    "path",
+    {
+      d: "M21.2 8.4c.5.38.8.97.8 1.6v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V10a2 2 0 0 1 .8-1.6l8-6a2 2 0 0 1 2.4 0l8 6Z",
+      key: "1jhwl8"
+    }
+  ],
+  ["path", { d: "m22 10-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 10", key: "1qfld7" }]
+];
+const MailOpen = createLucideIcon("mail-open", __iconNode$s);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$r = [
+  ["path", { d: "m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7", key: "132q7q" }],
+  ["rect", { x: "2", y: "4", width: "20", height: "16", rx: "2", key: "izxlao" }]
+];
+const Mail = createLucideIcon("mail", __iconNode$r);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$q = [
+  ["path", { d: "M4 12h16", key: "1lakjw" }],
+  ["path", { d: "M4 18h16", key: "19g7jn" }],
+  ["path", { d: "M4 6h16", key: "1o0s65" }]
+];
+const Menu = createLucideIcon("menu", __iconNode$q);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$p = [
+  ["path", { d: "M7.9 20A9 9 0 1 0 4 16.1L2 22Z", key: "vv11sd" }]
+];
+const MessageCircle = createLucideIcon("message-circle", __iconNode$p);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$o = [["path", { d: "M5 12h14", key: "1ays0h" }]];
+const Minus = createLucideIcon("minus", __iconNode$o);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$n = [
+  ["rect", { width: "20", height: "14", x: "2", y: "3", rx: "2", key: "48i651" }],
+  ["line", { x1: "8", x2: "16", y1: "21", y2: "21", key: "1svkeh" }],
+  ["line", { x1: "12", x2: "12", y1: "17", y2: "21", key: "vw1qmm" }]
+];
+const Monitor = createLucideIcon("monitor", __iconNode$n);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$m = [
+  ["path", { d: "M14 4.1 12 6", key: "ita8i4" }],
+  ["path", { d: "m5.1 8-2.9-.8", key: "1go3kf" }],
+  ["path", { d: "m6 12-1.9 2", key: "mnht97" }],
+  ["path", { d: "M7.2 2.2 8 5.1", key: "1cfko1" }],
+  [
+    "path",
+    {
+      d: "M9.037 9.69a.498.498 0 0 1 .653-.653l11 4.5a.5.5 0 0 1-.074.949l-4.349 1.041a1 1 0 0 0-.74.739l-1.04 4.35a.5.5 0 0 1-.95.074z",
+      key: "s0h3yz"
+    }
+  ]
+];
+const MousePointerClick = createLucideIcon("mouse-pointer-click", __iconNode$m);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$l = [
+  [
+    "path",
+    {
+      d: "M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z",
+      key: "e79jfc"
+    }
+  ],
+  ["circle", { cx: "13.5", cy: "6.5", r: ".5", fill: "currentColor", key: "1okk4w" }],
+  ["circle", { cx: "17.5", cy: "10.5", r: ".5", fill: "currentColor", key: "f64h9f" }],
+  ["circle", { cx: "6.5", cy: "12.5", r: ".5", fill: "currentColor", key: "qy21gx" }],
+  ["circle", { cx: "8.5", cy: "7.5", r: ".5", fill: "currentColor", key: "fotxhn" }]
+];
+const Palette = createLucideIcon("palette", __iconNode$l);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$k = [
+  ["path", { d: "M12 20h9", key: "t2du7b" }],
+  [
+    "path",
+    {
+      d: "M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z",
+      key: "1ykcvy"
+    }
+  ]
+];
+const PenLine = createLucideIcon("pen-line", __iconNode$k);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$j = [
+  ["path", { d: "M12 20h9", key: "t2du7b" }],
+  [
+    "path",
+    {
+      d: "M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z",
+      key: "1ykcvy"
+    }
+  ],
+  ["path", { d: "m15 5 3 3", key: "1w25hb" }]
+];
+const PencilLine = createLucideIcon("pencil-line", __iconNode$j);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$i = [
+  ["path", { d: "M5 12h14", key: "1ays0h" }],
+  ["path", { d: "M12 5v14", key: "s699le" }]
+];
+const Plus = createLucideIcon("plus", __iconNode$i);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$h = [
+  [
+    "path",
+    {
+      d: "M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z",
+      key: "rib7q0"
+    }
+  ],
+  [
+    "path",
+    {
+      d: "M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z",
+      key: "1ymkrd"
+    }
+  ]
+];
+const Quote = createLucideIcon("quote", __iconNode$h);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$g = [
+  [
+    "path",
+    {
+      d: "M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z",
+      key: "m3kijz"
+    }
+  ],
+  [
+    "path",
+    {
+      d: "m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z",
+      key: "1fmvmk"
+    }
+  ],
+  ["path", { d: "M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0", key: "1f8sc4" }],
+  ["path", { d: "M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5", key: "qeys4" }]
+];
+const Rocket = createLucideIcon("rocket", __iconNode$g);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$f = [
+  ["path", { d: "m21 21-4.34-4.34", key: "14j7rj" }],
+  ["circle", { cx: "11", cy: "11", r: "8", key: "4ej97u" }]
+];
+const Search = createLucideIcon("search", __iconNode$f);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$e = [
+  [
+    "path",
+    {
+      d: "M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z",
+      key: "1ffxy3"
+    }
+  ],
+  ["path", { d: "m21.854 2.147-10.94 10.939", key: "12cjpa" }]
+];
+const Send = createLucideIcon("send", __iconNode$e);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$d = [
+  [
+    "path",
+    {
+      d: "M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z",
+      key: "1qme2f"
+    }
+  ],
+  ["circle", { cx: "12", cy: "12", r: "3", key: "1v7zrd" }]
+];
+const Settings = createLucideIcon("settings", __iconNode$d);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$c = [
+  ["circle", { cx: "18", cy: "5", r: "3", key: "gq8acd" }],
+  ["circle", { cx: "6", cy: "12", r: "3", key: "w7nqdw" }],
+  ["circle", { cx: "18", cy: "19", r: "3", key: "1xt0gg" }],
+  ["line", { x1: "8.59", x2: "15.42", y1: "13.51", y2: "17.49", key: "47mynk" }],
+  ["line", { x1: "15.41", x2: "8.59", y1: "6.51", y2: "10.49", key: "1n3mei" }]
+];
+const Share2 = createLucideIcon("share-2", __iconNode$c);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$b = [
+  [
+    "path",
+    {
+      d: "M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z",
+      key: "oel41y"
+    }
+  ]
+];
+const Shield = createLucideIcon("shield", __iconNode$b);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$a = [
+  ["path", { d: "M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z", key: "hou9p0" }],
+  ["path", { d: "M3 6h18", key: "d0wm0j" }],
+  ["path", { d: "M16 10a4 4 0 0 1-8 0", key: "1ltviw" }]
+];
+const ShoppingBag = createLucideIcon("shopping-bag", __iconNode$a);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$9 = [
+  ["circle", { cx: "8", cy: "21", r: "1", key: "jimo8o" }],
+  ["circle", { cx: "19", cy: "21", r: "1", key: "13723u" }],
+  [
+    "path",
+    {
+      d: "M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12",
+      key: "9zh506"
+    }
+  ]
+];
+const ShoppingCart = createLucideIcon("shopping-cart", __iconNode$9);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$8 = [
+  ["rect", { width: "14", height: "20", x: "5", y: "2", rx: "2", ry: "2", key: "1yt0o3" }],
+  ["path", { d: "M12 18h.01", key: "mhygvu" }]
+];
+const Smartphone = createLucideIcon("smartphone", __iconNode$8);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$7 = [
+  [
+    "path",
+    {
+      d: "M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z",
+      key: "4pj2yx"
+    }
+  ],
+  ["path", { d: "M20 3v4", key: "1olli1" }],
+  ["path", { d: "M22 5h-4", key: "1gvqau" }],
+  ["path", { d: "M4 17v2", key: "vumght" }],
+  ["path", { d: "M5 18H3", key: "zchphs" }]
+];
+const Sparkles = createLucideIcon("sparkles", __iconNode$7);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$6 = [
+  ["rect", { width: "18", height: "18", x: "3", y: "3", rx: "2", key: "afitv7" }]
+];
+const Square = createLucideIcon("square", __iconNode$6);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$5 = [
+  [
+    "path",
+    {
+      d: "M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z",
+      key: "r04s7s"
+    }
+  ]
+];
+const Star = createLucideIcon("star", __iconNode$5);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$4 = [
+  ["rect", { width: "16", height: "20", x: "4", y: "2", rx: "2", ry: "2", key: "76otgf" }],
+  ["line", { x1: "12", x2: "12.01", y1: "18", y2: "18", key: "1dp563" }]
+];
+const Tablet = createLucideIcon("tablet", __iconNode$4);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$3 = [
+  ["path", { d: "M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2", key: "975kel" }],
+  ["circle", { cx: "12", cy: "7", r: "4", key: "17ys0d" }]
+];
+const User = createLucideIcon("user", __iconNode$3);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$2 = [
+  ["path", { d: "M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2", key: "cjf0a3" }],
+  ["path", { d: "M7 2v20", key: "1473qp" }],
+  ["path", { d: "M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7", key: "j28e5" }]
+];
+const Utensils = createLucideIcon("utensils", __iconNode$2);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$1 = [
+  ["path", { d: "M18 6 6 18", key: "1bl5f8" }],
+  ["path", { d: "m6 6 12 12", key: "d8bk6v" }]
+];
+const X = createLucideIcon("x", __iconNode$1);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode = [
+  [
+    "path",
+    {
+      d: "M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z",
+      key: "1xq2db"
+    }
+  ]
+];
+const Zap = createLucideIcon("zap", __iconNode);
+function r(e) {
+  var t, f, n = "";
+  if ("string" == typeof e || "number" == typeof e) n += e;
+  else if ("object" == typeof e) if (Array.isArray(e)) {
+    var o2 = e.length;
+    for (t = 0; t < o2; t++) e[t] && (f = r(e[t])) && (n && (n += " "), n += f);
+  } else for (f in e) e[f] && (n && (n += " "), n += f);
+  return n;
+}
+function clsx() {
+  for (var e, t, f = 0, n = "", o2 = arguments.length; f < o2; f++) (e = arguments[f]) && (t = r(e)) && (n && (n += " "), n += t);
+  return n;
+}
+const CLASS_PART_SEPARATOR = "-";
+const createClassGroupUtils = (config) => {
+  const classMap = createClassMap(config);
+  const {
+    conflictingClassGroups,
+    conflictingClassGroupModifiers
+  } = config;
+  const getClassGroupId = (className) => {
+    const classParts = className.split(CLASS_PART_SEPARATOR);
+    if (classParts[0] === "" && classParts.length !== 1) {
+      classParts.shift();
+    }
+    return getGroupRecursive(classParts, classMap) || getGroupIdForArbitraryProperty(className);
+  };
+  const getConflictingClassGroupIds = (classGroupId, hasPostfixModifier) => {
+    const conflicts = conflictingClassGroups[classGroupId] || [];
+    if (hasPostfixModifier && conflictingClassGroupModifiers[classGroupId]) {
+      return [...conflicts, ...conflictingClassGroupModifiers[classGroupId]];
+    }
+    return conflicts;
+  };
+  return {
+    getClassGroupId,
+    getConflictingClassGroupIds
+  };
+};
+const getGroupRecursive = (classParts, classPartObject) => {
+  var _a3;
+  if (classParts.length === 0) {
+    return classPartObject.classGroupId;
+  }
+  const currentClassPart = classParts[0];
+  const nextClassPartObject = classPartObject.nextPart.get(currentClassPart);
+  const classGroupFromNextClassPart = nextClassPartObject ? getGroupRecursive(classParts.slice(1), nextClassPartObject) : void 0;
+  if (classGroupFromNextClassPart) {
+    return classGroupFromNextClassPart;
+  }
+  if (classPartObject.validators.length === 0) {
+    return void 0;
+  }
+  const classRest = classParts.join(CLASS_PART_SEPARATOR);
+  return (_a3 = classPartObject.validators.find(({
+    validator
+  }) => validator(classRest))) == null ? void 0 : _a3.classGroupId;
+};
+const arbitraryPropertyRegex = /^\[(.+)\]$/;
+const getGroupIdForArbitraryProperty = (className) => {
+  if (arbitraryPropertyRegex.test(className)) {
+    const arbitraryPropertyClassName = arbitraryPropertyRegex.exec(className)[1];
+    const property = arbitraryPropertyClassName == null ? void 0 : arbitraryPropertyClassName.substring(0, arbitraryPropertyClassName.indexOf(":"));
+    if (property) {
+      return "arbitrary.." + property;
+    }
+  }
+};
+const createClassMap = (config) => {
+  const {
+    theme,
+    prefix: prefix2
+  } = config;
+  const classMap = {
+    nextPart: /* @__PURE__ */ new Map(),
+    validators: []
+  };
+  const prefixedClassGroupEntries = getPrefixedClassGroupEntries(Object.entries(config.classGroups), prefix2);
+  prefixedClassGroupEntries.forEach(([classGroupId, classGroup]) => {
+    processClassesRecursively(classGroup, classMap, classGroupId, theme);
+  });
+  return classMap;
+};
+const processClassesRecursively = (classGroup, classPartObject, classGroupId, theme) => {
+  classGroup.forEach((classDefinition) => {
+    if (typeof classDefinition === "string") {
+      const classPartObjectToEdit = classDefinition === "" ? classPartObject : getPart(classPartObject, classDefinition);
+      classPartObjectToEdit.classGroupId = classGroupId;
+      return;
+    }
+    if (typeof classDefinition === "function") {
+      if (isThemeGetter(classDefinition)) {
+        processClassesRecursively(classDefinition(theme), classPartObject, classGroupId, theme);
+        return;
+      }
+      classPartObject.validators.push({
+        validator: classDefinition,
+        classGroupId
+      });
+      return;
+    }
+    Object.entries(classDefinition).forEach(([key, classGroup2]) => {
+      processClassesRecursively(classGroup2, getPart(classPartObject, key), classGroupId, theme);
+    });
+  });
+};
+const getPart = (classPartObject, path) => {
+  let currentClassPartObject = classPartObject;
+  path.split(CLASS_PART_SEPARATOR).forEach((pathPart) => {
+    if (!currentClassPartObject.nextPart.has(pathPart)) {
+      currentClassPartObject.nextPart.set(pathPart, {
+        nextPart: /* @__PURE__ */ new Map(),
+        validators: []
+      });
+    }
+    currentClassPartObject = currentClassPartObject.nextPart.get(pathPart);
+  });
+  return currentClassPartObject;
+};
+const isThemeGetter = (func) => func.isThemeGetter;
+const getPrefixedClassGroupEntries = (classGroupEntries, prefix2) => {
+  if (!prefix2) {
+    return classGroupEntries;
+  }
+  return classGroupEntries.map(([classGroupId, classGroup]) => {
+    const prefixedClassGroup = classGroup.map((classDefinition) => {
+      if (typeof classDefinition === "string") {
+        return prefix2 + classDefinition;
+      }
+      if (typeof classDefinition === "object") {
+        return Object.fromEntries(Object.entries(classDefinition).map(([key, value]) => [prefix2 + key, value]));
+      }
+      return classDefinition;
+    });
+    return [classGroupId, prefixedClassGroup];
+  });
+};
+const createLruCache = (maxCacheSize) => {
+  if (maxCacheSize < 1) {
+    return {
+      get: () => void 0,
+      set: () => {
+      }
+    };
+  }
+  let cacheSize = 0;
+  let cache = /* @__PURE__ */ new Map();
+  let previousCache = /* @__PURE__ */ new Map();
+  const update = (key, value) => {
+    cache.set(key, value);
+    cacheSize++;
+    if (cacheSize > maxCacheSize) {
+      cacheSize = 0;
+      previousCache = cache;
+      cache = /* @__PURE__ */ new Map();
+    }
+  };
+  return {
+    get(key) {
+      let value = cache.get(key);
+      if (value !== void 0) {
+        return value;
+      }
+      if ((value = previousCache.get(key)) !== void 0) {
+        update(key, value);
+        return value;
+      }
+    },
+    set(key, value) {
+      if (cache.has(key)) {
+        cache.set(key, value);
+      } else {
+        update(key, value);
+      }
+    }
+  };
+};
+const IMPORTANT_MODIFIER = "!";
+const createParseClassName = (config) => {
+  const {
+    separator,
+    experimentalParseClassName
+  } = config;
+  const isSeparatorSingleCharacter = separator.length === 1;
+  const firstSeparatorCharacter = separator[0];
+  const separatorLength = separator.length;
+  const parseClassName = (className) => {
+    const modifiers = [];
+    let bracketDepth = 0;
+    let modifierStart = 0;
+    let postfixModifierPosition;
+    for (let index2 = 0; index2 < className.length; index2++) {
+      let currentCharacter = className[index2];
+      if (bracketDepth === 0) {
+        if (currentCharacter === firstSeparatorCharacter && (isSeparatorSingleCharacter || className.slice(index2, index2 + separatorLength) === separator)) {
+          modifiers.push(className.slice(modifierStart, index2));
+          modifierStart = index2 + separatorLength;
+          continue;
+        }
+        if (currentCharacter === "/") {
+          postfixModifierPosition = index2;
+          continue;
+        }
+      }
+      if (currentCharacter === "[") {
+        bracketDepth++;
+      } else if (currentCharacter === "]") {
+        bracketDepth--;
+      }
+    }
+    const baseClassNameWithImportantModifier = modifiers.length === 0 ? className : className.substring(modifierStart);
+    const hasImportantModifier = baseClassNameWithImportantModifier.startsWith(IMPORTANT_MODIFIER);
+    const baseClassName = hasImportantModifier ? baseClassNameWithImportantModifier.substring(1) : baseClassNameWithImportantModifier;
+    const maybePostfixModifierPosition = postfixModifierPosition && postfixModifierPosition > modifierStart ? postfixModifierPosition - modifierStart : void 0;
+    return {
+      modifiers,
+      hasImportantModifier,
+      baseClassName,
+      maybePostfixModifierPosition
+    };
+  };
+  if (experimentalParseClassName) {
+    return (className) => experimentalParseClassName({
+      className,
+      parseClassName
+    });
+  }
+  return parseClassName;
+};
+const sortModifiers = (modifiers) => {
+  if (modifiers.length <= 1) {
+    return modifiers;
+  }
+  const sortedModifiers = [];
+  let unsortedModifiers = [];
+  modifiers.forEach((modifier) => {
+    const isArbitraryVariant = modifier[0] === "[";
+    if (isArbitraryVariant) {
+      sortedModifiers.push(...unsortedModifiers.sort(), modifier);
+      unsortedModifiers = [];
+    } else {
+      unsortedModifiers.push(modifier);
+    }
+  });
+  sortedModifiers.push(...unsortedModifiers.sort());
+  return sortedModifiers;
+};
+const createConfigUtils = (config) => ({
+  cache: createLruCache(config.cacheSize),
+  parseClassName: createParseClassName(config),
+  ...createClassGroupUtils(config)
+});
+const SPLIT_CLASSES_REGEX = /\s+/;
+const mergeClassList = (classList, configUtils) => {
+  const {
+    parseClassName,
+    getClassGroupId,
+    getConflictingClassGroupIds
+  } = configUtils;
+  const classGroupsInConflict = [];
+  const classNames = classList.trim().split(SPLIT_CLASSES_REGEX);
+  let result = "";
+  for (let index2 = classNames.length - 1; index2 >= 0; index2 -= 1) {
+    const originalClassName = classNames[index2];
+    const {
+      modifiers,
+      hasImportantModifier,
+      baseClassName,
+      maybePostfixModifierPosition
+    } = parseClassName(originalClassName);
+    let hasPostfixModifier = Boolean(maybePostfixModifierPosition);
+    let classGroupId = getClassGroupId(hasPostfixModifier ? baseClassName.substring(0, maybePostfixModifierPosition) : baseClassName);
+    if (!classGroupId) {
+      if (!hasPostfixModifier) {
+        result = originalClassName + (result.length > 0 ? " " + result : result);
+        continue;
+      }
+      classGroupId = getClassGroupId(baseClassName);
+      if (!classGroupId) {
+        result = originalClassName + (result.length > 0 ? " " + result : result);
+        continue;
+      }
+      hasPostfixModifier = false;
+    }
+    const variantModifier = sortModifiers(modifiers).join(":");
+    const modifierId = hasImportantModifier ? variantModifier + IMPORTANT_MODIFIER : variantModifier;
+    const classId = modifierId + classGroupId;
+    if (classGroupsInConflict.includes(classId)) {
+      continue;
+    }
+    classGroupsInConflict.push(classId);
+    const conflictGroups = getConflictingClassGroupIds(classGroupId, hasPostfixModifier);
+    for (let i = 0; i < conflictGroups.length; ++i) {
+      const group = conflictGroups[i];
+      classGroupsInConflict.push(modifierId + group);
+    }
+    result = originalClassName + (result.length > 0 ? " " + result : result);
+  }
+  return result;
+};
+function twJoin() {
+  let index2 = 0;
+  let argument;
+  let resolvedValue;
+  let string = "";
+  while (index2 < arguments.length) {
+    if (argument = arguments[index2++]) {
+      if (resolvedValue = toValue(argument)) {
+        string && (string += " ");
+        string += resolvedValue;
+      }
+    }
+  }
+  return string;
+}
+const toValue = (mix2) => {
+  if (typeof mix2 === "string") {
+    return mix2;
+  }
+  let resolvedValue;
+  let string = "";
+  for (let k2 = 0; k2 < mix2.length; k2++) {
+    if (mix2[k2]) {
+      if (resolvedValue = toValue(mix2[k2])) {
+        string && (string += " ");
+        string += resolvedValue;
+      }
+    }
+  }
+  return string;
+};
+function createTailwindMerge(createConfigFirst, ...createConfigRest) {
+  let configUtils;
+  let cacheGet;
+  let cacheSet;
+  let functionToCall = initTailwindMerge;
+  function initTailwindMerge(classList) {
+    const config = createConfigRest.reduce((previousConfig, createConfigCurrent) => createConfigCurrent(previousConfig), createConfigFirst());
+    configUtils = createConfigUtils(config);
+    cacheGet = configUtils.cache.get;
+    cacheSet = configUtils.cache.set;
+    functionToCall = tailwindMerge;
+    return tailwindMerge(classList);
+  }
+  function tailwindMerge(classList) {
+    const cachedResult = cacheGet(classList);
+    if (cachedResult) {
+      return cachedResult;
+    }
+    const result = mergeClassList(classList, configUtils);
+    cacheSet(classList, result);
+    return result;
+  }
+  return function callTailwindMerge() {
+    return functionToCall(twJoin.apply(null, arguments));
+  };
+}
+const fromTheme = (key) => {
+  const themeGetter = (theme) => theme[key] || [];
+  themeGetter.isThemeGetter = true;
+  return themeGetter;
+};
+const arbitraryValueRegex = /^\[(?:([a-z-]+):)?(.+)\]$/i;
+const fractionRegex = /^\d+\/\d+$/;
+const stringLengths = /* @__PURE__ */ new Set(["px", "full", "screen"]);
+const tshirtUnitRegex = /^(\d+(\.\d+)?)?(xs|sm|md|lg|xl)$/;
+const lengthUnitRegex = /\d+(%|px|r?em|[sdl]?v([hwib]|min|max)|pt|pc|in|cm|mm|cap|ch|ex|r?lh|cq(w|h|i|b|min|max))|\b(calc|min|max|clamp)\(.+\)|^0$/;
+const colorFunctionRegex = /^(rgba?|hsla?|hwb|(ok)?(lab|lch)|color-mix)\(.+\)$/;
+const shadowRegex = /^(inset_)?-?((\d+)?\.?(\d+)[a-z]+|0)_-?((\d+)?\.?(\d+)[a-z]+|0)/;
+const imageRegex = /^(url|image|image-set|cross-fade|element|(repeating-)?(linear|radial|conic)-gradient)\(.+\)$/;
+const isLength = (value) => isNumber(value) || stringLengths.has(value) || fractionRegex.test(value);
+const isArbitraryLength = (value) => getIsArbitraryValue(value, "length", isLengthOnly);
+const isNumber = (value) => Boolean(value) && !Number.isNaN(Number(value));
+const isArbitraryNumber = (value) => getIsArbitraryValue(value, "number", isNumber);
+const isInteger = (value) => Boolean(value) && Number.isInteger(Number(value));
+const isPercent = (value) => value.endsWith("%") && isNumber(value.slice(0, -1));
+const isArbitraryValue = (value) => arbitraryValueRegex.test(value);
+const isTshirtSize = (value) => tshirtUnitRegex.test(value);
+const sizeLabels = /* @__PURE__ */ new Set(["length", "size", "percentage"]);
+const isArbitrarySize = (value) => getIsArbitraryValue(value, sizeLabels, isNever);
+const isArbitraryPosition = (value) => getIsArbitraryValue(value, "position", isNever);
+const imageLabels = /* @__PURE__ */ new Set(["image", "url"]);
+const isArbitraryImage = (value) => getIsArbitraryValue(value, imageLabels, isImage);
+const isArbitraryShadow = (value) => getIsArbitraryValue(value, "", isShadow);
+const isAny = () => true;
+const getIsArbitraryValue = (value, label, testValue) => {
+  const result = arbitraryValueRegex.exec(value);
+  if (result) {
+    if (result[1]) {
+      return typeof label === "string" ? result[1] === label : label.has(result[1]);
+    }
+    return testValue(result[2]);
+  }
+  return false;
+};
+const isLengthOnly = (value) => (
+  // `colorFunctionRegex` check is necessary because color functions can have percentages in them which which would be incorrectly classified as lengths.
+  // For example, `hsl(0 0% 0%)` would be classified as a length without this check.
+  // I could also use lookbehind assertion in `lengthUnitRegex` but that isn't supported widely enough.
+  lengthUnitRegex.test(value) && !colorFunctionRegex.test(value)
+);
+const isNever = () => false;
+const isShadow = (value) => shadowRegex.test(value);
+const isImage = (value) => imageRegex.test(value);
+const getDefaultConfig = () => {
+  const colors = fromTheme("colors");
+  const spacing = fromTheme("spacing");
+  const blur = fromTheme("blur");
+  const brightness = fromTheme("brightness");
+  const borderColor = fromTheme("borderColor");
+  const borderRadius = fromTheme("borderRadius");
+  const borderSpacing = fromTheme("borderSpacing");
+  const borderWidth = fromTheme("borderWidth");
+  const contrast = fromTheme("contrast");
+  const grayscale = fromTheme("grayscale");
+  const hueRotate = fromTheme("hueRotate");
+  const invert2 = fromTheme("invert");
+  const gap = fromTheme("gap");
+  const gradientColorStops = fromTheme("gradientColorStops");
+  const gradientColorStopPositions = fromTheme("gradientColorStopPositions");
+  const inset = fromTheme("inset");
+  const margin = fromTheme("margin");
+  const opacity = fromTheme("opacity");
+  const padding = fromTheme("padding");
+  const saturate = fromTheme("saturate");
+  const scale2 = fromTheme("scale");
+  const sepia = fromTheme("sepia");
+  const skew = fromTheme("skew");
+  const space = fromTheme("space");
+  const translate = fromTheme("translate");
+  const getOverscroll = () => ["auto", "contain", "none"];
+  const getOverflow = () => ["auto", "hidden", "clip", "visible", "scroll"];
+  const getSpacingWithAutoAndArbitrary = () => ["auto", isArbitraryValue, spacing];
+  const getSpacingWithArbitrary = () => [isArbitraryValue, spacing];
+  const getLengthWithEmptyAndArbitrary = () => ["", isLength, isArbitraryLength];
+  const getNumberWithAutoAndArbitrary = () => ["auto", isNumber, isArbitraryValue];
+  const getPositions = () => ["bottom", "center", "left", "left-bottom", "left-top", "right", "right-bottom", "right-top", "top"];
+  const getLineStyles = () => ["solid", "dashed", "dotted", "double", "none"];
+  const getBlendModes = () => ["normal", "multiply", "screen", "overlay", "darken", "lighten", "color-dodge", "color-burn", "hard-light", "soft-light", "difference", "exclusion", "hue", "saturation", "color", "luminosity"];
+  const getAlign = () => ["start", "end", "center", "between", "around", "evenly", "stretch"];
+  const getZeroAndEmpty = () => ["", "0", isArbitraryValue];
+  const getBreaks = () => ["auto", "avoid", "all", "avoid-page", "page", "left", "right", "column"];
+  const getNumberAndArbitrary = () => [isNumber, isArbitraryValue];
+  return {
+    cacheSize: 500,
+    separator: ":",
+    theme: {
+      colors: [isAny],
+      spacing: [isLength, isArbitraryLength],
+      blur: ["none", "", isTshirtSize, isArbitraryValue],
+      brightness: getNumberAndArbitrary(),
+      borderColor: [colors],
+      borderRadius: ["none", "", "full", isTshirtSize, isArbitraryValue],
+      borderSpacing: getSpacingWithArbitrary(),
+      borderWidth: getLengthWithEmptyAndArbitrary(),
+      contrast: getNumberAndArbitrary(),
+      grayscale: getZeroAndEmpty(),
+      hueRotate: getNumberAndArbitrary(),
+      invert: getZeroAndEmpty(),
+      gap: getSpacingWithArbitrary(),
+      gradientColorStops: [colors],
+      gradientColorStopPositions: [isPercent, isArbitraryLength],
+      inset: getSpacingWithAutoAndArbitrary(),
+      margin: getSpacingWithAutoAndArbitrary(),
+      opacity: getNumberAndArbitrary(),
+      padding: getSpacingWithArbitrary(),
+      saturate: getNumberAndArbitrary(),
+      scale: getNumberAndArbitrary(),
+      sepia: getZeroAndEmpty(),
+      skew: getNumberAndArbitrary(),
+      space: getSpacingWithArbitrary(),
+      translate: getSpacingWithArbitrary()
+    },
+    classGroups: {
+      // Layout
+      /**
+       * Aspect Ratio
+       * @see https://tailwindcss.com/docs/aspect-ratio
+       */
+      aspect: [{
+        aspect: ["auto", "square", "video", isArbitraryValue]
+      }],
+      /**
+       * Container
+       * @see https://tailwindcss.com/docs/container
+       */
+      container: ["container"],
+      /**
+       * Columns
+       * @see https://tailwindcss.com/docs/columns
+       */
+      columns: [{
+        columns: [isTshirtSize]
+      }],
+      /**
+       * Break After
+       * @see https://tailwindcss.com/docs/break-after
+       */
+      "break-after": [{
+        "break-after": getBreaks()
+      }],
+      /**
+       * Break Before
+       * @see https://tailwindcss.com/docs/break-before
+       */
+      "break-before": [{
+        "break-before": getBreaks()
+      }],
+      /**
+       * Break Inside
+       * @see https://tailwindcss.com/docs/break-inside
+       */
+      "break-inside": [{
+        "break-inside": ["auto", "avoid", "avoid-page", "avoid-column"]
+      }],
+      /**
+       * Box Decoration Break
+       * @see https://tailwindcss.com/docs/box-decoration-break
+       */
+      "box-decoration": [{
+        "box-decoration": ["slice", "clone"]
+      }],
+      /**
+       * Box Sizing
+       * @see https://tailwindcss.com/docs/box-sizing
+       */
+      box: [{
+        box: ["border", "content"]
+      }],
+      /**
+       * Display
+       * @see https://tailwindcss.com/docs/display
+       */
+      display: ["block", "inline-block", "inline", "flex", "inline-flex", "table", "inline-table", "table-caption", "table-cell", "table-column", "table-column-group", "table-footer-group", "table-header-group", "table-row-group", "table-row", "flow-root", "grid", "inline-grid", "contents", "list-item", "hidden"],
+      /**
+       * Floats
+       * @see https://tailwindcss.com/docs/float
+       */
+      float: [{
+        float: ["right", "left", "none", "start", "end"]
+      }],
+      /**
+       * Clear
+       * @see https://tailwindcss.com/docs/clear
+       */
+      clear: [{
+        clear: ["left", "right", "both", "none", "start", "end"]
+      }],
+      /**
+       * Isolation
+       * @see https://tailwindcss.com/docs/isolation
+       */
+      isolation: ["isolate", "isolation-auto"],
+      /**
+       * Object Fit
+       * @see https://tailwindcss.com/docs/object-fit
+       */
+      "object-fit": [{
+        object: ["contain", "cover", "fill", "none", "scale-down"]
+      }],
+      /**
+       * Object Position
+       * @see https://tailwindcss.com/docs/object-position
+       */
+      "object-position": [{
+        object: [...getPositions(), isArbitraryValue]
+      }],
+      /**
+       * Overflow
+       * @see https://tailwindcss.com/docs/overflow
+       */
+      overflow: [{
+        overflow: getOverflow()
+      }],
+      /**
+       * Overflow X
+       * @see https://tailwindcss.com/docs/overflow
+       */
+      "overflow-x": [{
+        "overflow-x": getOverflow()
+      }],
+      /**
+       * Overflow Y
+       * @see https://tailwindcss.com/docs/overflow
+       */
+      "overflow-y": [{
+        "overflow-y": getOverflow()
+      }],
+      /**
+       * Overscroll Behavior
+       * @see https://tailwindcss.com/docs/overscroll-behavior
+       */
+      overscroll: [{
+        overscroll: getOverscroll()
+      }],
+      /**
+       * Overscroll Behavior X
+       * @see https://tailwindcss.com/docs/overscroll-behavior
+       */
+      "overscroll-x": [{
+        "overscroll-x": getOverscroll()
+      }],
+      /**
+       * Overscroll Behavior Y
+       * @see https://tailwindcss.com/docs/overscroll-behavior
+       */
+      "overscroll-y": [{
+        "overscroll-y": getOverscroll()
+      }],
+      /**
+       * Position
+       * @see https://tailwindcss.com/docs/position
+       */
+      position: ["static", "fixed", "absolute", "relative", "sticky"],
+      /**
+       * Top / Right / Bottom / Left
+       * @see https://tailwindcss.com/docs/top-right-bottom-left
+       */
+      inset: [{
+        inset: [inset]
+      }],
+      /**
+       * Right / Left
+       * @see https://tailwindcss.com/docs/top-right-bottom-left
+       */
+      "inset-x": [{
+        "inset-x": [inset]
+      }],
+      /**
+       * Top / Bottom
+       * @see https://tailwindcss.com/docs/top-right-bottom-left
+       */
+      "inset-y": [{
+        "inset-y": [inset]
+      }],
+      /**
+       * Start
+       * @see https://tailwindcss.com/docs/top-right-bottom-left
+       */
+      start: [{
+        start: [inset]
+      }],
+      /**
+       * End
+       * @see https://tailwindcss.com/docs/top-right-bottom-left
+       */
+      end: [{
+        end: [inset]
+      }],
+      /**
+       * Top
+       * @see https://tailwindcss.com/docs/top-right-bottom-left
+       */
+      top: [{
+        top: [inset]
+      }],
+      /**
+       * Right
+       * @see https://tailwindcss.com/docs/top-right-bottom-left
+       */
+      right: [{
+        right: [inset]
+      }],
+      /**
+       * Bottom
+       * @see https://tailwindcss.com/docs/top-right-bottom-left
+       */
+      bottom: [{
+        bottom: [inset]
+      }],
+      /**
+       * Left
+       * @see https://tailwindcss.com/docs/top-right-bottom-left
+       */
+      left: [{
+        left: [inset]
+      }],
+      /**
+       * Visibility
+       * @see https://tailwindcss.com/docs/visibility
+       */
+      visibility: ["visible", "invisible", "collapse"],
+      /**
+       * Z-Index
+       * @see https://tailwindcss.com/docs/z-index
+       */
+      z: [{
+        z: ["auto", isInteger, isArbitraryValue]
+      }],
+      // Flexbox and Grid
+      /**
+       * Flex Basis
+       * @see https://tailwindcss.com/docs/flex-basis
+       */
+      basis: [{
+        basis: getSpacingWithAutoAndArbitrary()
+      }],
+      /**
+       * Flex Direction
+       * @see https://tailwindcss.com/docs/flex-direction
+       */
+      "flex-direction": [{
+        flex: ["row", "row-reverse", "col", "col-reverse"]
+      }],
+      /**
+       * Flex Wrap
+       * @see https://tailwindcss.com/docs/flex-wrap
+       */
+      "flex-wrap": [{
+        flex: ["wrap", "wrap-reverse", "nowrap"]
+      }],
+      /**
+       * Flex
+       * @see https://tailwindcss.com/docs/flex
+       */
+      flex: [{
+        flex: ["1", "auto", "initial", "none", isArbitraryValue]
+      }],
+      /**
+       * Flex Grow
+       * @see https://tailwindcss.com/docs/flex-grow
+       */
+      grow: [{
+        grow: getZeroAndEmpty()
+      }],
+      /**
+       * Flex Shrink
+       * @see https://tailwindcss.com/docs/flex-shrink
+       */
+      shrink: [{
+        shrink: getZeroAndEmpty()
+      }],
+      /**
+       * Order
+       * @see https://tailwindcss.com/docs/order
+       */
+      order: [{
+        order: ["first", "last", "none", isInteger, isArbitraryValue]
+      }],
+      /**
+       * Grid Template Columns
+       * @see https://tailwindcss.com/docs/grid-template-columns
+       */
+      "grid-cols": [{
+        "grid-cols": [isAny]
+      }],
+      /**
+       * Grid Column Start / End
+       * @see https://tailwindcss.com/docs/grid-column
+       */
+      "col-start-end": [{
+        col: ["auto", {
+          span: ["full", isInteger, isArbitraryValue]
+        }, isArbitraryValue]
+      }],
+      /**
+       * Grid Column Start
+       * @see https://tailwindcss.com/docs/grid-column
+       */
+      "col-start": [{
+        "col-start": getNumberWithAutoAndArbitrary()
+      }],
+      /**
+       * Grid Column End
+       * @see https://tailwindcss.com/docs/grid-column
+       */
+      "col-end": [{
+        "col-end": getNumberWithAutoAndArbitrary()
+      }],
+      /**
+       * Grid Template Rows
+       * @see https://tailwindcss.com/docs/grid-template-rows
+       */
+      "grid-rows": [{
+        "grid-rows": [isAny]
+      }],
+      /**
+       * Grid Row Start / End
+       * @see https://tailwindcss.com/docs/grid-row
+       */
+      "row-start-end": [{
+        row: ["auto", {
+          span: [isInteger, isArbitraryValue]
+        }, isArbitraryValue]
+      }],
+      /**
+       * Grid Row Start
+       * @see https://tailwindcss.com/docs/grid-row
+       */
+      "row-start": [{
+        "row-start": getNumberWithAutoAndArbitrary()
+      }],
+      /**
+       * Grid Row End
+       * @see https://tailwindcss.com/docs/grid-row
+       */
+      "row-end": [{
+        "row-end": getNumberWithAutoAndArbitrary()
+      }],
+      /**
+       * Grid Auto Flow
+       * @see https://tailwindcss.com/docs/grid-auto-flow
+       */
+      "grid-flow": [{
+        "grid-flow": ["row", "col", "dense", "row-dense", "col-dense"]
+      }],
+      /**
+       * Grid Auto Columns
+       * @see https://tailwindcss.com/docs/grid-auto-columns
+       */
+      "auto-cols": [{
+        "auto-cols": ["auto", "min", "max", "fr", isArbitraryValue]
+      }],
+      /**
+       * Grid Auto Rows
+       * @see https://tailwindcss.com/docs/grid-auto-rows
+       */
+      "auto-rows": [{
+        "auto-rows": ["auto", "min", "max", "fr", isArbitraryValue]
+      }],
+      /**
+       * Gap
+       * @see https://tailwindcss.com/docs/gap
+       */
+      gap: [{
+        gap: [gap]
+      }],
+      /**
+       * Gap X
+       * @see https://tailwindcss.com/docs/gap
+       */
+      "gap-x": [{
+        "gap-x": [gap]
+      }],
+      /**
+       * Gap Y
+       * @see https://tailwindcss.com/docs/gap
+       */
+      "gap-y": [{
+        "gap-y": [gap]
+      }],
+      /**
+       * Justify Content
+       * @see https://tailwindcss.com/docs/justify-content
+       */
+      "justify-content": [{
+        justify: ["normal", ...getAlign()]
+      }],
+      /**
+       * Justify Items
+       * @see https://tailwindcss.com/docs/justify-items
+       */
+      "justify-items": [{
+        "justify-items": ["start", "end", "center", "stretch"]
+      }],
+      /**
+       * Justify Self
+       * @see https://tailwindcss.com/docs/justify-self
+       */
+      "justify-self": [{
+        "justify-self": ["auto", "start", "end", "center", "stretch"]
+      }],
+      /**
+       * Align Content
+       * @see https://tailwindcss.com/docs/align-content
+       */
+      "align-content": [{
+        content: ["normal", ...getAlign(), "baseline"]
+      }],
+      /**
+       * Align Items
+       * @see https://tailwindcss.com/docs/align-items
+       */
+      "align-items": [{
+        items: ["start", "end", "center", "baseline", "stretch"]
+      }],
+      /**
+       * Align Self
+       * @see https://tailwindcss.com/docs/align-self
+       */
+      "align-self": [{
+        self: ["auto", "start", "end", "center", "stretch", "baseline"]
+      }],
+      /**
+       * Place Content
+       * @see https://tailwindcss.com/docs/place-content
+       */
+      "place-content": [{
+        "place-content": [...getAlign(), "baseline"]
+      }],
+      /**
+       * Place Items
+       * @see https://tailwindcss.com/docs/place-items
+       */
+      "place-items": [{
+        "place-items": ["start", "end", "center", "baseline", "stretch"]
+      }],
+      /**
+       * Place Self
+       * @see https://tailwindcss.com/docs/place-self
+       */
+      "place-self": [{
+        "place-self": ["auto", "start", "end", "center", "stretch"]
+      }],
+      // Spacing
+      /**
+       * Padding
+       * @see https://tailwindcss.com/docs/padding
+       */
+      p: [{
+        p: [padding]
+      }],
+      /**
+       * Padding X
+       * @see https://tailwindcss.com/docs/padding
+       */
+      px: [{
+        px: [padding]
+      }],
+      /**
+       * Padding Y
+       * @see https://tailwindcss.com/docs/padding
+       */
+      py: [{
+        py: [padding]
+      }],
+      /**
+       * Padding Start
+       * @see https://tailwindcss.com/docs/padding
+       */
+      ps: [{
+        ps: [padding]
+      }],
+      /**
+       * Padding End
+       * @see https://tailwindcss.com/docs/padding
+       */
+      pe: [{
+        pe: [padding]
+      }],
+      /**
+       * Padding Top
+       * @see https://tailwindcss.com/docs/padding
+       */
+      pt: [{
+        pt: [padding]
+      }],
+      /**
+       * Padding Right
+       * @see https://tailwindcss.com/docs/padding
+       */
+      pr: [{
+        pr: [padding]
+      }],
+      /**
+       * Padding Bottom
+       * @see https://tailwindcss.com/docs/padding
+       */
+      pb: [{
+        pb: [padding]
+      }],
+      /**
+       * Padding Left
+       * @see https://tailwindcss.com/docs/padding
+       */
+      pl: [{
+        pl: [padding]
+      }],
+      /**
+       * Margin
+       * @see https://tailwindcss.com/docs/margin
+       */
+      m: [{
+        m: [margin]
+      }],
+      /**
+       * Margin X
+       * @see https://tailwindcss.com/docs/margin
+       */
+      mx: [{
+        mx: [margin]
+      }],
+      /**
+       * Margin Y
+       * @see https://tailwindcss.com/docs/margin
+       */
+      my: [{
+        my: [margin]
+      }],
+      /**
+       * Margin Start
+       * @see https://tailwindcss.com/docs/margin
+       */
+      ms: [{
+        ms: [margin]
+      }],
+      /**
+       * Margin End
+       * @see https://tailwindcss.com/docs/margin
+       */
+      me: [{
+        me: [margin]
+      }],
+      /**
+       * Margin Top
+       * @see https://tailwindcss.com/docs/margin
+       */
+      mt: [{
+        mt: [margin]
+      }],
+      /**
+       * Margin Right
+       * @see https://tailwindcss.com/docs/margin
+       */
+      mr: [{
+        mr: [margin]
+      }],
+      /**
+       * Margin Bottom
+       * @see https://tailwindcss.com/docs/margin
+       */
+      mb: [{
+        mb: [margin]
+      }],
+      /**
+       * Margin Left
+       * @see https://tailwindcss.com/docs/margin
+       */
+      ml: [{
+        ml: [margin]
+      }],
+      /**
+       * Space Between X
+       * @see https://tailwindcss.com/docs/space
+       */
+      "space-x": [{
+        "space-x": [space]
+      }],
+      /**
+       * Space Between X Reverse
+       * @see https://tailwindcss.com/docs/space
+       */
+      "space-x-reverse": ["space-x-reverse"],
+      /**
+       * Space Between Y
+       * @see https://tailwindcss.com/docs/space
+       */
+      "space-y": [{
+        "space-y": [space]
+      }],
+      /**
+       * Space Between Y Reverse
+       * @see https://tailwindcss.com/docs/space
+       */
+      "space-y-reverse": ["space-y-reverse"],
+      // Sizing
+      /**
+       * Width
+       * @see https://tailwindcss.com/docs/width
+       */
+      w: [{
+        w: ["auto", "min", "max", "fit", "svw", "lvw", "dvw", isArbitraryValue, spacing]
+      }],
+      /**
+       * Min-Width
+       * @see https://tailwindcss.com/docs/min-width
+       */
+      "min-w": [{
+        "min-w": [isArbitraryValue, spacing, "min", "max", "fit"]
+      }],
+      /**
+       * Max-Width
+       * @see https://tailwindcss.com/docs/max-width
+       */
+      "max-w": [{
+        "max-w": [isArbitraryValue, spacing, "none", "full", "min", "max", "fit", "prose", {
+          screen: [isTshirtSize]
+        }, isTshirtSize]
+      }],
+      /**
+       * Height
+       * @see https://tailwindcss.com/docs/height
+       */
+      h: [{
+        h: [isArbitraryValue, spacing, "auto", "min", "max", "fit", "svh", "lvh", "dvh"]
+      }],
+      /**
+       * Min-Height
+       * @see https://tailwindcss.com/docs/min-height
+       */
+      "min-h": [{
+        "min-h": [isArbitraryValue, spacing, "min", "max", "fit", "svh", "lvh", "dvh"]
+      }],
+      /**
+       * Max-Height
+       * @see https://tailwindcss.com/docs/max-height
+       */
+      "max-h": [{
+        "max-h": [isArbitraryValue, spacing, "min", "max", "fit", "svh", "lvh", "dvh"]
+      }],
+      /**
+       * Size
+       * @see https://tailwindcss.com/docs/size
+       */
+      size: [{
+        size: [isArbitraryValue, spacing, "auto", "min", "max", "fit"]
+      }],
+      // Typography
+      /**
+       * Font Size
+       * @see https://tailwindcss.com/docs/font-size
+       */
+      "font-size": [{
+        text: ["base", isTshirtSize, isArbitraryLength]
+      }],
+      /**
+       * Font Smoothing
+       * @see https://tailwindcss.com/docs/font-smoothing
+       */
+      "font-smoothing": ["antialiased", "subpixel-antialiased"],
+      /**
+       * Font Style
+       * @see https://tailwindcss.com/docs/font-style
+       */
+      "font-style": ["italic", "not-italic"],
+      /**
+       * Font Weight
+       * @see https://tailwindcss.com/docs/font-weight
+       */
+      "font-weight": [{
+        font: ["thin", "extralight", "light", "normal", "medium", "semibold", "bold", "extrabold", "black", isArbitraryNumber]
+      }],
+      /**
+       * Font Family
+       * @see https://tailwindcss.com/docs/font-family
+       */
+      "font-family": [{
+        font: [isAny]
+      }],
+      /**
+       * Font Variant Numeric
+       * @see https://tailwindcss.com/docs/font-variant-numeric
+       */
+      "fvn-normal": ["normal-nums"],
+      /**
+       * Font Variant Numeric
+       * @see https://tailwindcss.com/docs/font-variant-numeric
+       */
+      "fvn-ordinal": ["ordinal"],
+      /**
+       * Font Variant Numeric
+       * @see https://tailwindcss.com/docs/font-variant-numeric
+       */
+      "fvn-slashed-zero": ["slashed-zero"],
+      /**
+       * Font Variant Numeric
+       * @see https://tailwindcss.com/docs/font-variant-numeric
+       */
+      "fvn-figure": ["lining-nums", "oldstyle-nums"],
+      /**
+       * Font Variant Numeric
+       * @see https://tailwindcss.com/docs/font-variant-numeric
+       */
+      "fvn-spacing": ["proportional-nums", "tabular-nums"],
+      /**
+       * Font Variant Numeric
+       * @see https://tailwindcss.com/docs/font-variant-numeric
+       */
+      "fvn-fraction": ["diagonal-fractions", "stacked-fractions"],
+      /**
+       * Letter Spacing
+       * @see https://tailwindcss.com/docs/letter-spacing
+       */
+      tracking: [{
+        tracking: ["tighter", "tight", "normal", "wide", "wider", "widest", isArbitraryValue]
+      }],
+      /**
+       * Line Clamp
+       * @see https://tailwindcss.com/docs/line-clamp
+       */
+      "line-clamp": [{
+        "line-clamp": ["none", isNumber, isArbitraryNumber]
+      }],
+      /**
+       * Line Height
+       * @see https://tailwindcss.com/docs/line-height
+       */
+      leading: [{
+        leading: ["none", "tight", "snug", "normal", "relaxed", "loose", isLength, isArbitraryValue]
+      }],
+      /**
+       * List Style Image
+       * @see https://tailwindcss.com/docs/list-style-image
+       */
+      "list-image": [{
+        "list-image": ["none", isArbitraryValue]
+      }],
+      /**
+       * List Style Type
+       * @see https://tailwindcss.com/docs/list-style-type
+       */
+      "list-style-type": [{
+        list: ["none", "disc", "decimal", isArbitraryValue]
+      }],
+      /**
+       * List Style Position
+       * @see https://tailwindcss.com/docs/list-style-position
+       */
+      "list-style-position": [{
+        list: ["inside", "outside"]
+      }],
+      /**
+       * Placeholder Color
+       * @deprecated since Tailwind CSS v3.0.0
+       * @see https://tailwindcss.com/docs/placeholder-color
+       */
+      "placeholder-color": [{
+        placeholder: [colors]
+      }],
+      /**
+       * Placeholder Opacity
+       * @see https://tailwindcss.com/docs/placeholder-opacity
+       */
+      "placeholder-opacity": [{
+        "placeholder-opacity": [opacity]
+      }],
+      /**
+       * Text Alignment
+       * @see https://tailwindcss.com/docs/text-align
+       */
+      "text-alignment": [{
+        text: ["left", "center", "right", "justify", "start", "end"]
+      }],
+      /**
+       * Text Color
+       * @see https://tailwindcss.com/docs/text-color
+       */
+      "text-color": [{
+        text: [colors]
+      }],
+      /**
+       * Text Opacity
+       * @see https://tailwindcss.com/docs/text-opacity
+       */
+      "text-opacity": [{
+        "text-opacity": [opacity]
+      }],
+      /**
+       * Text Decoration
+       * @see https://tailwindcss.com/docs/text-decoration
+       */
+      "text-decoration": ["underline", "overline", "line-through", "no-underline"],
+      /**
+       * Text Decoration Style
+       * @see https://tailwindcss.com/docs/text-decoration-style
+       */
+      "text-decoration-style": [{
+        decoration: [...getLineStyles(), "wavy"]
+      }],
+      /**
+       * Text Decoration Thickness
+       * @see https://tailwindcss.com/docs/text-decoration-thickness
+       */
+      "text-decoration-thickness": [{
+        decoration: ["auto", "from-font", isLength, isArbitraryLength]
+      }],
+      /**
+       * Text Underline Offset
+       * @see https://tailwindcss.com/docs/text-underline-offset
+       */
+      "underline-offset": [{
+        "underline-offset": ["auto", isLength, isArbitraryValue]
+      }],
+      /**
+       * Text Decoration Color
+       * @see https://tailwindcss.com/docs/text-decoration-color
+       */
+      "text-decoration-color": [{
+        decoration: [colors]
+      }],
+      /**
+       * Text Transform
+       * @see https://tailwindcss.com/docs/text-transform
+       */
+      "text-transform": ["uppercase", "lowercase", "capitalize", "normal-case"],
+      /**
+       * Text Overflow
+       * @see https://tailwindcss.com/docs/text-overflow
+       */
+      "text-overflow": ["truncate", "text-ellipsis", "text-clip"],
+      /**
+       * Text Wrap
+       * @see https://tailwindcss.com/docs/text-wrap
+       */
+      "text-wrap": [{
+        text: ["wrap", "nowrap", "balance", "pretty"]
+      }],
+      /**
+       * Text Indent
+       * @see https://tailwindcss.com/docs/text-indent
+       */
+      indent: [{
+        indent: getSpacingWithArbitrary()
+      }],
+      /**
+       * Vertical Alignment
+       * @see https://tailwindcss.com/docs/vertical-align
+       */
+      "vertical-align": [{
+        align: ["baseline", "top", "middle", "bottom", "text-top", "text-bottom", "sub", "super", isArbitraryValue]
+      }],
+      /**
+       * Whitespace
+       * @see https://tailwindcss.com/docs/whitespace
+       */
+      whitespace: [{
+        whitespace: ["normal", "nowrap", "pre", "pre-line", "pre-wrap", "break-spaces"]
+      }],
+      /**
+       * Word Break
+       * @see https://tailwindcss.com/docs/word-break
+       */
+      break: [{
+        break: ["normal", "words", "all", "keep"]
+      }],
+      /**
+       * Hyphens
+       * @see https://tailwindcss.com/docs/hyphens
+       */
+      hyphens: [{
+        hyphens: ["none", "manual", "auto"]
+      }],
+      /**
+       * Content
+       * @see https://tailwindcss.com/docs/content
+       */
+      content: [{
+        content: ["none", isArbitraryValue]
+      }],
+      // Backgrounds
+      /**
+       * Background Attachment
+       * @see https://tailwindcss.com/docs/background-attachment
+       */
+      "bg-attachment": [{
+        bg: ["fixed", "local", "scroll"]
+      }],
+      /**
+       * Background Clip
+       * @see https://tailwindcss.com/docs/background-clip
+       */
+      "bg-clip": [{
+        "bg-clip": ["border", "padding", "content", "text"]
+      }],
+      /**
+       * Background Opacity
+       * @deprecated since Tailwind CSS v3.0.0
+       * @see https://tailwindcss.com/docs/background-opacity
+       */
+      "bg-opacity": [{
+        "bg-opacity": [opacity]
+      }],
+      /**
+       * Background Origin
+       * @see https://tailwindcss.com/docs/background-origin
+       */
+      "bg-origin": [{
+        "bg-origin": ["border", "padding", "content"]
+      }],
+      /**
+       * Background Position
+       * @see https://tailwindcss.com/docs/background-position
+       */
+      "bg-position": [{
+        bg: [...getPositions(), isArbitraryPosition]
+      }],
+      /**
+       * Background Repeat
+       * @see https://tailwindcss.com/docs/background-repeat
+       */
+      "bg-repeat": [{
+        bg: ["no-repeat", {
+          repeat: ["", "x", "y", "round", "space"]
+        }]
+      }],
+      /**
+       * Background Size
+       * @see https://tailwindcss.com/docs/background-size
+       */
+      "bg-size": [{
+        bg: ["auto", "cover", "contain", isArbitrarySize]
+      }],
+      /**
+       * Background Image
+       * @see https://tailwindcss.com/docs/background-image
+       */
+      "bg-image": [{
+        bg: ["none", {
+          "gradient-to": ["t", "tr", "r", "br", "b", "bl", "l", "tl"]
+        }, isArbitraryImage]
+      }],
+      /**
+       * Background Color
+       * @see https://tailwindcss.com/docs/background-color
+       */
+      "bg-color": [{
+        bg: [colors]
+      }],
+      /**
+       * Gradient Color Stops From Position
+       * @see https://tailwindcss.com/docs/gradient-color-stops
+       */
+      "gradient-from-pos": [{
+        from: [gradientColorStopPositions]
+      }],
+      /**
+       * Gradient Color Stops Via Position
+       * @see https://tailwindcss.com/docs/gradient-color-stops
+       */
+      "gradient-via-pos": [{
+        via: [gradientColorStopPositions]
+      }],
+      /**
+       * Gradient Color Stops To Position
+       * @see https://tailwindcss.com/docs/gradient-color-stops
+       */
+      "gradient-to-pos": [{
+        to: [gradientColorStopPositions]
+      }],
+      /**
+       * Gradient Color Stops From
+       * @see https://tailwindcss.com/docs/gradient-color-stops
+       */
+      "gradient-from": [{
+        from: [gradientColorStops]
+      }],
+      /**
+       * Gradient Color Stops Via
+       * @see https://tailwindcss.com/docs/gradient-color-stops
+       */
+      "gradient-via": [{
+        via: [gradientColorStops]
+      }],
+      /**
+       * Gradient Color Stops To
+       * @see https://tailwindcss.com/docs/gradient-color-stops
+       */
+      "gradient-to": [{
+        to: [gradientColorStops]
+      }],
+      // Borders
+      /**
+       * Border Radius
+       * @see https://tailwindcss.com/docs/border-radius
+       */
+      rounded: [{
+        rounded: [borderRadius]
+      }],
+      /**
+       * Border Radius Start
+       * @see https://tailwindcss.com/docs/border-radius
+       */
+      "rounded-s": [{
+        "rounded-s": [borderRadius]
+      }],
+      /**
+       * Border Radius End
+       * @see https://tailwindcss.com/docs/border-radius
+       */
+      "rounded-e": [{
+        "rounded-e": [borderRadius]
+      }],
+      /**
+       * Border Radius Top
+       * @see https://tailwindcss.com/docs/border-radius
+       */
+      "rounded-t": [{
+        "rounded-t": [borderRadius]
+      }],
+      /**
+       * Border Radius Right
+       * @see https://tailwindcss.com/docs/border-radius
+       */
+      "rounded-r": [{
+        "rounded-r": [borderRadius]
+      }],
+      /**
+       * Border Radius Bottom
+       * @see https://tailwindcss.com/docs/border-radius
+       */
+      "rounded-b": [{
+        "rounded-b": [borderRadius]
+      }],
+      /**
+       * Border Radius Left
+       * @see https://tailwindcss.com/docs/border-radius
+       */
+      "rounded-l": [{
+        "rounded-l": [borderRadius]
+      }],
+      /**
+       * Border Radius Start Start
+       * @see https://tailwindcss.com/docs/border-radius
+       */
+      "rounded-ss": [{
+        "rounded-ss": [borderRadius]
+      }],
+      /**
+       * Border Radius Start End
+       * @see https://tailwindcss.com/docs/border-radius
+       */
+      "rounded-se": [{
+        "rounded-se": [borderRadius]
+      }],
+      /**
+       * Border Radius End End
+       * @see https://tailwindcss.com/docs/border-radius
+       */
+      "rounded-ee": [{
+        "rounded-ee": [borderRadius]
+      }],
+      /**
+       * Border Radius End Start
+       * @see https://tailwindcss.com/docs/border-radius
+       */
+      "rounded-es": [{
+        "rounded-es": [borderRadius]
+      }],
+      /**
+       * Border Radius Top Left
+       * @see https://tailwindcss.com/docs/border-radius
+       */
+      "rounded-tl": [{
+        "rounded-tl": [borderRadius]
+      }],
+      /**
+       * Border Radius Top Right
+       * @see https://tailwindcss.com/docs/border-radius
+       */
+      "rounded-tr": [{
+        "rounded-tr": [borderRadius]
+      }],
+      /**
+       * Border Radius Bottom Right
+       * @see https://tailwindcss.com/docs/border-radius
+       */
+      "rounded-br": [{
+        "rounded-br": [borderRadius]
+      }],
+      /**
+       * Border Radius Bottom Left
+       * @see https://tailwindcss.com/docs/border-radius
+       */
+      "rounded-bl": [{
+        "rounded-bl": [borderRadius]
+      }],
+      /**
+       * Border Width
+       * @see https://tailwindcss.com/docs/border-width
+       */
+      "border-w": [{
+        border: [borderWidth]
+      }],
+      /**
+       * Border Width X
+       * @see https://tailwindcss.com/docs/border-width
+       */
+      "border-w-x": [{
+        "border-x": [borderWidth]
+      }],
+      /**
+       * Border Width Y
+       * @see https://tailwindcss.com/docs/border-width
+       */
+      "border-w-y": [{
+        "border-y": [borderWidth]
+      }],
+      /**
+       * Border Width Start
+       * @see https://tailwindcss.com/docs/border-width
+       */
+      "border-w-s": [{
+        "border-s": [borderWidth]
+      }],
+      /**
+       * Border Width End
+       * @see https://tailwindcss.com/docs/border-width
+       */
+      "border-w-e": [{
+        "border-e": [borderWidth]
+      }],
+      /**
+       * Border Width Top
+       * @see https://tailwindcss.com/docs/border-width
+       */
+      "border-w-t": [{
+        "border-t": [borderWidth]
+      }],
+      /**
+       * Border Width Right
+       * @see https://tailwindcss.com/docs/border-width
+       */
+      "border-w-r": [{
+        "border-r": [borderWidth]
+      }],
+      /**
+       * Border Width Bottom
+       * @see https://tailwindcss.com/docs/border-width
+       */
+      "border-w-b": [{
+        "border-b": [borderWidth]
+      }],
+      /**
+       * Border Width Left
+       * @see https://tailwindcss.com/docs/border-width
+       */
+      "border-w-l": [{
+        "border-l": [borderWidth]
+      }],
+      /**
+       * Border Opacity
+       * @see https://tailwindcss.com/docs/border-opacity
+       */
+      "border-opacity": [{
+        "border-opacity": [opacity]
+      }],
+      /**
+       * Border Style
+       * @see https://tailwindcss.com/docs/border-style
+       */
+      "border-style": [{
+        border: [...getLineStyles(), "hidden"]
+      }],
+      /**
+       * Divide Width X
+       * @see https://tailwindcss.com/docs/divide-width
+       */
+      "divide-x": [{
+        "divide-x": [borderWidth]
+      }],
+      /**
+       * Divide Width X Reverse
+       * @see https://tailwindcss.com/docs/divide-width
+       */
+      "divide-x-reverse": ["divide-x-reverse"],
+      /**
+       * Divide Width Y
+       * @see https://tailwindcss.com/docs/divide-width
+       */
+      "divide-y": [{
+        "divide-y": [borderWidth]
+      }],
+      /**
+       * Divide Width Y Reverse
+       * @see https://tailwindcss.com/docs/divide-width
+       */
+      "divide-y-reverse": ["divide-y-reverse"],
+      /**
+       * Divide Opacity
+       * @see https://tailwindcss.com/docs/divide-opacity
+       */
+      "divide-opacity": [{
+        "divide-opacity": [opacity]
+      }],
+      /**
+       * Divide Style
+       * @see https://tailwindcss.com/docs/divide-style
+       */
+      "divide-style": [{
+        divide: getLineStyles()
+      }],
+      /**
+       * Border Color
+       * @see https://tailwindcss.com/docs/border-color
+       */
+      "border-color": [{
+        border: [borderColor]
+      }],
+      /**
+       * Border Color X
+       * @see https://tailwindcss.com/docs/border-color
+       */
+      "border-color-x": [{
+        "border-x": [borderColor]
+      }],
+      /**
+       * Border Color Y
+       * @see https://tailwindcss.com/docs/border-color
+       */
+      "border-color-y": [{
+        "border-y": [borderColor]
+      }],
+      /**
+       * Border Color S
+       * @see https://tailwindcss.com/docs/border-color
+       */
+      "border-color-s": [{
+        "border-s": [borderColor]
+      }],
+      /**
+       * Border Color E
+       * @see https://tailwindcss.com/docs/border-color
+       */
+      "border-color-e": [{
+        "border-e": [borderColor]
+      }],
+      /**
+       * Border Color Top
+       * @see https://tailwindcss.com/docs/border-color
+       */
+      "border-color-t": [{
+        "border-t": [borderColor]
+      }],
+      /**
+       * Border Color Right
+       * @see https://tailwindcss.com/docs/border-color
+       */
+      "border-color-r": [{
+        "border-r": [borderColor]
+      }],
+      /**
+       * Border Color Bottom
+       * @see https://tailwindcss.com/docs/border-color
+       */
+      "border-color-b": [{
+        "border-b": [borderColor]
+      }],
+      /**
+       * Border Color Left
+       * @see https://tailwindcss.com/docs/border-color
+       */
+      "border-color-l": [{
+        "border-l": [borderColor]
+      }],
+      /**
+       * Divide Color
+       * @see https://tailwindcss.com/docs/divide-color
+       */
+      "divide-color": [{
+        divide: [borderColor]
+      }],
+      /**
+       * Outline Style
+       * @see https://tailwindcss.com/docs/outline-style
+       */
+      "outline-style": [{
+        outline: ["", ...getLineStyles()]
+      }],
+      /**
+       * Outline Offset
+       * @see https://tailwindcss.com/docs/outline-offset
+       */
+      "outline-offset": [{
+        "outline-offset": [isLength, isArbitraryValue]
+      }],
+      /**
+       * Outline Width
+       * @see https://tailwindcss.com/docs/outline-width
+       */
+      "outline-w": [{
+        outline: [isLength, isArbitraryLength]
+      }],
+      /**
+       * Outline Color
+       * @see https://tailwindcss.com/docs/outline-color
+       */
+      "outline-color": [{
+        outline: [colors]
+      }],
+      /**
+       * Ring Width
+       * @see https://tailwindcss.com/docs/ring-width
+       */
+      "ring-w": [{
+        ring: getLengthWithEmptyAndArbitrary()
+      }],
+      /**
+       * Ring Width Inset
+       * @see https://tailwindcss.com/docs/ring-width
+       */
+      "ring-w-inset": ["ring-inset"],
+      /**
+       * Ring Color
+       * @see https://tailwindcss.com/docs/ring-color
+       */
+      "ring-color": [{
+        ring: [colors]
+      }],
+      /**
+       * Ring Opacity
+       * @see https://tailwindcss.com/docs/ring-opacity
+       */
+      "ring-opacity": [{
+        "ring-opacity": [opacity]
+      }],
+      /**
+       * Ring Offset Width
+       * @see https://tailwindcss.com/docs/ring-offset-width
+       */
+      "ring-offset-w": [{
+        "ring-offset": [isLength, isArbitraryLength]
+      }],
+      /**
+       * Ring Offset Color
+       * @see https://tailwindcss.com/docs/ring-offset-color
+       */
+      "ring-offset-color": [{
+        "ring-offset": [colors]
+      }],
+      // Effects
+      /**
+       * Box Shadow
+       * @see https://tailwindcss.com/docs/box-shadow
+       */
+      shadow: [{
+        shadow: ["", "inner", "none", isTshirtSize, isArbitraryShadow]
+      }],
+      /**
+       * Box Shadow Color
+       * @see https://tailwindcss.com/docs/box-shadow-color
+       */
+      "shadow-color": [{
+        shadow: [isAny]
+      }],
+      /**
+       * Opacity
+       * @see https://tailwindcss.com/docs/opacity
+       */
+      opacity: [{
+        opacity: [opacity]
+      }],
+      /**
+       * Mix Blend Mode
+       * @see https://tailwindcss.com/docs/mix-blend-mode
+       */
+      "mix-blend": [{
+        "mix-blend": [...getBlendModes(), "plus-lighter", "plus-darker"]
+      }],
+      /**
+       * Background Blend Mode
+       * @see https://tailwindcss.com/docs/background-blend-mode
+       */
+      "bg-blend": [{
+        "bg-blend": getBlendModes()
+      }],
+      // Filters
+      /**
+       * Filter
+       * @deprecated since Tailwind CSS v3.0.0
+       * @see https://tailwindcss.com/docs/filter
+       */
+      filter: [{
+        filter: ["", "none"]
+      }],
+      /**
+       * Blur
+       * @see https://tailwindcss.com/docs/blur
+       */
+      blur: [{
+        blur: [blur]
+      }],
+      /**
+       * Brightness
+       * @see https://tailwindcss.com/docs/brightness
+       */
+      brightness: [{
+        brightness: [brightness]
+      }],
+      /**
+       * Contrast
+       * @see https://tailwindcss.com/docs/contrast
+       */
+      contrast: [{
+        contrast: [contrast]
+      }],
+      /**
+       * Drop Shadow
+       * @see https://tailwindcss.com/docs/drop-shadow
+       */
+      "drop-shadow": [{
+        "drop-shadow": ["", "none", isTshirtSize, isArbitraryValue]
+      }],
+      /**
+       * Grayscale
+       * @see https://tailwindcss.com/docs/grayscale
+       */
+      grayscale: [{
+        grayscale: [grayscale]
+      }],
+      /**
+       * Hue Rotate
+       * @see https://tailwindcss.com/docs/hue-rotate
+       */
+      "hue-rotate": [{
+        "hue-rotate": [hueRotate]
+      }],
+      /**
+       * Invert
+       * @see https://tailwindcss.com/docs/invert
+       */
+      invert: [{
+        invert: [invert2]
+      }],
+      /**
+       * Saturate
+       * @see https://tailwindcss.com/docs/saturate
+       */
+      saturate: [{
+        saturate: [saturate]
+      }],
+      /**
+       * Sepia
+       * @see https://tailwindcss.com/docs/sepia
+       */
+      sepia: [{
+        sepia: [sepia]
+      }],
+      /**
+       * Backdrop Filter
+       * @deprecated since Tailwind CSS v3.0.0
+       * @see https://tailwindcss.com/docs/backdrop-filter
+       */
+      "backdrop-filter": [{
+        "backdrop-filter": ["", "none"]
+      }],
+      /**
+       * Backdrop Blur
+       * @see https://tailwindcss.com/docs/backdrop-blur
+       */
+      "backdrop-blur": [{
+        "backdrop-blur": [blur]
+      }],
+      /**
+       * Backdrop Brightness
+       * @see https://tailwindcss.com/docs/backdrop-brightness
+       */
+      "backdrop-brightness": [{
+        "backdrop-brightness": [brightness]
+      }],
+      /**
+       * Backdrop Contrast
+       * @see https://tailwindcss.com/docs/backdrop-contrast
+       */
+      "backdrop-contrast": [{
+        "backdrop-contrast": [contrast]
+      }],
+      /**
+       * Backdrop Grayscale
+       * @see https://tailwindcss.com/docs/backdrop-grayscale
+       */
+      "backdrop-grayscale": [{
+        "backdrop-grayscale": [grayscale]
+      }],
+      /**
+       * Backdrop Hue Rotate
+       * @see https://tailwindcss.com/docs/backdrop-hue-rotate
+       */
+      "backdrop-hue-rotate": [{
+        "backdrop-hue-rotate": [hueRotate]
+      }],
+      /**
+       * Backdrop Invert
+       * @see https://tailwindcss.com/docs/backdrop-invert
+       */
+      "backdrop-invert": [{
+        "backdrop-invert": [invert2]
+      }],
+      /**
+       * Backdrop Opacity
+       * @see https://tailwindcss.com/docs/backdrop-opacity
+       */
+      "backdrop-opacity": [{
+        "backdrop-opacity": [opacity]
+      }],
+      /**
+       * Backdrop Saturate
+       * @see https://tailwindcss.com/docs/backdrop-saturate
+       */
+      "backdrop-saturate": [{
+        "backdrop-saturate": [saturate]
+      }],
+      /**
+       * Backdrop Sepia
+       * @see https://tailwindcss.com/docs/backdrop-sepia
+       */
+      "backdrop-sepia": [{
+        "backdrop-sepia": [sepia]
+      }],
+      // Tables
+      /**
+       * Border Collapse
+       * @see https://tailwindcss.com/docs/border-collapse
+       */
+      "border-collapse": [{
+        border: ["collapse", "separate"]
+      }],
+      /**
+       * Border Spacing
+       * @see https://tailwindcss.com/docs/border-spacing
+       */
+      "border-spacing": [{
+        "border-spacing": [borderSpacing]
+      }],
+      /**
+       * Border Spacing X
+       * @see https://tailwindcss.com/docs/border-spacing
+       */
+      "border-spacing-x": [{
+        "border-spacing-x": [borderSpacing]
+      }],
+      /**
+       * Border Spacing Y
+       * @see https://tailwindcss.com/docs/border-spacing
+       */
+      "border-spacing-y": [{
+        "border-spacing-y": [borderSpacing]
+      }],
+      /**
+       * Table Layout
+       * @see https://tailwindcss.com/docs/table-layout
+       */
+      "table-layout": [{
+        table: ["auto", "fixed"]
+      }],
+      /**
+       * Caption Side
+       * @see https://tailwindcss.com/docs/caption-side
+       */
+      caption: [{
+        caption: ["top", "bottom"]
+      }],
+      // Transitions and Animation
+      /**
+       * Tranisition Property
+       * @see https://tailwindcss.com/docs/transition-property
+       */
+      transition: [{
+        transition: ["none", "all", "", "colors", "opacity", "shadow", "transform", isArbitraryValue]
+      }],
+      /**
+       * Transition Duration
+       * @see https://tailwindcss.com/docs/transition-duration
+       */
+      duration: [{
+        duration: getNumberAndArbitrary()
+      }],
+      /**
+       * Transition Timing Function
+       * @see https://tailwindcss.com/docs/transition-timing-function
+       */
+      ease: [{
+        ease: ["linear", "in", "out", "in-out", isArbitraryValue]
+      }],
+      /**
+       * Transition Delay
+       * @see https://tailwindcss.com/docs/transition-delay
+       */
+      delay: [{
+        delay: getNumberAndArbitrary()
+      }],
+      /**
+       * Animation
+       * @see https://tailwindcss.com/docs/animation
+       */
+      animate: [{
+        animate: ["none", "spin", "ping", "pulse", "bounce", isArbitraryValue]
+      }],
+      // Transforms
+      /**
+       * Transform
+       * @see https://tailwindcss.com/docs/transform
+       */
+      transform: [{
+        transform: ["", "gpu", "none"]
+      }],
+      /**
+       * Scale
+       * @see https://tailwindcss.com/docs/scale
+       */
+      scale: [{
+        scale: [scale2]
+      }],
+      /**
+       * Scale X
+       * @see https://tailwindcss.com/docs/scale
+       */
+      "scale-x": [{
+        "scale-x": [scale2]
+      }],
+      /**
+       * Scale Y
+       * @see https://tailwindcss.com/docs/scale
+       */
+      "scale-y": [{
+        "scale-y": [scale2]
+      }],
+      /**
+       * Rotate
+       * @see https://tailwindcss.com/docs/rotate
+       */
+      rotate: [{
+        rotate: [isInteger, isArbitraryValue]
+      }],
+      /**
+       * Translate X
+       * @see https://tailwindcss.com/docs/translate
+       */
+      "translate-x": [{
+        "translate-x": [translate]
+      }],
+      /**
+       * Translate Y
+       * @see https://tailwindcss.com/docs/translate
+       */
+      "translate-y": [{
+        "translate-y": [translate]
+      }],
+      /**
+       * Skew X
+       * @see https://tailwindcss.com/docs/skew
+       */
+      "skew-x": [{
+        "skew-x": [skew]
+      }],
+      /**
+       * Skew Y
+       * @see https://tailwindcss.com/docs/skew
+       */
+      "skew-y": [{
+        "skew-y": [skew]
+      }],
+      /**
+       * Transform Origin
+       * @see https://tailwindcss.com/docs/transform-origin
+       */
+      "transform-origin": [{
+        origin: ["center", "top", "top-right", "right", "bottom-right", "bottom", "bottom-left", "left", "top-left", isArbitraryValue]
+      }],
+      // Interactivity
+      /**
+       * Accent Color
+       * @see https://tailwindcss.com/docs/accent-color
+       */
+      accent: [{
+        accent: ["auto", colors]
+      }],
+      /**
+       * Appearance
+       * @see https://tailwindcss.com/docs/appearance
+       */
+      appearance: [{
+        appearance: ["none", "auto"]
+      }],
+      /**
+       * Cursor
+       * @see https://tailwindcss.com/docs/cursor
+       */
+      cursor: [{
+        cursor: ["auto", "default", "pointer", "wait", "text", "move", "help", "not-allowed", "none", "context-menu", "progress", "cell", "crosshair", "vertical-text", "alias", "copy", "no-drop", "grab", "grabbing", "all-scroll", "col-resize", "row-resize", "n-resize", "e-resize", "s-resize", "w-resize", "ne-resize", "nw-resize", "se-resize", "sw-resize", "ew-resize", "ns-resize", "nesw-resize", "nwse-resize", "zoom-in", "zoom-out", isArbitraryValue]
+      }],
+      /**
+       * Caret Color
+       * @see https://tailwindcss.com/docs/just-in-time-mode#caret-color-utilities
+       */
+      "caret-color": [{
+        caret: [colors]
+      }],
+      /**
+       * Pointer Events
+       * @see https://tailwindcss.com/docs/pointer-events
+       */
+      "pointer-events": [{
+        "pointer-events": ["none", "auto"]
+      }],
+      /**
+       * Resize
+       * @see https://tailwindcss.com/docs/resize
+       */
+      resize: [{
+        resize: ["none", "y", "x", ""]
+      }],
+      /**
+       * Scroll Behavior
+       * @see https://tailwindcss.com/docs/scroll-behavior
+       */
+      "scroll-behavior": [{
+        scroll: ["auto", "smooth"]
+      }],
+      /**
+       * Scroll Margin
+       * @see https://tailwindcss.com/docs/scroll-margin
+       */
+      "scroll-m": [{
+        "scroll-m": getSpacingWithArbitrary()
+      }],
+      /**
+       * Scroll Margin X
+       * @see https://tailwindcss.com/docs/scroll-margin
+       */
+      "scroll-mx": [{
+        "scroll-mx": getSpacingWithArbitrary()
+      }],
+      /**
+       * Scroll Margin Y
+       * @see https://tailwindcss.com/docs/scroll-margin
+       */
+      "scroll-my": [{
+        "scroll-my": getSpacingWithArbitrary()
+      }],
+      /**
+       * Scroll Margin Start
+       * @see https://tailwindcss.com/docs/scroll-margin
+       */
+      "scroll-ms": [{
+        "scroll-ms": getSpacingWithArbitrary()
+      }],
+      /**
+       * Scroll Margin End
+       * @see https://tailwindcss.com/docs/scroll-margin
+       */
+      "scroll-me": [{
+        "scroll-me": getSpacingWithArbitrary()
+      }],
+      /**
+       * Scroll Margin Top
+       * @see https://tailwindcss.com/docs/scroll-margin
+       */
+      "scroll-mt": [{
+        "scroll-mt": getSpacingWithArbitrary()
+      }],
+      /**
+       * Scroll Margin Right
+       * @see https://tailwindcss.com/docs/scroll-margin
+       */
+      "scroll-mr": [{
+        "scroll-mr": getSpacingWithArbitrary()
+      }],
+      /**
+       * Scroll Margin Bottom
+       * @see https://tailwindcss.com/docs/scroll-margin
+       */
+      "scroll-mb": [{
+        "scroll-mb": getSpacingWithArbitrary()
+      }],
+      /**
+       * Scroll Margin Left
+       * @see https://tailwindcss.com/docs/scroll-margin
+       */
+      "scroll-ml": [{
+        "scroll-ml": getSpacingWithArbitrary()
+      }],
+      /**
+       * Scroll Padding
+       * @see https://tailwindcss.com/docs/scroll-padding
+       */
+      "scroll-p": [{
+        "scroll-p": getSpacingWithArbitrary()
+      }],
+      /**
+       * Scroll Padding X
+       * @see https://tailwindcss.com/docs/scroll-padding
+       */
+      "scroll-px": [{
+        "scroll-px": getSpacingWithArbitrary()
+      }],
+      /**
+       * Scroll Padding Y
+       * @see https://tailwindcss.com/docs/scroll-padding
+       */
+      "scroll-py": [{
+        "scroll-py": getSpacingWithArbitrary()
+      }],
+      /**
+       * Scroll Padding Start
+       * @see https://tailwindcss.com/docs/scroll-padding
+       */
+      "scroll-ps": [{
+        "scroll-ps": getSpacingWithArbitrary()
+      }],
+      /**
+       * Scroll Padding End
+       * @see https://tailwindcss.com/docs/scroll-padding
+       */
+      "scroll-pe": [{
+        "scroll-pe": getSpacingWithArbitrary()
+      }],
+      /**
+       * Scroll Padding Top
+       * @see https://tailwindcss.com/docs/scroll-padding
+       */
+      "scroll-pt": [{
+        "scroll-pt": getSpacingWithArbitrary()
+      }],
+      /**
+       * Scroll Padding Right
+       * @see https://tailwindcss.com/docs/scroll-padding
+       */
+      "scroll-pr": [{
+        "scroll-pr": getSpacingWithArbitrary()
+      }],
+      /**
+       * Scroll Padding Bottom
+       * @see https://tailwindcss.com/docs/scroll-padding
+       */
+      "scroll-pb": [{
+        "scroll-pb": getSpacingWithArbitrary()
+      }],
+      /**
+       * Scroll Padding Left
+       * @see https://tailwindcss.com/docs/scroll-padding
+       */
+      "scroll-pl": [{
+        "scroll-pl": getSpacingWithArbitrary()
+      }],
+      /**
+       * Scroll Snap Align
+       * @see https://tailwindcss.com/docs/scroll-snap-align
+       */
+      "snap-align": [{
+        snap: ["start", "end", "center", "align-none"]
+      }],
+      /**
+       * Scroll Snap Stop
+       * @see https://tailwindcss.com/docs/scroll-snap-stop
+       */
+      "snap-stop": [{
+        snap: ["normal", "always"]
+      }],
+      /**
+       * Scroll Snap Type
+       * @see https://tailwindcss.com/docs/scroll-snap-type
+       */
+      "snap-type": [{
+        snap: ["none", "x", "y", "both"]
+      }],
+      /**
+       * Scroll Snap Type Strictness
+       * @see https://tailwindcss.com/docs/scroll-snap-type
+       */
+      "snap-strictness": [{
+        snap: ["mandatory", "proximity"]
+      }],
+      /**
+       * Touch Action
+       * @see https://tailwindcss.com/docs/touch-action
+       */
+      touch: [{
+        touch: ["auto", "none", "manipulation"]
+      }],
+      /**
+       * Touch Action X
+       * @see https://tailwindcss.com/docs/touch-action
+       */
+      "touch-x": [{
+        "touch-pan": ["x", "left", "right"]
+      }],
+      /**
+       * Touch Action Y
+       * @see https://tailwindcss.com/docs/touch-action
+       */
+      "touch-y": [{
+        "touch-pan": ["y", "up", "down"]
+      }],
+      /**
+       * Touch Action Pinch Zoom
+       * @see https://tailwindcss.com/docs/touch-action
+       */
+      "touch-pz": ["touch-pinch-zoom"],
+      /**
+       * User Select
+       * @see https://tailwindcss.com/docs/user-select
+       */
+      select: [{
+        select: ["none", "text", "all", "auto"]
+      }],
+      /**
+       * Will Change
+       * @see https://tailwindcss.com/docs/will-change
+       */
+      "will-change": [{
+        "will-change": ["auto", "scroll", "contents", "transform", isArbitraryValue]
+      }],
+      // SVG
+      /**
+       * Fill
+       * @see https://tailwindcss.com/docs/fill
+       */
+      fill: [{
+        fill: [colors, "none"]
+      }],
+      /**
+       * Stroke Width
+       * @see https://tailwindcss.com/docs/stroke-width
+       */
+      "stroke-w": [{
+        stroke: [isLength, isArbitraryLength, isArbitraryNumber]
+      }],
+      /**
+       * Stroke
+       * @see https://tailwindcss.com/docs/stroke
+       */
+      stroke: [{
+        stroke: [colors, "none"]
+      }],
+      // Accessibility
+      /**
+       * Screen Readers
+       * @see https://tailwindcss.com/docs/screen-readers
+       */
+      sr: ["sr-only", "not-sr-only"],
+      /**
+       * Forced Color Adjust
+       * @see https://tailwindcss.com/docs/forced-color-adjust
+       */
+      "forced-color-adjust": [{
+        "forced-color-adjust": ["auto", "none"]
+      }]
+    },
+    conflictingClassGroups: {
+      overflow: ["overflow-x", "overflow-y"],
+      overscroll: ["overscroll-x", "overscroll-y"],
+      inset: ["inset-x", "inset-y", "start", "end", "top", "right", "bottom", "left"],
+      "inset-x": ["right", "left"],
+      "inset-y": ["top", "bottom"],
+      flex: ["basis", "grow", "shrink"],
+      gap: ["gap-x", "gap-y"],
+      p: ["px", "py", "ps", "pe", "pt", "pr", "pb", "pl"],
+      px: ["pr", "pl"],
+      py: ["pt", "pb"],
+      m: ["mx", "my", "ms", "me", "mt", "mr", "mb", "ml"],
+      mx: ["mr", "ml"],
+      my: ["mt", "mb"],
+      size: ["w", "h"],
+      "font-size": ["leading"],
+      "fvn-normal": ["fvn-ordinal", "fvn-slashed-zero", "fvn-figure", "fvn-spacing", "fvn-fraction"],
+      "fvn-ordinal": ["fvn-normal"],
+      "fvn-slashed-zero": ["fvn-normal"],
+      "fvn-figure": ["fvn-normal"],
+      "fvn-spacing": ["fvn-normal"],
+      "fvn-fraction": ["fvn-normal"],
+      "line-clamp": ["display", "overflow"],
+      rounded: ["rounded-s", "rounded-e", "rounded-t", "rounded-r", "rounded-b", "rounded-l", "rounded-ss", "rounded-se", "rounded-ee", "rounded-es", "rounded-tl", "rounded-tr", "rounded-br", "rounded-bl"],
+      "rounded-s": ["rounded-ss", "rounded-es"],
+      "rounded-e": ["rounded-se", "rounded-ee"],
+      "rounded-t": ["rounded-tl", "rounded-tr"],
+      "rounded-r": ["rounded-tr", "rounded-br"],
+      "rounded-b": ["rounded-br", "rounded-bl"],
+      "rounded-l": ["rounded-tl", "rounded-bl"],
+      "border-spacing": ["border-spacing-x", "border-spacing-y"],
+      "border-w": ["border-w-s", "border-w-e", "border-w-t", "border-w-r", "border-w-b", "border-w-l"],
+      "border-w-x": ["border-w-r", "border-w-l"],
+      "border-w-y": ["border-w-t", "border-w-b"],
+      "border-color": ["border-color-s", "border-color-e", "border-color-t", "border-color-r", "border-color-b", "border-color-l"],
+      "border-color-x": ["border-color-r", "border-color-l"],
+      "border-color-y": ["border-color-t", "border-color-b"],
+      "scroll-m": ["scroll-mx", "scroll-my", "scroll-ms", "scroll-me", "scroll-mt", "scroll-mr", "scroll-mb", "scroll-ml"],
+      "scroll-mx": ["scroll-mr", "scroll-ml"],
+      "scroll-my": ["scroll-mt", "scroll-mb"],
+      "scroll-p": ["scroll-px", "scroll-py", "scroll-ps", "scroll-pe", "scroll-pt", "scroll-pr", "scroll-pb", "scroll-pl"],
+      "scroll-px": ["scroll-pr", "scroll-pl"],
+      "scroll-py": ["scroll-pt", "scroll-pb"],
+      touch: ["touch-x", "touch-y", "touch-pz"],
+      "touch-x": ["touch"],
+      "touch-y": ["touch"],
+      "touch-pz": ["touch"]
+    },
+    conflictingClassGroupModifiers: {
+      "font-size": ["leading"]
+    }
+  };
+};
+const twMerge = /* @__PURE__ */ createTailwindMerge(getDefaultConfig);
+function cn(...inputs) {
+  return twMerge(clsx(inputs));
+}
 function Dialog({
   ...props
 }) {
@@ -38337,120 +38197,113 @@ const UserRole = Variant({
   "guest": Null
 });
 const SiteId = Nat;
-const VisualStyle = Record({
-  "primaryColor": Text,
-  "fontFamily": Text,
-  "secondaryColor": Text
+const SelectedFeature$1 = Variant({
+  "contactForm": Null,
+  "userAccounts": Null,
+  "payments": Null,
+  "blog": Null,
+  "liveChat": Null,
+  "newsletter": Null,
+  "testimonials": Null,
+  "bookingCalendar": Null,
+  "imageGallery": Null
 });
-const SiteType = Variant({
+const VisualStyle$1 = Variant({
+  "bold": Null,
+  "minimal": Null,
+  "warm": Null,
+  "playful": Null,
+  "luxury": Null
+});
+const SiteType$1 = Variant({
   "portfolio": Null,
   "blog": Null,
-  "business": Null,
-  "landing": Null,
+  "saas": Null,
+  "agency": Null,
+  "booking": Null,
+  "landingPage": Null,
+  "restaurant": Null,
   "ecommerce": Null
 });
-const SelectedFeatures = Record({
-  "contactForm": Bool,
-  "bookings": Bool,
-  "auth": Bool
-});
 const WizardInput = Record({
-  "visualStyle": VisualStyle,
-  "siteType": SiteType,
-  "businessDescription": Text,
-  "selectedFeatures": SelectedFeatures
+  "features": Vec(SelectedFeature$1),
+  "vibe": VisualStyle$1,
+  "siteType": SiteType$1,
+  "niche": Text
 });
-const PublishStatus = Variant({
-  "published": Null,
-  "publishing": Null,
-  "unpublished": Null,
-  "failed": Null
-});
-const UserId = Principal2;
 const Timestamp = Int;
-const LayoutMetadata = Record({
-  "borderRadius": Text,
-  "layoutStyle": Text,
-  "fontFamily": Text
-});
-const ColorPalette = Record({
-  "accent": Text,
-  "background": Text,
-  "text": Text,
-  "secondary": Text,
-  "primary": Text
-});
-const SectionType = Variant({
-  "contact": Null,
-  "about": Null,
-  "hero": Null,
-  "services": Null,
-  "footer": Null
-});
-const SiteSection = Record({
-  "subheading": Text,
-  "content": Text,
-  "sectionType": SectionType,
-  "heading": Text
-});
-const GeneratedSite = Record({
-  "siteTitle": Text,
-  "tagline": Text,
-  "layout": LayoutMetadata,
-  "colorPalette": ColorPalette,
-  "sections": Vec(SiteSection)
-});
-const SitePublic = Record({
-  "id": SiteId,
-  "status": PublishStatus,
-  "title": Text,
-  "owner": UserId,
-  "createdAt": Timestamp,
-  "publishedUrl": Opt(Text),
-  "updatedAt": Timestamp,
-  "generatedData": Opt(GeneratedSite),
-  "subdomain": Opt(Text)
-});
 const UserProfile = Record({
   "name": Text,
+  "createdAt": Timestamp,
+  "plan": Variant({ "pro": Null, "free": Null }),
   "email": Text
 });
 const PreLaunchChecks = Record({
   "seo": Bool,
-  "formsValid": Bool,
-  "performanceHint": Bool,
-  "mobileReady": Bool
+  "forms": Bool,
+  "seoNote": Text,
+  "speedNote": Text,
+  "formsNote": Text,
+  "speed": Nat,
+  "mobile": Bool,
+  "mobileNote": Text
+});
+const PublishStatus = Variant({
+  "live": Null,
+  "draft": Null
+});
+const UserId = Principal2;
+const SitePublic = Record({
+  "id": SiteId,
+  "status": PublishStatus,
+  "features": Vec(SelectedFeature$1),
+  "formSubmissions": Nat,
+  "visitors": Nat,
+  "owner": UserId,
+  "name": Text,
+  "createdAt": Timestamp,
+  "slug": Text,
+  "vibe": VisualStyle$1,
+  "publishedAt": Opt(Timestamp),
+  "siteType": SiteType$1,
+  "updatedAt": Timestamp,
+  "niche": Text,
+  "lighthouseScore": Nat,
+  "siteUrl": Opt(Text)
 });
 const SiteSummary = Record({
   "id": SiteId,
   "status": PublishStatus,
-  "title": Text,
-  "createdAt": Timestamp,
-  "subdomain": Opt(Text)
+  "formSubmissions": Nat,
+  "visitors": Nat,
+  "name": Text,
+  "slug": Text,
+  "updatedAt": Timestamp,
+  "lighthouseScore": Nat,
+  "siteUrl": Opt(Text)
+});
+const SiteUpdate = Record({
+  "name": Opt(Text),
+  "niche": Opt(Text)
 });
 Service({
   "_initializeAccessControl": Func([], [], []),
   "assignCallerUserRole": Func([Principal2, UserRole], [], []),
-  "deleteSite": Func([SiteId], [], []),
-  "generateSite": Func([WizardInput], [SitePublic], []),
-  "getCallerUserProfile": Func([], [Opt(UserProfile)], ["query"]),
+  "deleteSite": Func([SiteId], [Bool], []),
+  "generateSite": Func([WizardInput], [SiteId, Text], []),
+  "getCallerProfile": Func([], [Opt(UserProfile)], ["query"]),
   "getCallerUserRole": Func([], [UserRole], ["query"]),
-  "getPreLaunchChecks": Func([SiteId], [PreLaunchChecks], ["query"]),
-  "getSite": Func([SiteId], [Opt(SitePublic)], ["query"]),
-  "getUserProfile": Func(
-    [Principal2],
-    [Opt(UserProfile)],
+  "getPreLaunchChecks": Func(
+    [SiteId],
+    [Opt(PreLaunchChecks)],
     ["query"]
   ),
+  "getSite": Func([SiteId], [Opt(SitePublic)], ["query"]),
   "isCallerAdmin": Func([], [Bool], ["query"]),
   "listMySites": Func([], [Vec(SiteSummary)], ["query"]),
-  "publishSite": Func([SiteId], [SitePublic], []),
-  "saveCallerUserProfile": Func([UserProfile], [], []),
-  "updateSite": Func(
-    [SiteId, Opt(Text), Opt(GeneratedSite)],
-    [SitePublic],
-    []
-  )
+  "publishSite": Func([SiteId], [Opt(SitePublic)], []),
+  "saveCallerProfile": Func([Text, Text], [UserProfile], []),
+  "updateSite": Func([SiteId, SiteUpdate], [Opt(SitePublic)], [])
 });
 const idlFactory = ({ IDL: IDL2 }) => {
   const UserRole2 = IDL2.Variant({
@@ -38459,117 +38312,110 @@ const idlFactory = ({ IDL: IDL2 }) => {
     "guest": IDL2.Null
   });
   const SiteId2 = IDL2.Nat;
-  const VisualStyle2 = IDL2.Record({
-    "primaryColor": IDL2.Text,
-    "fontFamily": IDL2.Text,
-    "secondaryColor": IDL2.Text
+  const SelectedFeature2 = IDL2.Variant({
+    "contactForm": IDL2.Null,
+    "userAccounts": IDL2.Null,
+    "payments": IDL2.Null,
+    "blog": IDL2.Null,
+    "liveChat": IDL2.Null,
+    "newsletter": IDL2.Null,
+    "testimonials": IDL2.Null,
+    "bookingCalendar": IDL2.Null,
+    "imageGallery": IDL2.Null
+  });
+  const VisualStyle2 = IDL2.Variant({
+    "bold": IDL2.Null,
+    "minimal": IDL2.Null,
+    "warm": IDL2.Null,
+    "playful": IDL2.Null,
+    "luxury": IDL2.Null
   });
   const SiteType2 = IDL2.Variant({
     "portfolio": IDL2.Null,
     "blog": IDL2.Null,
-    "business": IDL2.Null,
-    "landing": IDL2.Null,
+    "saas": IDL2.Null,
+    "agency": IDL2.Null,
+    "booking": IDL2.Null,
+    "landingPage": IDL2.Null,
+    "restaurant": IDL2.Null,
     "ecommerce": IDL2.Null
   });
-  const SelectedFeatures2 = IDL2.Record({
-    "contactForm": IDL2.Bool,
-    "bookings": IDL2.Bool,
-    "auth": IDL2.Bool
-  });
   const WizardInput2 = IDL2.Record({
-    "visualStyle": VisualStyle2,
+    "features": IDL2.Vec(SelectedFeature2),
+    "vibe": VisualStyle2,
     "siteType": SiteType2,
-    "businessDescription": IDL2.Text,
-    "selectedFeatures": SelectedFeatures2
+    "niche": IDL2.Text
   });
-  const PublishStatus2 = IDL2.Variant({
-    "published": IDL2.Null,
-    "publishing": IDL2.Null,
-    "unpublished": IDL2.Null,
-    "failed": IDL2.Null
-  });
-  const UserId2 = IDL2.Principal;
   const Timestamp2 = IDL2.Int;
-  const LayoutMetadata2 = IDL2.Record({
-    "borderRadius": IDL2.Text,
-    "layoutStyle": IDL2.Text,
-    "fontFamily": IDL2.Text
+  const UserProfile2 = IDL2.Record({
+    "name": IDL2.Text,
+    "createdAt": Timestamp2,
+    "plan": IDL2.Variant({ "pro": IDL2.Null, "free": IDL2.Null }),
+    "email": IDL2.Text
   });
-  const ColorPalette2 = IDL2.Record({
-    "accent": IDL2.Text,
-    "background": IDL2.Text,
-    "text": IDL2.Text,
-    "secondary": IDL2.Text,
-    "primary": IDL2.Text
+  const PreLaunchChecks2 = IDL2.Record({
+    "seo": IDL2.Bool,
+    "forms": IDL2.Bool,
+    "seoNote": IDL2.Text,
+    "speedNote": IDL2.Text,
+    "formsNote": IDL2.Text,
+    "speed": IDL2.Nat,
+    "mobile": IDL2.Bool,
+    "mobileNote": IDL2.Text
   });
-  const SectionType2 = IDL2.Variant({
-    "contact": IDL2.Null,
-    "about": IDL2.Null,
-    "hero": IDL2.Null,
-    "services": IDL2.Null,
-    "footer": IDL2.Null
-  });
-  const SiteSection2 = IDL2.Record({
-    "subheading": IDL2.Text,
-    "content": IDL2.Text,
-    "sectionType": SectionType2,
-    "heading": IDL2.Text
-  });
-  const GeneratedSite2 = IDL2.Record({
-    "siteTitle": IDL2.Text,
-    "tagline": IDL2.Text,
-    "layout": LayoutMetadata2,
-    "colorPalette": ColorPalette2,
-    "sections": IDL2.Vec(SiteSection2)
-  });
+  const PublishStatus2 = IDL2.Variant({ "live": IDL2.Null, "draft": IDL2.Null });
+  const UserId2 = IDL2.Principal;
   const SitePublic2 = IDL2.Record({
     "id": SiteId2,
     "status": PublishStatus2,
-    "title": IDL2.Text,
+    "features": IDL2.Vec(SelectedFeature2),
+    "formSubmissions": IDL2.Nat,
+    "visitors": IDL2.Nat,
     "owner": UserId2,
+    "name": IDL2.Text,
     "createdAt": Timestamp2,
-    "publishedUrl": IDL2.Opt(IDL2.Text),
+    "slug": IDL2.Text,
+    "vibe": VisualStyle2,
+    "publishedAt": IDL2.Opt(Timestamp2),
+    "siteType": SiteType2,
     "updatedAt": Timestamp2,
-    "generatedData": IDL2.Opt(GeneratedSite2),
-    "subdomain": IDL2.Opt(IDL2.Text)
-  });
-  const UserProfile2 = IDL2.Record({ "name": IDL2.Text, "email": IDL2.Text });
-  const PreLaunchChecks2 = IDL2.Record({
-    "seo": IDL2.Bool,
-    "formsValid": IDL2.Bool,
-    "performanceHint": IDL2.Bool,
-    "mobileReady": IDL2.Bool
+    "niche": IDL2.Text,
+    "lighthouseScore": IDL2.Nat,
+    "siteUrl": IDL2.Opt(IDL2.Text)
   });
   const SiteSummary2 = IDL2.Record({
     "id": SiteId2,
     "status": PublishStatus2,
-    "title": IDL2.Text,
-    "createdAt": Timestamp2,
-    "subdomain": IDL2.Opt(IDL2.Text)
+    "formSubmissions": IDL2.Nat,
+    "visitors": IDL2.Nat,
+    "name": IDL2.Text,
+    "slug": IDL2.Text,
+    "updatedAt": Timestamp2,
+    "lighthouseScore": IDL2.Nat,
+    "siteUrl": IDL2.Opt(IDL2.Text)
+  });
+  const SiteUpdate2 = IDL2.Record({
+    "name": IDL2.Opt(IDL2.Text),
+    "niche": IDL2.Opt(IDL2.Text)
   });
   return IDL2.Service({
     "_initializeAccessControl": IDL2.Func([], [], []),
     "assignCallerUserRole": IDL2.Func([IDL2.Principal, UserRole2], [], []),
-    "deleteSite": IDL2.Func([SiteId2], [], []),
-    "generateSite": IDL2.Func([WizardInput2], [SitePublic2], []),
-    "getCallerUserProfile": IDL2.Func([], [IDL2.Opt(UserProfile2)], ["query"]),
+    "deleteSite": IDL2.Func([SiteId2], [IDL2.Bool], []),
+    "generateSite": IDL2.Func([WizardInput2], [SiteId2, IDL2.Text], []),
+    "getCallerProfile": IDL2.Func([], [IDL2.Opt(UserProfile2)], ["query"]),
     "getCallerUserRole": IDL2.Func([], [UserRole2], ["query"]),
-    "getPreLaunchChecks": IDL2.Func([SiteId2], [PreLaunchChecks2], ["query"]),
-    "getSite": IDL2.Func([SiteId2], [IDL2.Opt(SitePublic2)], ["query"]),
-    "getUserProfile": IDL2.Func(
-      [IDL2.Principal],
-      [IDL2.Opt(UserProfile2)],
+    "getPreLaunchChecks": IDL2.Func(
+      [SiteId2],
+      [IDL2.Opt(PreLaunchChecks2)],
       ["query"]
     ),
+    "getSite": IDL2.Func([SiteId2], [IDL2.Opt(SitePublic2)], ["query"]),
     "isCallerAdmin": IDL2.Func([], [IDL2.Bool], ["query"]),
     "listMySites": IDL2.Func([], [IDL2.Vec(SiteSummary2)], ["query"]),
-    "publishSite": IDL2.Func([SiteId2], [SitePublic2], []),
-    "saveCallerUserProfile": IDL2.Func([UserProfile2], [], []),
-    "updateSite": IDL2.Func(
-      [SiteId2, IDL2.Opt(IDL2.Text), IDL2.Opt(GeneratedSite2)],
-      [SitePublic2],
-      []
-    )
+    "publishSite": IDL2.Func([SiteId2], [IDL2.Opt(SitePublic2)], []),
+    "saveCallerProfile": IDL2.Func([IDL2.Text, IDL2.Text], [UserProfile2], []),
+    "updateSite": IDL2.Func([SiteId2, SiteUpdate2], [IDL2.Opt(SitePublic2)], [])
   });
 };
 function candid_some(value) {
@@ -38583,6 +38429,37 @@ function candid_none() {
 function record_opt_to_undefined(arg) {
   return arg == null ? void 0 : arg;
 }
+var SelectedFeature = /* @__PURE__ */ ((SelectedFeature2) => {
+  SelectedFeature2["contactForm"] = "contactForm";
+  SelectedFeature2["userAccounts"] = "userAccounts";
+  SelectedFeature2["payments"] = "payments";
+  SelectedFeature2["blog"] = "blog";
+  SelectedFeature2["liveChat"] = "liveChat";
+  SelectedFeature2["newsletter"] = "newsletter";
+  SelectedFeature2["testimonials"] = "testimonials";
+  SelectedFeature2["bookingCalendar"] = "bookingCalendar";
+  SelectedFeature2["imageGallery"] = "imageGallery";
+  return SelectedFeature2;
+})(SelectedFeature || {});
+var SiteType = /* @__PURE__ */ ((SiteType2) => {
+  SiteType2["portfolio"] = "portfolio";
+  SiteType2["blog"] = "blog";
+  SiteType2["saas"] = "saas";
+  SiteType2["agency"] = "agency";
+  SiteType2["booking"] = "booking";
+  SiteType2["landingPage"] = "landingPage";
+  SiteType2["restaurant"] = "restaurant";
+  SiteType2["ecommerce"] = "ecommerce";
+  return SiteType2;
+})(SiteType || {});
+var VisualStyle = /* @__PURE__ */ ((VisualStyle2) => {
+  VisualStyle2["bold"] = "bold";
+  VisualStyle2["minimal"] = "minimal";
+  VisualStyle2["warm"] = "warm";
+  VisualStyle2["playful"] = "playful";
+  VisualStyle2["luxury"] = "luxury";
+  return VisualStyle2;
+})(VisualStyle || {});
 class Backend {
   constructor(actor, _uploadFile, _downloadFile, processError2) {
     this.actor = actor;
@@ -38636,84 +38513,76 @@ class Backend {
     if (this.processError) {
       try {
         const result = await this.actor.generateSite(to_candid_WizardInput_n3(this._uploadFile, this._downloadFile, arg0));
-        return from_candid_SitePublic_n7(this._uploadFile, this._downloadFile, result);
+        return [
+          result[0],
+          result[1]
+        ];
       } catch (e) {
         this.processError(e);
         throw new Error("unreachable");
       }
     } else {
       const result = await this.actor.generateSite(to_candid_WizardInput_n3(this._uploadFile, this._downloadFile, arg0));
-      return from_candid_SitePublic_n7(this._uploadFile, this._downloadFile, result);
+      return [
+        result[0],
+        result[1]
+      ];
     }
   }
-  async getCallerUserProfile() {
+  async getCallerProfile() {
     if (this.processError) {
       try {
-        const result = await this.actor.getCallerUserProfile();
-        return from_candid_opt_n20(this._uploadFile, this._downloadFile, result);
+        const result = await this.actor.getCallerProfile();
+        return from_candid_opt_n12(this._uploadFile, this._downloadFile, result);
       } catch (e) {
         this.processError(e);
         throw new Error("unreachable");
       }
     } else {
-      const result = await this.actor.getCallerUserProfile();
-      return from_candid_opt_n20(this._uploadFile, this._downloadFile, result);
+      const result = await this.actor.getCallerProfile();
+      return from_candid_opt_n12(this._uploadFile, this._downloadFile, result);
     }
   }
   async getCallerUserRole() {
     if (this.processError) {
       try {
         const result = await this.actor.getCallerUserRole();
-        return from_candid_UserRole_n21(this._uploadFile, this._downloadFile, result);
+        return from_candid_UserRole_n16(this._uploadFile, this._downloadFile, result);
       } catch (e) {
         this.processError(e);
         throw new Error("unreachable");
       }
     } else {
       const result = await this.actor.getCallerUserRole();
-      return from_candid_UserRole_n21(this._uploadFile, this._downloadFile, result);
+      return from_candid_UserRole_n16(this._uploadFile, this._downloadFile, result);
     }
   }
   async getPreLaunchChecks(arg0) {
     if (this.processError) {
       try {
         const result = await this.actor.getPreLaunchChecks(arg0);
-        return result;
+        return from_candid_opt_n18(this._uploadFile, this._downloadFile, result);
       } catch (e) {
         this.processError(e);
         throw new Error("unreachable");
       }
     } else {
       const result = await this.actor.getPreLaunchChecks(arg0);
-      return result;
+      return from_candid_opt_n18(this._uploadFile, this._downloadFile, result);
     }
   }
   async getSite(arg0) {
     if (this.processError) {
       try {
         const result = await this.actor.getSite(arg0);
-        return from_candid_opt_n23(this._uploadFile, this._downloadFile, result);
+        return from_candid_opt_n19(this._uploadFile, this._downloadFile, result);
       } catch (e) {
         this.processError(e);
         throw new Error("unreachable");
       }
     } else {
       const result = await this.actor.getSite(arg0);
-      return from_candid_opt_n23(this._uploadFile, this._downloadFile, result);
-    }
-  }
-  async getUserProfile(arg0) {
-    if (this.processError) {
-      try {
-        const result = await this.actor.getUserProfile(arg0);
-        return from_candid_opt_n20(this._uploadFile, this._downloadFile, result);
-      } catch (e) {
-        this.processError(e);
-        throw new Error("unreachable");
-      }
-    } else {
-      const result = await this.actor.getUserProfile(arg0);
-      return from_candid_opt_n20(this._uploadFile, this._downloadFile, result);
+      return from_candid_opt_n19(this._uploadFile, this._downloadFile, result);
     }
   }
   async isCallerAdmin() {
@@ -38734,194 +38603,213 @@ class Backend {
     if (this.processError) {
       try {
         const result = await this.actor.listMySites();
-        return from_candid_vec_n24(this._uploadFile, this._downloadFile, result);
+        return from_candid_vec_n33(this._uploadFile, this._downloadFile, result);
       } catch (e) {
         this.processError(e);
         throw new Error("unreachable");
       }
     } else {
       const result = await this.actor.listMySites();
-      return from_candid_vec_n24(this._uploadFile, this._downloadFile, result);
+      return from_candid_vec_n33(this._uploadFile, this._downloadFile, result);
     }
   }
   async publishSite(arg0) {
     if (this.processError) {
       try {
         const result = await this.actor.publishSite(arg0);
-        return from_candid_SitePublic_n7(this._uploadFile, this._downloadFile, result);
+        return from_candid_opt_n19(this._uploadFile, this._downloadFile, result);
       } catch (e) {
         this.processError(e);
         throw new Error("unreachable");
       }
     } else {
       const result = await this.actor.publishSite(arg0);
-      return from_candid_SitePublic_n7(this._uploadFile, this._downloadFile, result);
+      return from_candid_opt_n19(this._uploadFile, this._downloadFile, result);
     }
   }
-  async saveCallerUserProfile(arg0) {
+  async saveCallerProfile(arg0, arg1) {
     if (this.processError) {
       try {
-        const result = await this.actor.saveCallerUserProfile(arg0);
-        return result;
+        const result = await this.actor.saveCallerProfile(arg0, arg1);
+        return from_candid_UserProfile_n13(this._uploadFile, this._downloadFile, result);
       } catch (e) {
         this.processError(e);
         throw new Error("unreachable");
       }
     } else {
-      const result = await this.actor.saveCallerUserProfile(arg0);
-      return result;
+      const result = await this.actor.saveCallerProfile(arg0, arg1);
+      return from_candid_UserProfile_n13(this._uploadFile, this._downloadFile, result);
     }
   }
-  async updateSite(arg0, arg1, arg2) {
+  async updateSite(arg0, arg1) {
     if (this.processError) {
       try {
-        const result = await this.actor.updateSite(arg0, to_candid_opt_n27(this._uploadFile, this._downloadFile, arg1), to_candid_opt_n28(this._uploadFile, this._downloadFile, arg2));
-        return from_candid_SitePublic_n7(this._uploadFile, this._downloadFile, result);
+        const result = await this.actor.updateSite(arg0, to_candid_SiteUpdate_n36(this._uploadFile, this._downloadFile, arg1));
+        return from_candid_opt_n19(this._uploadFile, this._downloadFile, result);
       } catch (e) {
         this.processError(e);
         throw new Error("unreachable");
       }
     } else {
-      const result = await this.actor.updateSite(arg0, to_candid_opt_n27(this._uploadFile, this._downloadFile, arg1), to_candid_opt_n28(this._uploadFile, this._downloadFile, arg2));
-      return from_candid_SitePublic_n7(this._uploadFile, this._downloadFile, result);
+      const result = await this.actor.updateSite(arg0, to_candid_SiteUpdate_n36(this._uploadFile, this._downloadFile, arg1));
+      return from_candid_opt_n19(this._uploadFile, this._downloadFile, result);
     }
   }
 }
-function from_candid_GeneratedSite_n13(_uploadFile, _downloadFile, value) {
+function from_candid_PublishStatus_n22(_uploadFile, _downloadFile, value) {
+  return from_candid_variant_n23(_uploadFile, _downloadFile, value);
+}
+function from_candid_SelectedFeature_n25(_uploadFile, _downloadFile, value) {
+  return from_candid_variant_n26(_uploadFile, _downloadFile, value);
+}
+function from_candid_SitePublic_n20(_uploadFile, _downloadFile, value) {
+  return from_candid_record_n21(_uploadFile, _downloadFile, value);
+}
+function from_candid_SiteSummary_n34(_uploadFile, _downloadFile, value) {
+  return from_candid_record_n35(_uploadFile, _downloadFile, value);
+}
+function from_candid_SiteType_n30(_uploadFile, _downloadFile, value) {
+  return from_candid_variant_n31(_uploadFile, _downloadFile, value);
+}
+function from_candid_UserProfile_n13(_uploadFile, _downloadFile, value) {
   return from_candid_record_n14(_uploadFile, _downloadFile, value);
 }
-function from_candid_PublishStatus_n9(_uploadFile, _downloadFile, value) {
-  return from_candid_variant_n10(_uploadFile, _downloadFile, value);
+function from_candid_UserRole_n16(_uploadFile, _downloadFile, value) {
+  return from_candid_variant_n17(_uploadFile, _downloadFile, value);
 }
-function from_candid_SectionType_n18(_uploadFile, _downloadFile, value) {
-  return from_candid_variant_n19(_uploadFile, _downloadFile, value);
-}
-function from_candid_SitePublic_n7(_uploadFile, _downloadFile, value) {
-  return from_candid_record_n8(_uploadFile, _downloadFile, value);
-}
-function from_candid_SiteSection_n16(_uploadFile, _downloadFile, value) {
-  return from_candid_record_n17(_uploadFile, _downloadFile, value);
-}
-function from_candid_SiteSummary_n25(_uploadFile, _downloadFile, value) {
-  return from_candid_record_n26(_uploadFile, _downloadFile, value);
-}
-function from_candid_UserRole_n21(_uploadFile, _downloadFile, value) {
-  return from_candid_variant_n22(_uploadFile, _downloadFile, value);
-}
-function from_candid_opt_n11(_uploadFile, _downloadFile, value) {
-  return value.length === 0 ? null : value[0];
+function from_candid_VisualStyle_n27(_uploadFile, _downloadFile, value) {
+  return from_candid_variant_n28(_uploadFile, _downloadFile, value);
 }
 function from_candid_opt_n12(_uploadFile, _downloadFile, value) {
-  return value.length === 0 ? null : from_candid_GeneratedSite_n13(_uploadFile, _downloadFile, value[0]);
+  return value.length === 0 ? null : from_candid_UserProfile_n13(_uploadFile, _downloadFile, value[0]);
 }
-function from_candid_opt_n20(_uploadFile, _downloadFile, value) {
+function from_candid_opt_n18(_uploadFile, _downloadFile, value) {
   return value.length === 0 ? null : value[0];
 }
-function from_candid_opt_n23(_uploadFile, _downloadFile, value) {
-  return value.length === 0 ? null : from_candid_SitePublic_n7(_uploadFile, _downloadFile, value[0]);
+function from_candid_opt_n19(_uploadFile, _downloadFile, value) {
+  return value.length === 0 ? null : from_candid_SitePublic_n20(_uploadFile, _downloadFile, value[0]);
+}
+function from_candid_opt_n29(_uploadFile, _downloadFile, value) {
+  return value.length === 0 ? null : value[0];
+}
+function from_candid_opt_n32(_uploadFile, _downloadFile, value) {
+  return value.length === 0 ? null : value[0];
 }
 function from_candid_record_n14(_uploadFile, _downloadFile, value) {
   return {
-    siteTitle: value.siteTitle,
-    tagline: value.tagline,
-    layout: value.layout,
-    colorPalette: value.colorPalette,
-    sections: from_candid_vec_n15(_uploadFile, _downloadFile, value.sections)
-  };
-}
-function from_candid_record_n17(_uploadFile, _downloadFile, value) {
-  return {
-    subheading: value.subheading,
-    content: value.content,
-    sectionType: from_candid_SectionType_n18(_uploadFile, _downloadFile, value.sectionType),
-    heading: value.heading
-  };
-}
-function from_candid_record_n26(_uploadFile, _downloadFile, value) {
-  return {
-    id: value.id,
-    status: from_candid_PublishStatus_n9(_uploadFile, _downloadFile, value.status),
-    title: value.title,
+    name: value.name,
     createdAt: value.createdAt,
-    subdomain: record_opt_to_undefined(from_candid_opt_n11(_uploadFile, _downloadFile, value.subdomain))
+    plan: from_candid_variant_n15(_uploadFile, _downloadFile, value.plan),
+    email: value.email
   };
 }
-function from_candid_record_n8(_uploadFile, _downloadFile, value) {
+function from_candid_record_n21(_uploadFile, _downloadFile, value) {
   return {
     id: value.id,
-    status: from_candid_PublishStatus_n9(_uploadFile, _downloadFile, value.status),
-    title: value.title,
+    status: from_candid_PublishStatus_n22(_uploadFile, _downloadFile, value.status),
+    features: from_candid_vec_n24(_uploadFile, _downloadFile, value.features),
+    formSubmissions: value.formSubmissions,
+    visitors: value.visitors,
     owner: value.owner,
+    name: value.name,
     createdAt: value.createdAt,
-    publishedUrl: record_opt_to_undefined(from_candid_opt_n11(_uploadFile, _downloadFile, value.publishedUrl)),
+    slug: value.slug,
+    vibe: from_candid_VisualStyle_n27(_uploadFile, _downloadFile, value.vibe),
+    publishedAt: record_opt_to_undefined(from_candid_opt_n29(_uploadFile, _downloadFile, value.publishedAt)),
+    siteType: from_candid_SiteType_n30(_uploadFile, _downloadFile, value.siteType),
     updatedAt: value.updatedAt,
-    generatedData: record_opt_to_undefined(from_candid_opt_n12(_uploadFile, _downloadFile, value.generatedData)),
-    subdomain: record_opt_to_undefined(from_candid_opt_n11(_uploadFile, _downloadFile, value.subdomain))
+    niche: value.niche,
+    lighthouseScore: value.lighthouseScore,
+    siteUrl: record_opt_to_undefined(from_candid_opt_n32(_uploadFile, _downloadFile, value.siteUrl))
   };
 }
-function from_candid_variant_n10(_uploadFile, _downloadFile, value) {
-  return "published" in value ? "published" : "publishing" in value ? "publishing" : "unpublished" in value ? "unpublished" : "failed" in value ? "failed" : value;
+function from_candid_record_n35(_uploadFile, _downloadFile, value) {
+  return {
+    id: value.id,
+    status: from_candid_PublishStatus_n22(_uploadFile, _downloadFile, value.status),
+    formSubmissions: value.formSubmissions,
+    visitors: value.visitors,
+    name: value.name,
+    slug: value.slug,
+    updatedAt: value.updatedAt,
+    lighthouseScore: value.lighthouseScore,
+    siteUrl: record_opt_to_undefined(from_candid_opt_n32(_uploadFile, _downloadFile, value.siteUrl))
+  };
 }
-function from_candid_variant_n19(_uploadFile, _downloadFile, value) {
-  return "contact" in value ? "contact" : "about" in value ? "about" : "hero" in value ? "hero" : "services" in value ? "services" : "footer" in value ? "footer" : value;
+function from_candid_variant_n15(_uploadFile, _downloadFile, value) {
+  return "pro" in value ? "pro" : "free" in value ? "free" : value;
 }
-function from_candid_variant_n22(_uploadFile, _downloadFile, value) {
+function from_candid_variant_n17(_uploadFile, _downloadFile, value) {
   return "admin" in value ? "admin" : "user" in value ? "user" : "guest" in value ? "guest" : value;
 }
-function from_candid_vec_n15(_uploadFile, _downloadFile, value) {
-  return value.map((x2) => from_candid_SiteSection_n16(_uploadFile, _downloadFile, x2));
+function from_candid_variant_n23(_uploadFile, _downloadFile, value) {
+  return "live" in value ? "live" : "draft" in value ? "draft" : value;
+}
+function from_candid_variant_n26(_uploadFile, _downloadFile, value) {
+  return "contactForm" in value ? "contactForm" : "userAccounts" in value ? "userAccounts" : "payments" in value ? "payments" : "blog" in value ? "blog" : "liveChat" in value ? "liveChat" : "newsletter" in value ? "newsletter" : "testimonials" in value ? "testimonials" : "bookingCalendar" in value ? "bookingCalendar" : "imageGallery" in value ? "imageGallery" : value;
+}
+function from_candid_variant_n28(_uploadFile, _downloadFile, value) {
+  return "bold" in value ? "bold" : "minimal" in value ? "minimal" : "warm" in value ? "warm" : "playful" in value ? "playful" : "luxury" in value ? "luxury" : value;
+}
+function from_candid_variant_n31(_uploadFile, _downloadFile, value) {
+  return "portfolio" in value ? "portfolio" : "blog" in value ? "blog" : "saas" in value ? "saas" : "agency" in value ? "agency" : "booking" in value ? "booking" : "landingPage" in value ? "landingPage" : "restaurant" in value ? "restaurant" : "ecommerce" in value ? "ecommerce" : value;
 }
 function from_candid_vec_n24(_uploadFile, _downloadFile, value) {
-  return value.map((x2) => from_candid_SiteSummary_n25(_uploadFile, _downloadFile, x2));
+  return value.map((x2) => from_candid_SelectedFeature_n25(_uploadFile, _downloadFile, x2));
 }
-function to_candid_GeneratedSite_n29(_uploadFile, _downloadFile, value) {
-  return to_candid_record_n30(_uploadFile, _downloadFile, value);
+function from_candid_vec_n33(_uploadFile, _downloadFile, value) {
+  return value.map((x2) => from_candid_SiteSummary_n34(_uploadFile, _downloadFile, x2));
 }
-function to_candid_SectionType_n34(_uploadFile, _downloadFile, value) {
-  return to_candid_variant_n35(_uploadFile, _downloadFile, value);
+function to_candid_SelectedFeature_n6(_uploadFile, _downloadFile, value) {
+  return to_candid_variant_n7(_uploadFile, _downloadFile, value);
 }
-function to_candid_SiteSection_n32(_uploadFile, _downloadFile, value) {
-  return to_candid_record_n33(_uploadFile, _downloadFile, value);
+function to_candid_SiteType_n10(_uploadFile, _downloadFile, value) {
+  return to_candid_variant_n11(_uploadFile, _downloadFile, value);
 }
-function to_candid_SiteType_n5(_uploadFile, _downloadFile, value) {
-  return to_candid_variant_n6(_uploadFile, _downloadFile, value);
+function to_candid_SiteUpdate_n36(_uploadFile, _downloadFile, value) {
+  return to_candid_record_n37(_uploadFile, _downloadFile, value);
 }
 function to_candid_UserRole_n1(_uploadFile, _downloadFile, value) {
   return to_candid_variant_n2(_uploadFile, _downloadFile, value);
 }
+function to_candid_VisualStyle_n8(_uploadFile, _downloadFile, value) {
+  return to_candid_variant_n9(_uploadFile, _downloadFile, value);
+}
 function to_candid_WizardInput_n3(_uploadFile, _downloadFile, value) {
   return to_candid_record_n4(_uploadFile, _downloadFile, value);
 }
-function to_candid_opt_n27(_uploadFile, _downloadFile, value) {
-  return value === null ? candid_none() : candid_some(value);
-}
-function to_candid_opt_n28(_uploadFile, _downloadFile, value) {
-  return value === null ? candid_none() : candid_some(to_candid_GeneratedSite_n29(_uploadFile, _downloadFile, value));
-}
-function to_candid_record_n30(_uploadFile, _downloadFile, value) {
+function to_candid_record_n37(_uploadFile, _downloadFile, value) {
   return {
-    siteTitle: value.siteTitle,
-    tagline: value.tagline,
-    layout: value.layout,
-    colorPalette: value.colorPalette,
-    sections: to_candid_vec_n31(_uploadFile, _downloadFile, value.sections)
-  };
-}
-function to_candid_record_n33(_uploadFile, _downloadFile, value) {
-  return {
-    subheading: value.subheading,
-    content: value.content,
-    sectionType: to_candid_SectionType_n34(_uploadFile, _downloadFile, value.sectionType),
-    heading: value.heading
+    name: value.name ? candid_some(value.name) : candid_none(),
+    niche: value.niche ? candid_some(value.niche) : candid_none()
   };
 }
 function to_candid_record_n4(_uploadFile, _downloadFile, value) {
   return {
-    visualStyle: value.visualStyle,
-    siteType: to_candid_SiteType_n5(_uploadFile, _downloadFile, value.siteType),
-    businessDescription: value.businessDescription,
-    selectedFeatures: value.selectedFeatures
+    features: to_candid_vec_n5(_uploadFile, _downloadFile, value.features),
+    vibe: to_candid_VisualStyle_n8(_uploadFile, _downloadFile, value.vibe),
+    siteType: to_candid_SiteType_n10(_uploadFile, _downloadFile, value.siteType),
+    niche: value.niche
   };
+}
+function to_candid_variant_n11(_uploadFile, _downloadFile, value) {
+  return value == "portfolio" ? {
+    portfolio: null
+  } : value == "blog" ? {
+    blog: null
+  } : value == "saas" ? {
+    saas: null
+  } : value == "agency" ? {
+    agency: null
+  } : value == "booking" ? {
+    booking: null
+  } : value == "landingPage" ? {
+    landingPage: null
+  } : value == "restaurant" ? {
+    restaurant: null
+  } : value == "ecommerce" ? {
+    ecommerce: null
+  } : value;
 }
 function to_candid_variant_n2(_uploadFile, _downloadFile, value) {
   return value == "admin" ? {
@@ -38932,34 +38820,42 @@ function to_candid_variant_n2(_uploadFile, _downloadFile, value) {
     guest: null
   } : value;
 }
-function to_candid_variant_n35(_uploadFile, _downloadFile, value) {
-  return value == "contact" ? {
-    contact: null
-  } : value == "about" ? {
-    about: null
-  } : value == "hero" ? {
-    hero: null
-  } : value == "services" ? {
-    services: null
-  } : value == "footer" ? {
-    footer: null
-  } : value;
-}
-function to_candid_variant_n6(_uploadFile, _downloadFile, value) {
-  return value == "portfolio" ? {
-    portfolio: null
+function to_candid_variant_n7(_uploadFile, _downloadFile, value) {
+  return value == "contactForm" ? {
+    contactForm: null
+  } : value == "userAccounts" ? {
+    userAccounts: null
+  } : value == "payments" ? {
+    payments: null
   } : value == "blog" ? {
     blog: null
-  } : value == "business" ? {
-    business: null
-  } : value == "landing" ? {
-    landing: null
-  } : value == "ecommerce" ? {
-    ecommerce: null
+  } : value == "liveChat" ? {
+    liveChat: null
+  } : value == "newsletter" ? {
+    newsletter: null
+  } : value == "testimonials" ? {
+    testimonials: null
+  } : value == "bookingCalendar" ? {
+    bookingCalendar: null
+  } : value == "imageGallery" ? {
+    imageGallery: null
   } : value;
 }
-function to_candid_vec_n31(_uploadFile, _downloadFile, value) {
-  return value.map((x2) => to_candid_SiteSection_n32(_uploadFile, _downloadFile, x2));
+function to_candid_variant_n9(_uploadFile, _downloadFile, value) {
+  return value == "bold" ? {
+    bold: null
+  } : value == "minimal" ? {
+    minimal: null
+  } : value == "warm" ? {
+    warm: null
+  } : value == "playful" ? {
+    playful: null
+  } : value == "luxury" ? {
+    luxury: null
+  } : value;
+}
+function to_candid_vec_n5(_uploadFile, _downloadFile, value) {
+  return value.map((x2) => to_candid_SelectedFeature_n6(_uploadFile, _downloadFile, x2));
 }
 function createActor(canisterId, _uploadFile, _downloadFile, options = {}) {
   const agent = options.agent || HttpAgent.createSync({
@@ -38984,14 +38880,7 @@ function useListMySites() {
     queryKey: ["sites"],
     queryFn: async () => {
       if (!actor) return [];
-      const sites = await asBackend(actor).listMySites();
-      return sites.map((s2) => ({
-        id: s2.id,
-        title: s2.title,
-        status: s2.status,
-        subdomain: s2.subdomain,
-        createdAt: s2.createdAt
-      }));
+      return asBackend(actor).listMySites();
     },
     enabled: !!actor && !isFetching
   });
@@ -39002,9 +38891,7 @@ function useGetSite(id2) {
     queryKey: ["site", id2 == null ? void 0 : id2.toString()],
     queryFn: async () => {
       if (!actor || id2 === void 0) return null;
-      const site = await asBackend(actor).getSite(id2);
-      if (!site) return null;
-      return site;
+      return asBackend(actor).getSite(id2);
     },
     enabled: !!actor && !isFetching && id2 !== void 0
   });
@@ -39015,15 +38902,7 @@ function useGetPreLaunchChecks(id2) {
     queryKey: ["prelaunch", id2 == null ? void 0 : id2.toString()],
     queryFn: async () => {
       if (!actor || id2 === void 0) return null;
-      const checks = await asBackend(actor).getPreLaunchChecks(id2);
-      return {
-        seoTitle: checks.seo,
-        seoDescription: checks.seo,
-        mobileLayout: checks.mobileReady,
-        performance: checks.performanceHint,
-        formsWorking: checks.formsValid,
-        customDomain: false
-      };
+      return asBackend(actor).getPreLaunchChecks(id2);
     },
     enabled: !!actor && !isFetching && id2 !== void 0
   });
@@ -39034,22 +38913,7 @@ function useGenerateSite() {
   return useMutation({
     mutationFn: async (input) => {
       if (!actor) throw new Error("Actor not available");
-      const backendInput = {
-        siteType: input.siteType,
-        businessDescription: input.businessDescription,
-        visualStyle: {
-          primaryColor: "#6366f1",
-          secondaryColor: "#a78bfa",
-          fontFamily: input.visualStyle
-        },
-        selectedFeatures: {
-          contactForm: input.selectedFeatures.contactForm,
-          bookings: input.selectedFeatures.bookings,
-          auth: input.selectedFeatures.auth
-        }
-      };
-      const site = await asBackend(actor).generateSite(backendInput);
-      return site;
+      return asBackend(actor).generateSite(input);
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["sites"] })
   });
@@ -39058,18 +38922,14 @@ function useUpdateSite() {
   const { actor } = useActor(createActor);
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id: id2, title, generatedData }) => {
+    mutationFn: async ({ id: id2, name, niche }) => {
       if (!actor) throw new Error("Actor not available");
-      const site = await asBackend(actor).updateSite(
-        id2,
-        title ?? null,
-        generatedData ? generatedData : null
-      );
-      return site;
+      return asBackend(actor).updateSite(id2, { name, niche });
     },
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: ["sites"] });
-      qc.invalidateQueries({ queryKey: ["site", data.id.toString()] });
+      if (data)
+        qc.invalidateQueries({ queryKey: ["site", data.id.toString()] });
     }
   });
 }
@@ -39090,14 +38950,31 @@ function usePublishSite() {
   return useMutation({
     mutationFn: async (id2) => {
       if (!actor) throw new Error("Actor not available");
-      const site = await asBackend(actor).publishSite(id2);
-      return site;
+      return asBackend(actor).publishSite(id2);
     },
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: ["sites"] });
-      qc.invalidateQueries({ queryKey: ["site", data.id.toString()] });
+      if (data)
+        qc.invalidateQueries({ queryKey: ["site", data.id.toString()] });
     }
   });
+}
+function useGetCallerProfile() {
+  const { actor, isFetching: actorFetching } = useActor(createActor);
+  const query = useQuery({
+    queryKey: ["currentUserProfile"],
+    queryFn: async () => {
+      if (!actor) throw new Error("Actor not available");
+      return asBackend(actor).getCallerProfile();
+    },
+    enabled: !!actor && !actorFetching,
+    retry: false
+  });
+  return {
+    ...query,
+    isLoading: actorFetching || query.isLoading,
+    isFetched: !!actor && query.isFetched
+  };
 }
 var jt = (n) => {
   switch (n) {
@@ -39375,178 +39252,365 @@ reactExports.forwardRef(function(e, t) {
     })) : null;
   }));
 });
-const SKELETON_KEYS = ["a", "b", "c"];
-function DashboardPage() {
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(ProtectedRoute, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(DashboardContent, {}) });
+function getInitials(name) {
+  return name.split(" ").map((w2) => w2[0]).join("").slice(0, 2).toUpperCase();
 }
-function DashboardContent() {
-  const { data: sites, isLoading } = useListMySites();
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(Layout, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "container mx-auto px-4 py-10", "data-ocid": "dashboard.page", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between mb-8", children: [
+function siteUrl(site) {
+  return site.siteUrl ?? `${site.slug}.forge.app`;
+}
+const NAV_ITEMS = [
+  { icon: LayoutDashboard, label: "Dashboard", active: true },
+  { icon: Globe, label: "My Sites" },
+  { icon: ChartNoAxesColumn, label: "Analytics" },
+  { icon: Link, label: "Domains" }
+];
+const NAV_BOTTOM = [
+  { icon: CreditCard, label: "Billing" },
+  { icon: Settings, label: "Settings" }
+];
+function DashboardPage() {
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(ProtectedRoute, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(DashboardShell, {}) });
+}
+function DashboardShell() {
+  const { data: sites, isLoading, isError } = useListMySites();
+  const { data: profile } = useGetCallerProfile();
+  const displayName = (profile == null ? void 0 : profile.name) ?? "User";
+  const initials = getInitials(displayName);
+  const hasSites = !isLoading && !isError && sites && sites.length > 0;
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    "div",
+    {
+      className: "flex h-screen overflow-hidden bg-card",
+      "data-ocid": "dashboard.page",
+      children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "aside",
+          {
+            className: "w-[216px] flex-shrink-0 bg-card border-r border-border flex flex-col py-4 px-[10px] overflow-hidden",
+            "data-ocid": "dashboard.sidebar",
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "px-2 mb-5", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "font-display font-extrabold text-[18px] tracking-tight text-foreground", children: [
+                "Forge",
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-primary", children: "." })
+              ] }) }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("nav", { className: "flex flex-col gap-[2px]", children: NAV_ITEMS.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                "button",
+                {
+                  type: "button",
+                  className: [
+                    "flex items-center gap-[9px] px-[10px] py-2 rounded-sm text-[13px] font-display font-medium transition-forge cursor-pointer w-full text-left",
+                    item.active ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-background hover:text-foreground"
+                  ].join(" "),
+                  "data-ocid": `dashboard.sidebar.${item.label.toLowerCase().replace(" ", "_")}.link`,
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      item.icon,
+                      {
+                        className: `w-[15px] h-[15px] flex-shrink-0 ${item.active ? "text-primary" : ""}`
+                      }
+                    ),
+                    item.label
+                  ]
+                },
+                item.label
+              )) }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "my-[6px] mx-1 h-px bg-border" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex flex-col gap-[2px]", children: NAV_BOTTOM.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                "button",
+                {
+                  type: "button",
+                  className: "flex items-center gap-[9px] px-[10px] py-2 rounded-sm text-[13px] font-display font-medium text-muted-foreground hover:bg-background hover:text-foreground transition-forge cursor-pointer w-full text-left",
+                  "data-ocid": `dashboard.sidebar.${item.label.toLowerCase()}.link`,
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(item.icon, { className: "w-[15px] h-[15px] flex-shrink-0" }),
+                    item.label
+                  ]
+                },
+                item.label
+              )) }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-auto", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                "button",
+                {
+                  type: "button",
+                  className: "w-full flex items-center gap-[9px] px-2 py-[9px] rounded-sm hover:bg-background transition-forge cursor-pointer",
+                  "data-ocid": "dashboard.sidebar.user_profile",
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center flex-shrink-0", children: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "font-display font-bold text-[12px] text-primary", children: initials }) }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-left min-w-0", children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "font-display font-semibold text-[12px] text-foreground truncate", children: displayName }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-[11px] text-muted-foreground", children: "Free plan" })
+                    ] })
+                  ]
+                }
+              ) })
+            ]
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("main", { className: "flex-1 overflow-y-auto bg-background", children: isLoading ? /* @__PURE__ */ jsxRuntimeExports.jsx(DashboardSkeleton, {}) : isError ? /* @__PURE__ */ jsxRuntimeExports.jsx(ErrorState, {}) : hasSites ? /* @__PURE__ */ jsxRuntimeExports.jsx(HasSitesView, { sites }) : /* @__PURE__ */ jsxRuntimeExports.jsx(ZeroState, {}) })
+      ]
+    }
+  );
+}
+function DashboardSkeleton() {
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "p-8", "data-ocid": "dashboard.loading_state", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between mb-6", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "font-display font-bold text-3xl text-foreground", children: "My Sites" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-muted-foreground mt-1 text-sm", children: "Manage and publish your AI-generated websites." })
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Skeleton, { className: "h-7 w-48 mb-2" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Skeleton, { className: "h-4 w-72" })
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(Link, { to: "/wizard", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
-        Button,
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Skeleton, { className: "h-9 w-28" })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid grid-cols-4 gap-3 mb-6", children: [1, 2, 3, 4].map((i) => /* @__PURE__ */ jsxRuntimeExports.jsx(Skeleton, { className: "h-24 rounded-md" }, i)) }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid grid-cols-3 gap-4", children: [1, 2, 3].map((i) => /* @__PURE__ */ jsxRuntimeExports.jsx(Skeleton, { className: "h-[185px] rounded-md" }, i)) })
+  ] });
+}
+function ErrorState() {
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    "div",
+    {
+      className: "flex flex-col items-center justify-center h-full gap-4 text-center p-8",
+      "data-ocid": "dashboard.error_state",
+      children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-14 h-14 rounded-full bg-destructive/10 flex items-center justify-center", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Briefcase, { className: "w-6 h-6 text-destructive" }) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "font-display font-bold text-lg text-foreground mb-1", children: "Couldn't load your sites" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-muted-foreground max-w-xs", children: "Something went wrong fetching your data. Refresh the page to try again." })
+        ] })
+      ]
+    }
+  );
+}
+function HasSitesView({ sites }) {
+  const publishedCount = sites.filter((s2) => s2.status === "live").length;
+  const STATS = [
+    {
+      icon: Globe,
+      value: String(publishedCount),
+      label: "Published sites",
+      trend: "↑ Just launched"
+    },
+    { icon: Globe, value: "24", label: "Visitors today", trend: "↑ 24 new" },
+    {
+      icon: MousePointerClick,
+      value: "6",
+      label: "Form submissions",
+      trend: "↑ 6 new"
+    },
+    { icon: Zap, value: "97", label: "Lighthouse score", trend: "↑ Top 5%" }
+  ];
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "p-7 pl-8", "data-ocid": "dashboard.has_sites", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-start justify-between mb-6", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "font-display font-extrabold text-[21px] text-foreground tracking-tight mb-[3px]", children: "Welcome back 👋" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[13px] text-muted-foreground", children: "Here's what's happening with your sites today." })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(Link$1, { to: "/wizard", "data-ocid": "dashboard.new_site_button", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+        "button",
         {
-          className: "gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold",
-          "data-ocid": "dashboard.create_new_site_button",
+          type: "button",
+          className: "flex items-center gap-[7px] bg-primary text-primary-foreground font-display font-semibold text-[13px] px-[18px] py-[9px] rounded-sm hover:opacity-90 transition-forge",
           children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(Plus, { className: "w-4 h-4" }),
-            "Create New Site"
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Plus, { className: "w-[14px] h-[14px]" }),
+            "New Site"
           ]
         }
       ) })
     ] }),
-    isLoading ? /* @__PURE__ */ jsxRuntimeExports.jsx(
+    /* @__PURE__ */ jsxRuntimeExports.jsx(
       "div",
       {
-        className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5",
-        "data-ocid": "dashboard.loading_state",
-        children: Array.from({ length: 3 }).map((_2, i) => /* @__PURE__ */ jsxRuntimeExports.jsx(
-          Skeleton,
+        className: "grid grid-cols-4 gap-3 mb-6",
+        "data-ocid": "dashboard.stats_row",
+        children: STATS.map((stat, i) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "div",
           {
-            className: "h-52 rounded-xl"
+            className: "bg-card border border-border rounded-md px-[18px] py-4",
+            "data-ocid": `dashboard.stat_card.${i + 1}`,
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-[34px] h-[34px] bg-primary/10 rounded-[7px] flex items-center justify-center mb-[10px]", children: /* @__PURE__ */ jsxRuntimeExports.jsx(stat.icon, { className: "w-[17px] h-[17px] text-primary" }) }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "font-display font-extrabold text-[24px] text-foreground tracking-tight mb-[2px]", children: stat.value }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-[11px] text-muted-foreground", children: stat.label }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-[11px] text-accent font-display font-semibold mt-[3px]", children: stat.trend })
+            ]
           },
-          `skeleton-${SKELETON_KEYS[i]}`
+          stat.label
         ))
       }
-    ) : !sites || sites.length === 0 ? /* @__PURE__ */ jsxRuntimeExports.jsx(EmptyState, {}) : /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5", children: sites.map((site, i) => /* @__PURE__ */ jsxRuntimeExports.jsx(SiteCard, { site, index: i + 1 }, site.id.toString())) })
-  ] }) });
-}
-function EmptyState() {
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs(
-    "div",
-    {
-      className: "flex flex-col items-center justify-center py-28 gap-5 text-center",
-      "data-ocid": "dashboard.empty_state",
-      children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "relative w-28 h-28 flex items-center justify-center", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "absolute inset-0 rounded-3xl bg-primary/10 animate-pulse" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "absolute inset-3 rounded-2xl bg-primary/5" }),
+    ),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between mb-3", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "font-display font-bold text-[13px] text-foreground", children: "My Sites" }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        "a",
+        {
+          href: "/dashboard",
+          className: "text-[12px] font-display font-semibold text-primary",
+          "data-ocid": "dashboard.view_all_link",
+          children: "View all"
+        }
+      )
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "div",
+      {
+        className: "grid grid-cols-3 gap-[14px] mb-6",
+        "data-ocid": "dashboard.sites_grid",
+        children: [
+          sites.map((site, i) => /* @__PURE__ */ jsxRuntimeExports.jsx(SiteCard, { site, index: i + 1 }, site.id.toString())),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Link$1, { to: "/wizard", "data-ocid": "dashboard.new_site_card", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "bg-card border-[1.5px] border-dashed border-border rounded-md h-[185px] flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-primary/50 hover:bg-primary/4 transition-forge", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-9 h-9 rounded-full bg-background flex items-center justify-center", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Plus, { className: "w-4 h-4 text-muted-foreground" }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "font-display font-semibold text-[12px] text-muted-foreground", children: "Build a new site" })
+          ] }) })
+        ]
+      }
+    ),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "div",
+      {
+        className: "bg-primary/10 border-[1.5px] border-primary/30 rounded-md p-[18px] flex items-center gap-[18px]",
+        "data-ocid": "dashboard.upsell_card",
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-[42px] h-[42px] bg-primary rounded-[9px] flex items-center justify-center flex-shrink-0", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Rocket, { className: "w-5 h-5 text-primary-foreground" }) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1 min-w-0", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "font-display font-bold text-[13px] text-foreground mb-[3px]", children: "Upgrade to Pro — $29/mo" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-[12px] text-muted-foreground", children: "Connect a custom domain, unlimited sites, app logic, and payments." })
+          ] }),
           /* @__PURE__ */ jsxRuntimeExports.jsx(
-            Zap,
+            "button",
             {
-              className: "relative w-12 h-12 text-primary",
-              fill: "currentColor",
-              strokeWidth: 0
+              type: "button",
+              className: "flex items-center gap-[6px] bg-primary text-primary-foreground font-display font-semibold text-[12px] px-[14px] py-[7px] rounded-sm hover:opacity-90 transition-forge flex-shrink-0",
+              "data-ocid": "dashboard.upgrade_button",
+              children: "Upgrade"
             }
           )
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "font-display font-bold text-2xl text-foreground mb-2", children: "Your first site is one prompt away" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-muted-foreground max-w-sm mx-auto text-sm leading-relaxed", children: "Describe your business in plain language and Forge builds the entire site — design, content, and features — in minutes." })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Link, { to: "/wizard", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
-          Button,
-          {
-            size: "lg",
-            className: "gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-8 mt-1",
-            "data-ocid": "dashboard.empty_state.build_button",
-            children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Zap, { className: "w-5 h-5", fill: "currentColor", strokeWidth: 0 }),
-              "Build Your Site"
-            ]
-          }
-        ) })
-      ]
-    }
-  );
+        ]
+      }
+    )
+  ] });
 }
 function SiteCard({ site, index: index2 }) {
   const navigate = useNavigate();
   const { mutateAsync: deleteSite, isPending: isDeleting } = useDeleteSite();
   const [confirmOpen, setConfirmOpen] = reactExports.useState(false);
-  const formattedDate = new Date(
-    Number(site.createdAt) / 1e6
-  ).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric"
-  });
+  const isLive = site.status === "live";
+  const url = siteUrl(site);
   const handleDelete = async () => {
     try {
       await deleteSite(site.id);
-      ue.success(`"${site.title}" was deleted.`);
+      ue.success(`"${site.name}" was deleted.`);
     } catch {
-      ue.error("Failed to delete site. Please try again.");
+      ue.error("Failed to delete. Please try again.");
     } finally {
       setConfirmOpen(false);
     }
   };
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
     /* @__PURE__ */ jsxRuntimeExports.jsxs(
-      "div",
+      "button",
       {
-        className: "bg-card border border-border rounded-xl p-5 flex flex-col gap-4 hover:border-primary/40 transition-smooth group animate-slide-up",
+        type: "button",
+        className: "bg-card border border-border rounded-md overflow-hidden cursor-pointer hover:border-primary/40 hover:shadow-[0_4px_20px_rgba(0,81,255,0.08)] transition-forge w-full text-left",
         "data-ocid": `dashboard.site_card.${index2}`,
+        onClick: () => navigate({
+          to: "/editor/$siteId",
+          params: { siteId: site.id.toString() }
+        }),
         children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-start justify-between gap-2", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "font-display font-semibold text-foreground group-hover:text-primary transition-smooth truncate min-w-0 flex-1", children: site.title }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(StatusBadge, { status: site.status })
-          ] }),
-          site.subdomain ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-1.5 text-xs text-muted-foreground", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(Globe, { className: "w-3.5 h-3.5 shrink-0" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "truncate", children: [
-              site.subdomain,
-              ".forge.app"
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "div",
+            {
+              className: "relative h-[110px] border-b border-border flex items-center justify-center overflow-hidden",
+              style: {
+                background: "linear-gradient(135deg, oklch(var(--primary) / 0.08) 0%, oklch(var(--background)) 100%)"
+              },
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "w-full px-4 text-center", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "font-display font-extrabold text-[9px] text-primary mb-1", children: site.name }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    "div",
+                    {
+                      className: "h-[3px] bg-primary/30 rounded-sm mx-auto mb-[3px]",
+                      style: { width: "60px" }
+                    }
+                  ),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    "div",
+                    {
+                      className: "h-[3px] bg-border rounded-sm mx-auto",
+                      style: { width: "40px" }
+                    }
+                  )
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "span",
+                  {
+                    className: [
+                      "absolute top-[7px] right-[7px] font-display font-bold text-[9px] px-[7px] py-[2px] rounded-full",
+                      isLive ? "bg-accent/20 text-accent" : "bg-muted-foreground/20 text-muted-foreground"
+                    ].join(" "),
+                    children: isLive ? "Live" : "Draft"
+                  }
+                )
+              ]
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "p-[14px]", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "font-display font-bold text-[12px] text-foreground mb-[2px] truncate", children: site.name }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "font-mono text-[10px] text-muted-foreground mb-2 truncate", children: url }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[10px] text-muted-foreground", children: "Updated just now" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                "div",
+                {
+                  className: "flex items-center gap-[3px]",
+                  onClick: (e) => e.stopPropagation(),
+                  onKeyDown: (e) => e.stopPropagation(),
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      "button",
+                      {
+                        type: "button",
+                        className: "w-6 h-6 rounded border border-border flex items-center justify-center hover:border-primary/40 hover:bg-primary/10 transition-forge",
+                        onClick: (e) => {
+                          e.stopPropagation();
+                          navigate({
+                            to: "/editor/$siteId",
+                            params: { siteId: site.id.toString() }
+                          });
+                        },
+                        "aria-label": "Edit site",
+                        "data-ocid": `dashboard.site_card.${index2}.edit_button`,
+                        children: /* @__PURE__ */ jsxRuntimeExports.jsx(PenLine, { className: "w-[11px] h-[11px] text-muted-foreground" })
+                      }
+                    ),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      "button",
+                      {
+                        type: "button",
+                        className: "w-6 h-6 rounded border border-border flex items-center justify-center hover:border-primary/40 hover:bg-primary/10 transition-forge",
+                        "aria-label": "Open live site",
+                        "data-ocid": `dashboard.site_card.${index2}.external_link_button`,
+                        children: /* @__PURE__ */ jsxRuntimeExports.jsx(ExternalLink, { className: "w-[11px] h-[11px] text-muted-foreground" })
+                      }
+                    ),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      "button",
+                      {
+                        type: "button",
+                        className: "w-6 h-6 rounded border border-border flex items-center justify-center hover:border-destructive/40 hover:bg-destructive/8 transition-forge",
+                        "aria-label": "More actions",
+                        onClick: (e) => {
+                          e.stopPropagation();
+                          setConfirmOpen(true);
+                        },
+                        "data-ocid": `dashboard.site_card.${index2}.delete_button`,
+                        children: /* @__PURE__ */ jsxRuntimeExports.jsx(Ellipsis, { className: "w-[11px] h-[11px] text-muted-foreground" })
+                      }
+                    )
+                  ]
+                }
+              )
             ] })
-          ] }) : /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-1.5 text-xs text-muted-foreground/50 italic", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(Globe, { className: "w-3.5 h-3.5 shrink-0" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "Not yet published" })
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-1.5 text-xs text-muted-foreground mt-auto", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(Clock, { className: "w-3.5 h-3.5 shrink-0" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: formattedDate })
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 pt-1 border-t border-border", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs(
-              Button,
-              {
-                variant: "outline",
-                size: "sm",
-                className: "flex-1 gap-1.5 text-xs h-8 border-border hover:border-primary/40 hover:text-primary",
-                onClick: () => navigate({
-                  to: "/editor/$siteId",
-                  params: { siteId: site.id.toString() }
-                }),
-                "data-ocid": `dashboard.site_card.${index2}.edit_button`,
-                children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Pen, { className: "w-3.5 h-3.5" }),
-                  "Edit"
-                ]
-              }
-            ),
-            site.status !== "published" && /* @__PURE__ */ jsxRuntimeExports.jsxs(
-              Button,
-              {
-                variant: "outline",
-                size: "sm",
-                className: "flex-1 gap-1.5 text-xs h-8 border-primary/30 text-primary hover:bg-primary/10 hover:border-primary/60",
-                onClick: () => navigate({
-                  to: "/publish/$siteId",
-                  params: { siteId: site.id.toString() }
-                }),
-                "data-ocid": `dashboard.site_card.${index2}.publish_button`,
-                children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Rocket, { className: "w-3.5 h-3.5" }),
-                  "Publish"
-                ]
-              }
-            ),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(
-              Button,
-              {
-                variant: "ghost",
-                size: "sm",
-                className: "h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10",
-                onClick: () => setConfirmOpen(true),
-                "aria-label": "Delete site",
-                "data-ocid": `dashboard.site_card.${index2}.delete_button`,
-                children: /* @__PURE__ */ jsxRuntimeExports.jsx(Trash2, { className: "w-3.5 h-3.5" })
-              }
-            )
           ] })
         ]
       }
@@ -39562,7 +39626,7 @@ function SiteCard({ site, index: index2 }) {
             /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogDescription, { className: "text-sm text-muted-foreground", children: [
               /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "font-semibold text-foreground", children: [
                 '"',
-                site.title,
+                site.name,
                 '"'
               ] }),
               " ",
@@ -39571,20 +39635,20 @@ function SiteCard({ site, index: index2 }) {
           ] }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs(DialogFooter, { className: "gap-2 sm:gap-2", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx(
-              Button,
+              "button",
               {
-                variant: "outline",
-                size: "sm",
+                type: "button",
+                className: "flex-1 border border-border rounded-sm px-3 py-2 text-[13px] font-display font-semibold text-foreground hover:bg-muted/50 transition-forge",
                 onClick: () => setConfirmOpen(false),
                 "data-ocid": `dashboard.site_card.${index2}.cancel_button`,
                 children: "Cancel"
               }
             ),
             /* @__PURE__ */ jsxRuntimeExports.jsx(
-              Button,
+              "button",
               {
-                variant: "destructive",
-                size: "sm",
+                type: "button",
+                className: "flex-1 bg-destructive text-destructive-foreground rounded-sm px-3 py-2 text-[13px] font-display font-semibold hover:opacity-90 transition-forge disabled:opacity-50",
                 onClick: handleDelete,
                 disabled: isDeleting,
                 "data-ocid": `dashboard.site_card.${index2}.confirm_button`,
@@ -39597,43 +39661,215 @@ function SiteCard({ site, index: index2 }) {
     ) })
   ] });
 }
-function StatusBadge({ status }) {
-  if (status === "published") {
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(
-      Badge,
-      {
-        variant: "outline",
-        className: "shrink-0 text-xs border-green-500/30 text-green-400 bg-green-500/10 capitalize",
-        children: "Published"
-      }
-    );
+const ZERO_STEPS = [
+  {
+    num: 1,
+    title: "Describe your site",
+    desc: "Answer 4 quick questions — no typing required"
+  },
+  {
+    num: 2,
+    title: "Watch it get built",
+    desc: "Forge designs, writes copy, and adds your features"
+  },
+  {
+    num: 3,
+    title: "Tweak and publish",
+    desc: "Edit anything inline, then go live in one click"
   }
-  if (status === "publishing") {
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(
-      Badge,
-      {
-        variant: "outline",
-        className: "shrink-0 text-xs border-accent/30 text-accent bg-accent/10 capitalize",
-        children: "Publishing"
-      }
-    );
+];
+const TEMPLATES = [
+  {
+    name: "Portfolio",
+    cat: "Designer / Creator",
+    color: "from-primary/10 to-primary/5",
+    barColor: "bg-primary"
+  },
+  {
+    name: "Landing Page",
+    cat: "Product / SaaS",
+    color: "from-accent/10 to-accent/5",
+    barColor: "bg-accent"
+  },
+  {
+    name: "eCommerce",
+    cat: "Shop / Store",
+    color: "from-orange-400/10 to-orange-400/5",
+    barColor: "bg-orange-400"
+  },
+  {
+    name: "SaaS Dashboard",
+    cat: "App / Tool",
+    color: "from-foreground/10 to-foreground/5",
+    barColor: "bg-foreground/40"
   }
-  if (status === "failed") {
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(
-      Badge,
-      {
-        variant: "outline",
-        className: "shrink-0 text-xs border-destructive/30 text-destructive bg-destructive/10 capitalize",
-        children: "Failed"
-      }
-    );
-  }
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(
-    Badge,
+];
+function ZeroState() {
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    "div",
     {
-      variant: "outline",
-      className: "shrink-0 text-xs border-border text-muted-foreground bg-muted/50 capitalize",
-      children: "Unpublished"
+      className: "flex flex-col overflow-y-auto",
+      "data-ocid": "dashboard.zero_state",
+      children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "div",
+          {
+            className: "border-b border-border px-12 py-13 flex gap-16 items-center",
+            style: {
+              background: "linear-gradient(135deg, oklch(var(--primary) / 0.07) 0%, oklch(var(--background)) 55%)",
+              padding: "52px 48px"
+            },
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1 max-w-[480px]", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "inline-flex items-center gap-[7px] bg-card border border-border rounded-full px-[14px] py-[5px] text-[11px] font-display font-bold text-muted-foreground mb-5", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Sparkles, { className: "w-3 h-3 text-primary" }),
+                  "Account ready"
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("h1", { className: "font-display font-black text-[32px] text-foreground tracking-tight leading-[1.1] mb-3", children: [
+                  "Build your first ",
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-primary", children: "site in 60 seconds." })
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[15px] text-muted-foreground leading-relaxed mb-7 max-w-[400px]", children: "Tell Forge what you need in plain English. It'll design, write, and build it — then hand it to you to publish." }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    Link$1,
+                    {
+                      to: "/wizard",
+                      "data-ocid": "dashboard.zero_state.start_building_button",
+                      children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                        "button",
+                        {
+                          type: "button",
+                          className: "flex items-center gap-2 bg-primary text-primary-foreground font-display font-bold text-[15px] px-7 py-[13px] rounded-md hover:opacity-90 transition-forge",
+                          children: [
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(Zap, { className: "w-4 h-4" }),
+                            "Start building — it's free"
+                          ]
+                        }
+                      )
+                    }
+                  ),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    "button",
+                    {
+                      type: "button",
+                      className: "flex items-center gap-2 border border-border rounded-md px-6 py-[12px] text-[15px] font-display font-medium text-muted-foreground hover:text-foreground hover:border-muted-foreground transition-forge",
+                      "data-ocid": "dashboard.zero_state.browse_templates_button",
+                      children: "Browse templates"
+                    }
+                  )
+                ] })
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-shrink-0 w-[320px] flex flex-col gap-2", children: ZERO_STEPS.map((step) => /* @__PURE__ */ jsxRuntimeExports.jsx(Link$1, { to: "/wizard", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                "div",
+                {
+                  className: "flex items-start gap-[14px] p-4 bg-card border border-border rounded-md hover:border-primary/40 hover:bg-primary/4 transition-forge cursor-pointer",
+                  "data-ocid": `dashboard.zero_state.step.${step.num}`,
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-7 h-7 rounded-full bg-primary/15 text-primary font-display font-extrabold text-[12px] flex items-center justify-center flex-shrink-0 mt-[1px]", children: step.num }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "font-display font-bold text-[13px] text-foreground mb-[3px]", children: step.title }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-[12px] text-muted-foreground", children: step.desc })
+                    ] })
+                  ]
+                }
+              ) }, step.num)) })
+            ]
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "px-12 py-8", style: { padding: "32px 48px" }, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "font-display font-extrabold text-[16px] text-foreground tracking-tight mb-[6px]", children: "Start from a template" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-[13px] text-muted-foreground mb-5", children: "Or skip the wizard and pick a starting point. Fully editable once generated." }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "div",
+            {
+              className: "grid grid-cols-4 gap-[14px]",
+              "data-ocid": "dashboard.zero_state.template_grid",
+              children: TEMPLATES.map((tpl) => /* @__PURE__ */ jsxRuntimeExports.jsx(Link$1, { to: "/wizard", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                "div",
+                {
+                  className: "bg-card border-[1.5px] border-border rounded-md overflow-hidden cursor-pointer hover:border-primary/40 hover:shadow-[0_4px_20px_rgba(0,81,255,0.09)] hover:-translate-y-[2px] transition-forge",
+                  "data-ocid": `dashboard.zero_state.template.${tpl.name.toLowerCase().replace(" ", "_")}`,
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      "div",
+                      {
+                        className: `h-[90px] border-b border-border flex items-center justify-center p-3 bg-gradient-to-br ${tpl.color}`,
+                        children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "w-full flex flex-col gap-1", children: [
+                          /* @__PURE__ */ jsxRuntimeExports.jsx(
+                            "div",
+                            {
+                              className: `h-[5px] ${tpl.barColor} opacity-80 rounded-[2px] w-[50%]`
+                            }
+                          ),
+                          /* @__PURE__ */ jsxRuntimeExports.jsx(
+                            "div",
+                            {
+                              className: `h-[5px] ${tpl.barColor} opacity-40 rounded-[2px] w-[80%]`
+                            }
+                          ),
+                          /* @__PURE__ */ jsxRuntimeExports.jsx(
+                            "div",
+                            {
+                              className: `h-[5px] ${tpl.barColor} opacity-30 rounded-[2px] w-[60%] mt-[3px]`
+                            }
+                          ),
+                          /* @__PURE__ */ jsxRuntimeExports.jsx(
+                            "div",
+                            {
+                              className: `h-4 ${tpl.barColor} opacity-60 rounded-[3px] w-[40%] mt-1`
+                            }
+                          )
+                        ] })
+                      }
+                    ),
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "px-3 py-[10px]", children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "font-display font-bold text-[12px] text-foreground mb-[2px]", children: tpl.name }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-[10px] text-muted-foreground", children: tpl.cat })
+                    ] })
+                  ]
+                }
+              ) }, tpl.name))
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "div",
+          {
+            className: "px-12 pb-10",
+            style: { padding: "0 48px 40px" },
+            "data-ocid": "dashboard.zero_state.empty_activity",
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "font-display font-extrabold text-[16px] text-foreground tracking-tight mb-3", children: "Recent activity" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                "div",
+                {
+                  className: "bg-card border border-border rounded-md px-8 py-12 text-center",
+                  "data-ocid": "dashboard.zero_state.empty_state",
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-14 h-14 bg-background rounded-full flex items-center justify-center mx-auto mb-4", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Clock, { className: "w-6 h-6 text-muted-foreground" }) }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "font-display font-bold text-[15px] text-foreground mb-[6px]", children: "Nothing here yet" }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[13px] text-muted-foreground mb-5 max-w-[280px] mx-auto leading-relaxed", children: "Once you build and publish your first site, your activity, visitor stats, and form submissions will show up here." }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(Link$1, { to: "/wizard", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                      "button",
+                      {
+                        type: "button",
+                        className: "flex items-center gap-2 bg-primary text-primary-foreground font-display font-semibold text-[12px] px-[14px] py-[7px] rounded-sm hover:opacity-90 transition-forge mx-auto",
+                        "data-ocid": "dashboard.zero_state.empty_state.build_button",
+                        children: [
+                          /* @__PURE__ */ jsxRuntimeExports.jsx(Zap, { className: "w-[13px] h-[13px]" }),
+                          "Build my first site"
+                        ]
+                      }
+                    ) })
+                  ]
+                }
+              )
+            ]
+          }
+        )
+      ]
     }
   );
 }
@@ -39820,25 +40056,25 @@ function HeroSection({
           EditableText,
           {
             as: "p",
-            value: section.body,
+            value: section.subheading,
             className: "text-lg md:text-xl opacity-90 mb-8 leading-relaxed",
-            isEditing: (editingField == null ? void 0 : editingField.sectionIndex) === index2 && editingField.field === "body",
+            isEditing: (editingField == null ? void 0 : editingField.sectionIndex) === index2 && editingField.field === "subheading",
             onStartEdit: () => onStartEdit({
               sectionIndex: index2,
-              field: "body",
-              originalValue: section.body
+              field: "subheading",
+              originalValue: section.subheading
             }),
             onSaveEdit,
             onCancelEdit
           }
         ),
-        section.ctaText && /* @__PURE__ */ jsxRuntimeExports.jsx(
+        section.content && /* @__PURE__ */ jsxRuntimeExports.jsx(
           "button",
           {
             type: "button",
             className: "inline-flex items-center gap-2 px-8 py-3 rounded-full font-semibold text-sm transition-all hover:opacity-90 active:scale-95",
             style: { background: palette.accent, color: palette.text },
-            children: section.ctaText
+            children: section.content
           }
         )
       ] })
@@ -39884,13 +40120,13 @@ function AboutSection({
             EditableText,
             {
               as: "p",
-              value: section.body,
+              value: section.subheading,
               className: "text-base leading-relaxed opacity-80",
-              isEditing: (editingField == null ? void 0 : editingField.sectionIndex) === index2 && editingField.field === "body",
+              isEditing: (editingField == null ? void 0 : editingField.sectionIndex) === index2 && editingField.field === "subheading",
               onStartEdit: () => onStartEdit({
                 sectionIndex: index2,
-                field: "body",
-                originalValue: section.body
+                field: "subheading",
+                originalValue: section.subheading
               }),
               onSaveEdit,
               onCancelEdit
@@ -39955,30 +40191,20 @@ function FeaturesSection({
             EditableText,
             {
               as: "p",
-              value: section.body,
+              value: section.subheading,
               className: "text-base opacity-70 max-w-xl mx-auto",
-              isEditing: (editingField == null ? void 0 : editingField.sectionIndex) === index2 && editingField.field === "body",
+              isEditing: (editingField == null ? void 0 : editingField.sectionIndex) === index2 && editingField.field === "subheading",
               onStartEdit: () => onStartEdit({
                 sectionIndex: index2,
-                field: "body",
-                originalValue: section.body
+                field: "subheading",
+                originalValue: section.subheading
               }),
               onSaveEdit,
               onCancelEdit
             }
           )
         ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid sm:grid-cols-2 md:grid-cols-3 gap-6", children: (section.items ?? [
-          { title: "Speed", description: "Deploy in minutes, not weeks" },
-          {
-            title: "Design",
-            description: "AI-generated layouts that impress"
-          },
-          {
-            title: "Scale",
-            description: "Built to grow with your business"
-          }
-        ]).map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid sm:grid-cols-2 md:grid-cols-3 gap-6", children: (section.content ? section.content.split(",") : ["Speed", "Design", "Scale"]).map((item, i) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
           "div",
           {
             className: "rounded-xl p-6 border",
@@ -40003,13 +40229,12 @@ function FeaturesSection({
                 {
                   className: "font-semibold text-sm mb-1",
                   style: { color: palette.text },
-                  children: item.title
+                  children: item.trim()
                 }
-              ),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs opacity-60", style: { color: palette.text }, children: item.description })
+              )
             ]
           },
-          item.title
+          `${item.trim()}-${i}`
         )) })
       ] })
     }
@@ -40053,13 +40278,13 @@ function ContactSection({
           EditableText,
           {
             as: "p",
-            value: section.body,
+            value: section.subheading,
             className: "text-sm opacity-70 mb-8",
-            isEditing: (editingField == null ? void 0 : editingField.sectionIndex) === index2 && editingField.field === "body",
+            isEditing: (editingField == null ? void 0 : editingField.sectionIndex) === index2 && editingField.field === "subheading",
             onStartEdit: () => onStartEdit({
               sectionIndex: index2,
-              field: "body",
-              originalValue: section.body
+              field: "subheading",
+              originalValue: section.subheading
             }),
             onSaveEdit,
             onCancelEdit
@@ -40200,13 +40425,13 @@ function GenericSection({
           EditableText,
           {
             as: "p",
-            value: section.body,
+            value: section.subheading,
             className: "text-base opacity-70 leading-relaxed",
-            isEditing: (editingField == null ? void 0 : editingField.sectionIndex) === index2 && editingField.field === "body",
+            isEditing: (editingField == null ? void 0 : editingField.sectionIndex) === index2 && editingField.field === "subheading",
             onStartEdit: () => onStartEdit({
               sectionIndex: index2,
-              field: "body",
-              originalValue: section.body
+              field: "subheading",
+              originalValue: section.subheading
             }),
             onSaveEdit,
             onCancelEdit
@@ -40261,7 +40486,7 @@ function SitePreview({
     [sectionRefs]
   );
   const renderSection = (section, index2) => {
-    const key = `${section.type}-${index2}`;
+    const key = `${section.sectionType}-${index2}`;
     const isHighlighted = highlightedSection === key;
     const commonProps = {
       section,
@@ -40274,12 +40499,12 @@ function SitePreview({
       onCancelEdit,
       sectionRef: setSectionRef(key)
     };
-    switch (section.type) {
+    switch (section.sectionType) {
       case "hero":
         return /* @__PURE__ */ jsxRuntimeExports.jsx(HeroSection, { ...commonProps }, key);
       case "about":
         return /* @__PURE__ */ jsxRuntimeExports.jsx(AboutSection, { ...commonProps }, key);
-      case "features":
+      case "services":
         return /* @__PURE__ */ jsxRuntimeExports.jsx(FeaturesSection, { ...commonProps }, key);
       case "contact":
         return /* @__PURE__ */ jsxRuntimeExports.jsx(ContactSection, { ...commonProps }, key);
@@ -40349,154 +40574,134 @@ const DEFAULT_SITE = {
   siteTitle: "My Business",
   tagline: "Excellence in every detail",
   colorPalette: {
-    primary: "#6366f1",
-    secondary: "#a78bfa",
-    accent: "#fcd34d",
+    primary: "#0051ff",
+    secondary: "#3374ff",
+    accent: "#e8eeff",
     background: "#ffffff",
-    text: "#1e1b4b"
+    text: "#0d1117"
   },
   layout: {
-    headerStyle: "split",
-    footerStyle: "full",
-    contentWidth: "standard",
-    sectionSpacing: "standard"
+    borderRadius: "8px",
+    layoutStyle: "standard",
+    fontFamily: "Montserrat"
   },
   sections: [
     {
-      type: "hero",
+      sectionType: "hero",
       heading: "Build Something Remarkable",
-      body: "We help ambitious businesses craft digital experiences that captivate, convert, and grow.",
-      ctaText: "Get Started",
-      ctaUrl: "#contact"
+      subheading: "We help ambitious businesses craft digital experiences that captivate, convert, and grow.",
+      content: "Get Started"
     },
     {
-      type: "about",
+      sectionType: "about",
       heading: "Who We Are",
-      body: "A passionate team of designers and developers committed to delivering exceptional results for our clients across every industry."
+      subheading: "A passionate team of designers and developers committed to delivering exceptional results.",
+      content: ""
     },
     {
-      type: "features",
+      sectionType: "services",
       heading: "What We Offer",
-      body: "Everything you need to launch and grow your business online.",
-      items: [
-        {
-          title: "Strategy",
-          description: "Data-driven approaches to accelerate your growth"
-        },
-        {
-          title: "Design",
-          description: "Beautiful interfaces that delight your users"
-        },
-        {
-          title: "Development",
-          description: "Robust, scalable solutions built to last"
-        }
-      ]
+      subheading: "Everything you need to launch and grow your business online.",
+      content: "Strategy, Design, Development"
     },
     {
-      type: "contact",
+      sectionType: "contact",
       heading: "Get In Touch",
-      body: "Ready to start your project? We'd love to hear from you."
+      subheading: "Ready to start your project? We'd love to hear from you.",
+      content: ""
     }
   ]
 };
-function DeviceBtn({ mode, active, onClick, icon, label }) {
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+const SECTION_DEFS = [
+  { key: "nav", label: "Navigation", Icon: LayoutTemplate },
+  { key: "hero", label: "Hero", Icon: Star },
+  { key: "features", label: "Features", Icon: Image },
+  { key: "about", label: "About", Icon: User },
+  { key: "testimonials", label: "Testimonials", Icon: Quote },
+  { key: "contact", label: "Contact", Icon: Mail },
+  { key: "footer", label: "Footer", Icon: Link }
+];
+const SWATCHES = [
+  "#0051ff",
+  "#16a34a",
+  "#dc2626",
+  "#9333ea",
+  "#ea580c",
+  "#0d1117"
+];
+function Toggle({ on, onToggle }) {
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(
     "button",
     {
       type: "button",
-      onClick,
-      "data-ocid": `editor.device_${mode}`,
-      title: label,
-      className: `flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-smooth ${active ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-secondary hover:text-foreground"}`,
-      children: [
-        icon,
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[10px] tracking-wide", children: label })
-      ]
+      role: "switch",
+      "aria-checked": on,
+      onClick: onToggle,
+      className: `relative flex-shrink-0 w-[34px] h-[18px] rounded-full transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${on ? "bg-primary" : "bg-border"}`,
+      children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+        "span",
+        {
+          className: `absolute top-[3px] w-3 h-3 rounded-full bg-card shadow-sm transition-all duration-200 ${on ? "right-[3px]" : "left-[3px]"}`
+        }
+      )
     }
   );
 }
 function SectionListItem({
-  label,
+  def,
   isActive,
   index: index2,
   onClick
 }) {
+  const { Icon: Icon2, label } = def;
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(
     "button",
     {
       type: "button",
       onClick,
       "data-ocid": `editor.section_item.${index2 + 1}`,
-      className: `w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-left text-sm transition-smooth group ${isActive ? "bg-primary/15 text-primary border border-primary/25" : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground border border-transparent"}`,
+      className: `w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-all duration-150 border-[1.5px] ${isActive ? "bg-[var(--blue-faint,#f0f4ff)] border-primary text-primary" : "border-transparent text-muted-foreground hover:bg-secondary/60 hover:text-foreground"}`,
       children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(GripVertical, { className: "w-3.5 h-3.5 flex-shrink-0 opacity-30 group-hover:opacity-60" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "capitalize truncate flex-1", children: label }),
-        isActive && /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { className: "w-3.5 h-3.5 flex-shrink-0" })
+        /* @__PURE__ */ jsxRuntimeExports.jsx(GripVertical, { className: "w-3 h-3 flex-shrink-0 text-muted-foreground/40" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "div",
+          {
+            className: `w-[26px] h-[26px] rounded-md flex items-center justify-center flex-shrink-0 ${isActive ? "bg-primary/10" : "bg-secondary"}`,
+            children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+              Icon2,
+              {
+                className: `w-[13px] h-[13px] ${isActive ? "text-primary" : "text-muted-foreground"}`
+              }
+            )
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "span",
+          {
+            className: `text-xs font-medium flex-1 min-w-0 truncate ${isActive ? "text-primary font-semibold" : ""}`,
+            children: label
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Eye, { className: "w-3 h-3 flex-shrink-0 text-muted-foreground/50" })
       ]
     }
   );
 }
-function InlineTitleEditor({
-  value,
-  onChange
+function DeviceBtn({
+  active,
+  onClick,
+  icon,
+  label
 }) {
-  const [editing, setEditing] = reactExports.useState(false);
-  const [draft, setDraft] = reactExports.useState(value);
-  const commit = reactExports.useCallback(() => {
-    setEditing(false);
-    if (draft.trim()) onChange(draft.trim());
-    else setDraft(value);
-  }, [draft, onChange, value]);
-  if (editing) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(
-      "input",
-      {
-        type: "text",
-        value: draft,
-        className: "bg-secondary border border-input rounded-md px-2 py-1 text-sm font-display font-semibold text-foreground outline-none w-48 focus:border-primary",
-        onChange: (e) => setDraft(e.target.value),
-        onBlur: commit,
-        onKeyDown: (e) => {
-          if (e.key === "Enter") commit();
-          if (e.key === "Escape") {
-            setDraft(value);
-            setEditing(false);
-          }
-        },
-        "data-ocid": "editor.title_input"
-      }
-    );
-  }
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(
     "button",
     {
       type: "button",
-      onClick: () => {
-        setDraft(value);
-        setEditing(true);
-      },
-      className: "flex items-center gap-1.5 group",
-      "data-ocid": "editor.title_button",
-      title: "Click to rename",
-      children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "font-display font-semibold text-sm text-foreground truncate max-w-48", children: value }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-60 transition-smooth", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
-          "svg",
-          {
-            viewBox: "0 0 24 24",
-            fill: "none",
-            stroke: "currentColor",
-            strokeWidth: "2",
-            "aria-label": "Edit icon",
-            role: "img",
-            children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" })
-            ]
-          }
-        ) })
-      ]
+      onClick,
+      title: label,
+      "aria-label": label,
+      className: `w-7 h-6 flex items-center justify-center rounded transition-all duration-150 ${active ? "bg-card text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`,
+      children: icon
     }
   );
 }
@@ -40507,227 +40712,373 @@ function EditorContent() {
   const { data: site, isLoading } = useGetSite(id2);
   const updateSite = useUpdateSite();
   const [deviceMode, setDeviceMode] = reactExports.useState("desktop");
-  const [highlightedSection, setHighlightedSection] = reactExports.useState(
-    null
-  );
+  const [activeSection, setActiveSection] = reactExports.useState("nav");
   const [editingField, setEditingField] = reactExports.useState(null);
-  const [savedIndicator, setSavedIndicator] = reactExports.useState(false);
+  const [activeColor, setActiveColor] = reactExports.useState(SWATCHES[0]);
+  const [features, setFeatures] = reactExports.useState({
+    contactForm: true,
+    analytics: true,
+    cookieBanner: false,
+    liveChat: false
+  });
+  const [aiInput, setAiInput] = reactExports.useState("");
+  const [seoTitle, setSeoTitle] = reactExports.useState("");
+  const [seoDesc, setSeoDesc] = reactExports.useState("");
   const sectionRefs = reactExports.useRef({});
-  const generatedData = (site == null ? void 0 : site.generatedData) ?? DEFAULT_SITE;
-  const siteTitle = (site == null ? void 0 : site.title) ?? generatedData.siteTitle;
-  const sectionLabel = (s2, i) => {
-    var _a3;
-    return ((_a3 = s2.heading) == null ? void 0 : _a3.slice(0, 24)) || s2.type || `Section ${i + 1}`;
-  };
-  const sectionKey = (s2, i) => `${s2.type}-${i}`;
-  const scrollToSection = reactExports.useCallback((key) => {
-    setHighlightedSection(key);
-    const el = sectionRefs.current[key];
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  }, []);
+  const generatedData = DEFAULT_SITE;
+  const siteTitle = (site == null ? void 0 : site.name) ?? generatedData.siteTitle;
+  const siteSlug = siteTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 28) || "my-site";
+  const displaySeoTitle = seoTitle || siteTitle;
+  const displaySeoDesc = seoDesc || generatedData.tagline || "";
   const handleSaveEdit = reactExports.useCallback(
     (newValue) => {
       if (!editingField) return;
       const { sectionIndex, field } = editingField;
-      const updated = generatedData.sections.map(
+      generatedData.sections.map(
         (s2, i) => i === sectionIndex ? { ...s2, [field]: newValue } : s2
       );
-      const updatedData = {
-        ...generatedData,
-        sections: updated
-      };
+      ({
+        ...generatedData
+      });
       setEditingField(null);
-      updateSite.mutate(
-        { id: id2, generatedData: updatedData },
-        {
-          onSuccess: () => {
-            setSavedIndicator(true);
-            setTimeout(() => setSavedIndicator(false), 2e3);
-          }
-        }
-      );
+      updateSite.mutate({ id: id2 });
     },
     [editingField, generatedData, id2, updateSite]
   );
-  const handleTitleChange = reactExports.useCallback(
-    (newTitle) => {
-      updateSite.mutate(
-        { id: id2, title: newTitle },
-        {
-          onSuccess: () => {
-            setSavedIndicator(true);
-            setTimeout(() => setSavedIndicator(false), 2e3);
-          }
-        }
-      );
-    },
-    [id2, updateSite]
-  );
-  const handleSave = reactExports.useCallback(() => {
-    updateSite.mutate(
-      { id: id2, title: siteTitle, generatedData },
-      {
-        onSuccess: () => {
-          setSavedIndicator(true);
-          setTimeout(() => setSavedIndicator(false), 2200);
-        }
-      }
-    );
-  }, [id2, siteTitle, generatedData, updateSite]);
+  const scrollToSection = reactExports.useCallback((key) => {
+    setActiveSection(key);
+    const el = sectionRefs.current[key];
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, []);
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(
     "div",
     {
       className: "flex flex-col h-screen bg-background overflow-hidden",
       "data-ocid": "editor.page",
       children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "flex items-center gap-3 px-4 py-2.5 bg-card border-b border-border shadow-subtle z-20 flex-shrink-0", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3 flex-1 min-w-0", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(
-              "button",
-              {
-                type: "button",
-                onClick: () => navigate({ to: "/dashboard" }),
-                className: "flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-smooth p-1.5 rounded-lg hover:bg-secondary",
-                "data-ocid": "editor.back_button",
-                title: "Back to dashboard",
-                children: /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowLeft, { className: "w-4 h-4" })
-              }
-            ),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 flex-shrink-0", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-6 h-6 rounded-md bg-primary flex items-center justify-center", children: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-primary-foreground text-xs font-bold font-display", children: "F" }) }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs text-muted-foreground hidden sm:block", children: "Forge" })
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-px h-5 bg-border" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(InlineTitleEditor, { value: siteTitle, onChange: handleTitleChange })
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-1 bg-background border border-border rounded-xl p-1", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(
-              DeviceBtn,
-              {
-                mode: "desktop",
-                active: deviceMode === "desktop",
-                onClick: () => setDeviceMode("desktop"),
-                icon: /* @__PURE__ */ jsxRuntimeExports.jsx(Laptop, { className: "w-4 h-4" }),
-                label: "Desktop"
-              }
-            ),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(
-              DeviceBtn,
-              {
-                mode: "tablet",
-                active: deviceMode === "tablet",
-                onClick: () => setDeviceMode("tablet"),
-                icon: /* @__PURE__ */ jsxRuntimeExports.jsx(Tablet, { className: "w-4 h-4" }),
-                label: "Tablet"
-              }
-            ),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(
-              DeviceBtn,
-              {
-                mode: "mobile",
-                active: deviceMode === "mobile",
-                onClick: () => setDeviceMode("mobile"),
-                icon: /* @__PURE__ */ jsxRuntimeExports.jsx(Smartphone, { className: "w-4 h-4" }),
-                label: "Mobile"
-              }
-            )
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 flex-shrink-0", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs(
-              "button",
-              {
-                type: "button",
-                onClick: handleSave,
-                disabled: updateSite.isPending,
-                "data-ocid": "editor.save_button",
-                className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-border text-foreground hover:bg-secondary transition-smooth disabled:opacity-50",
-                children: [
-                  updateSite.isPending ? /* @__PURE__ */ jsxRuntimeExports.jsx(LoaderCircle, { className: "w-3.5 h-3.5 animate-spin" }) : savedIndicator ? /* @__PURE__ */ jsxRuntimeExports.jsx(Check, { className: "w-3.5 h-3.5 text-green-500" }) : null,
-                  savedIndicator ? "Saved" : "Save"
-                ]
-              }
-            ),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs(
-              "button",
-              {
-                type: "button",
-                onClick: () => navigate({ to: "/publish/$siteId", params: { siteId } }),
-                "data-ocid": "editor.publish_button",
-                className: "flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold bg-primary text-primary-foreground hover:opacity-90 transition-smooth",
-                children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(Rocket, { className: "w-3.5 h-3.5" }),
-                  "Publish"
-                ]
-              }
-            )
-          ] })
-        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "header",
+          {
+            className: "h-14 flex items-center gap-3 px-6 bg-card border-b border-border z-20 flex-shrink-0",
+            style: { minHeight: 56 },
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "font-display font-bold text-lg text-foreground flex-shrink-0", children: [
+                "Forge",
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-primary", children: "." })
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-px h-5 bg-border flex-shrink-0" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-sm text-muted-foreground min-w-0 truncate flex-1", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "font-semibold text-foreground", children: siteTitle }),
+                " · Editing"
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2.5 flex-shrink-0", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                  "span",
+                  {
+                    className: "inline-flex items-center gap-1.5 bg-primary/10 text-primary border border-primary/30 text-xs font-semibold rounded-full px-3 py-1 cursor-pointer hover:bg-primary/15 transition-colors",
+                    "data-ocid": "editor.preview_tag",
+                    children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(Eye, { className: "w-3 h-3" }),
+                      "Preview"
+                    ]
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                  "button",
+                  {
+                    type: "button",
+                    className: "flex items-center gap-1.5 text-sm font-medium text-muted-foreground border border-border rounded-lg px-3 py-1.5 hover:text-foreground hover:border-muted-foreground/60 transition-all",
+                    "data-ocid": "editor.share_button",
+                    children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(Share2, { className: "w-3.5 h-3.5" }),
+                      "Share"
+                    ]
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                  "button",
+                  {
+                    type: "button",
+                    onClick: () => navigate({ to: "/publish/$siteId", params: { siteId } }),
+                    "data-ocid": "editor.publish_button",
+                    className: "flex items-center gap-1.5 px-4 py-1.5 bg-primary text-primary-foreground font-semibold text-sm rounded-lg hover:opacity-90 transition-opacity",
+                    children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(Rocket, { className: "w-3.5 h-3.5" }),
+                      "Publish"
+                    ]
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "div",
+                  {
+                    className: "w-8 h-8 rounded-full bg-primary/10 text-primary font-display font-bold text-xs flex items-center justify-center flex-shrink-0",
+                    "data-ocid": "editor.avatar",
+                    children: siteTitle.slice(0, 2).toUpperCase()
+                  }
+                )
+              ] })
+            ]
+          }
+        ),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-1 overflow-hidden", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "aside",
+            {
+              className: "w-[252px] flex-shrink-0 bg-card border-r border-border flex flex-col overflow-hidden",
+              "data-ocid": "editor.left_panel",
+              style: { minWidth: 252 },
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[11px] font-bold uppercase tracking-widest text-muted-foreground", children: "Sections" }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                    "button",
+                    {
+                      type: "button",
+                      className: "flex items-center gap-1 text-xs font-semibold text-primary",
+                      "data-ocid": "editor.add_section_button",
+                      children: [
+                        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-base leading-none", children: "+" }),
+                        " Add"
+                      ]
+                    }
+                  )
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "div",
+                  {
+                    className: "flex-1 overflow-y-auto p-2 flex flex-col gap-0.5",
+                    "data-ocid": "editor.section_list",
+                    children: isLoading ? [1, 2, 3, 4, 5].map((i) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      "div",
+                      {
+                        className: "h-9 rounded-lg bg-muted/50 animate-pulse"
+                      },
+                      i
+                    )) : SECTION_DEFS.map((def, index2) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      SectionListItem,
+                      {
+                        def,
+                        isActive: activeSection === def.key,
+                        index: index2,
+                        onClick: () => scrollToSection(def.key)
+                      },
+                      def.key
+                    ))
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "border-t border-border p-2.5 flex-shrink-0", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-1.5 mb-2", children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(Sparkles, { className: "w-2.5 h-2.5 text-primary" }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[10px] font-bold uppercase tracking-widest text-primary", children: "Refine with AI" })
+                  ] }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-1.5", children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      "input",
+                      {
+                        type: "text",
+                        placeholder: '"Make the hero bolder"',
+                        value: aiInput,
+                        onChange: (e) => setAiInput(e.target.value),
+                        className: "flex-1 min-w-0 border border-border rounded-lg px-2.5 py-1.5 text-xs text-foreground bg-card placeholder:text-muted-foreground outline-none focus:border-primary caret-primary transition-colors",
+                        "data-ocid": "editor.ai_input"
+                      }
+                    ),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      "button",
+                      {
+                        type: "button",
+                        className: "w-8 h-8 bg-primary rounded-lg flex items-center justify-center flex-shrink-0 hover:opacity-85 transition-opacity",
+                        "aria-label": "Send AI prompt",
+                        "data-ocid": "editor.ai_send_button",
+                        children: /* @__PURE__ */ jsxRuntimeExports.jsx(Send, { className: "w-3.5 h-3.5 text-white" })
+                      }
+                    )
+                  ] })
+                ] })
+              ]
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(
             "main",
             {
-              className: "flex-1 overflow-auto bg-muted/30 px-4",
+              className: "flex-1 flex flex-col overflow-hidden",
               "data-ocid": "editor.canvas",
-              children: isLoading ? /* @__PURE__ */ jsxRuntimeExports.jsx(
-                "div",
-                {
-                  className: "flex items-center justify-center h-full",
-                  "data-ocid": "editor.loading_state",
-                  children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col items-center gap-3 text-muted-foreground", children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsx(LoaderCircle, { className: "w-8 h-8 animate-spin text-primary" }),
-                    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-sm", children: "Loading your site…" })
-                  ] })
-                }
-              ) : /* @__PURE__ */ jsxRuntimeExports.jsx(DevicePreview, { mode: deviceMode, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-                SitePreview,
-                {
-                  generatedData,
-                  editingField,
-                  onStartEdit: setEditingField,
-                  onSaveEdit: handleSaveEdit,
-                  onCancelEdit: () => setEditingField(null),
-                  highlightedSection,
-                  sectionRefs
-                }
-              ) })
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 px-3.5 py-2 bg-card border-b border-border flex-shrink-0", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center bg-secondary border border-border rounded-lg p-0.5", children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      DeviceBtn,
+                      {
+                        active: deviceMode === "desktop",
+                        onClick: () => setDeviceMode("desktop"),
+                        icon: /* @__PURE__ */ jsxRuntimeExports.jsx(Monitor, { className: "w-3.5 h-3.5" }),
+                        label: "Desktop"
+                      }
+                    ),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      DeviceBtn,
+                      {
+                        active: deviceMode === "tablet",
+                        onClick: () => setDeviceMode("tablet"),
+                        icon: /* @__PURE__ */ jsxRuntimeExports.jsx(Tablet, { className: "w-3.5 h-3.5" }),
+                        label: "Tablet"
+                      }
+                    ),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      DeviceBtn,
+                      {
+                        active: deviceMode === "mobile",
+                        onClick: () => setDeviceMode("mobile"),
+                        icon: /* @__PURE__ */ jsxRuntimeExports.jsx(Smartphone, { className: "w-3.5 h-3.5" }),
+                        label: "Mobile"
+                      }
+                    )
+                  ] }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs text-muted-foreground font-mono ml-auto", children: "100%" })
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "div",
+                  {
+                    className: "flex-1 overflow-auto bg-[#dde1eb]",
+                    style: { background: "#dde1eb" },
+                    children: isLoading ? /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      "div",
+                      {
+                        className: "flex items-center justify-center h-full",
+                        "data-ocid": "editor.loading_state",
+                        children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col items-center gap-3 text-muted-foreground", children: [
+                          /* @__PURE__ */ jsxRuntimeExports.jsx(LoaderCircle, { className: "w-8 h-8 animate-spin text-primary" }),
+                          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-sm", children: "Loading your site…" })
+                        ] })
+                      }
+                    ) : /* @__PURE__ */ jsxRuntimeExports.jsx(DevicePreview, { mode: deviceMode, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      SitePreview,
+                      {
+                        generatedData,
+                        editingField,
+                        onStartEdit: setEditingField,
+                        onSaveEdit: handleSaveEdit,
+                        onCancelEdit: () => setEditingField(null),
+                        highlightedSection: activeSection,
+                        sectionRefs
+                      }
+                    ) })
+                  }
+                )
+              ]
             }
           ),
           /* @__PURE__ */ jsxRuntimeExports.jsxs(
             "aside",
             {
-              className: "w-[200px] flex-shrink-0 bg-card border-l border-border flex flex-col overflow-hidden",
-              "data-ocid": "editor.sidebar",
+              className: "w-[272px] flex-shrink-0 bg-card border-l border-border flex flex-col overflow-y-auto",
+              "data-ocid": "editor.right_panel",
+              style: { minWidth: 272 },
               children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "px-3 py-3 border-b border-border", children: /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-xs font-semibold text-muted-foreground uppercase tracking-wider", children: "Sections" }) }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx(
-                  "div",
-                  {
-                    className: "flex-1 overflow-y-auto p-2 flex flex-col gap-1",
-                    "data-ocid": "editor.section_list",
-                    children: isLoading ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex flex-col gap-1.5 p-1", children: [1, 2, 3, 4].map((i) => /* @__PURE__ */ jsxRuntimeExports.jsx(
-                      "div",
-                      {
-                        className: "h-8 rounded-lg bg-muted/60 animate-pulse"
-                      },
-                      i
-                    )) }) : generatedData.sections.map((section, index2) => {
-                      const key = sectionKey(section, index2);
-                      return /* @__PURE__ */ jsxRuntimeExports.jsx(
-                        SectionListItem,
+                /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "px-4 py-3 border-b border-border flex-shrink-0", children: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[11px] font-bold uppercase tracking-widest text-muted-foreground", children: "Page settings" }) }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "px-4 py-4 border-b border-border", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-3", children: "SEO" }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col gap-2.5", children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col gap-1", children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        "label",
                         {
-                          label: sectionLabel(section, index2),
-                          isActive: highlightedSection === key,
-                          index: index2,
-                          onClick: () => scrollToSection(key)
-                        },
-                        key
-                      );
-                    })
-                  }
-                ),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "px-3 py-3 border-t border-border", children: /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[10px] text-muted-foreground leading-relaxed", children: "Click any heading or paragraph in the preview to edit inline." }) })
+                          className: "text-xs font-medium text-foreground",
+                          htmlFor: "seo-title",
+                          children: "Page title"
+                        }
+                      ),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        "input",
+                        {
+                          id: "seo-title",
+                          type: "text",
+                          value: displaySeoTitle,
+                          onChange: (e) => setSeoTitle(e.target.value),
+                          className: "border border-border rounded-lg px-2.5 py-2 text-sm text-foreground bg-card outline-none focus:border-primary transition-colors",
+                          "data-ocid": "editor.seo_title_input"
+                        }
+                      )
+                    ] }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col gap-1", children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        "label",
+                        {
+                          className: "text-xs font-medium text-foreground",
+                          htmlFor: "seo-desc",
+                          children: "Meta description"
+                        }
+                      ),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        "textarea",
+                        {
+                          id: "seo-desc",
+                          rows: 3,
+                          value: displaySeoDesc,
+                          onChange: (e) => setSeoDesc(e.target.value),
+                          className: "border border-border rounded-lg px-2.5 py-2 text-xs text-foreground bg-card outline-none focus:border-primary transition-colors resize-none leading-relaxed",
+                          "data-ocid": "editor.seo_desc_textarea"
+                        }
+                      )
+                    ] })
+                  ] })
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "px-4 py-4 border-b border-border", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-3", children: "Accent colour" }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex gap-1.5 flex-wrap", children: SWATCHES.map((color2) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    "button",
+                    {
+                      type: "button",
+                      "aria-label": `Set accent color ${color2}`,
+                      onClick: () => setActiveColor(color2),
+                      "data-ocid": "editor.color_swatch",
+                      className: `w-[26px] h-[26px] rounded transition-all ${activeColor === color2 ? "border-2 border-primary" : "border-2 border-transparent"}`,
+                      style: { background: color2 }
+                    },
+                    color2
+                  )) })
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "px-4 py-4 border-b border-border", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-3", children: "Features" }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex flex-col gap-2", children: [
+                    { key: "contactForm", label: "Contact form" },
+                    { key: "analytics", label: "Analytics" },
+                    { key: "cookieBanner", label: "Cookie banner" },
+                    { key: "liveChat", label: "Live chat" }
+                  ].map(({ key, label }) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-sm text-foreground", children: label }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      Toggle,
+                      {
+                        on: features[key],
+                        onToggle: () => setFeatures((f) => ({ ...f, [key]: !f[key] }))
+                      }
+                    )
+                  ] }, key)) })
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "px-4 py-4", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-3", children: "Domain" }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-xs text-foreground mb-3 leading-relaxed", children: [
+                    "Publishing to",
+                    " ",
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs("strong", { className: "font-mono text-primary text-[10px]", children: [
+                      siteSlug,
+                      ".forge.app"
+                    ] })
+                  ] }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                    "button",
+                    {
+                      type: "button",
+                      className: "w-full flex items-center justify-center gap-1.5 border border-border rounded-lg py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:border-muted-foreground/60 transition-all",
+                      "data-ocid": "editor.connect_domain_button",
+                      children: [
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(Globe, { className: "w-3.5 h-3.5" }),
+                        "Connect custom domain"
+                      ]
+                    }
+                  )
+                ] })
               ]
             }
           )
@@ -40738,6 +41089,4649 @@ function EditorContent() {
 }
 function EditorPage() {
   return /* @__PURE__ */ jsxRuntimeExports.jsx(ProtectedRoute, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(EditorContent, {}) });
+}
+const LOG_STEPS = [
+  {
+    icon: Cpu,
+    label: "Analysing your brief",
+    sub: "Reading project type, niche, and desired features"
+  },
+  {
+    icon: LayoutTemplate,
+    label: "Designing page layout",
+    sub: "Selecting sections and visual hierarchy"
+  },
+  {
+    icon: Palette,
+    label: "Applying visual style",
+    sub: "Typography, colours, and spacing"
+  },
+  {
+    icon: PencilLine,
+    label: "Writing copy",
+    sub: "Headlines, descriptions, and CTAs"
+  },
+  {
+    icon: Image,
+    label: "Building sections",
+    sub: "Adding requested features and components"
+  },
+  {
+    icon: Search,
+    label: "Configuring SEO",
+    sub: "Meta title, description, Open Graph tags"
+  },
+  {
+    icon: Smartphone,
+    label: "Optimising for mobile",
+    sub: "Responsive breakpoints and touch interactions"
+  },
+  {
+    icon: Rocket,
+    label: "Preparing preview",
+    sub: "Compiling and rendering your site"
+  }
+];
+function SkeletonBlock({
+  w: w2,
+  h: h2,
+  delay: delay2 = 0
+}) {
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(
+    "div",
+    {
+      className: "rounded bg-primary/10 animate-pulse",
+      style: { width: w2, height: h2, animationDelay: `${delay2}ms` }
+    }
+  );
+}
+function MiniSitePreview({ siteTitle }) {
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    "div",
+    {
+      className: "absolute inset-0 overflow-hidden",
+      "data-ocid": "generate.preview_panel",
+      children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "bg-primary/5 border-b border-border p-3 flex items-center justify-between", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "font-display font-extrabold text-xs text-primary", children: siteTitle }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-3", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[9px] text-muted-foreground font-display font-medium", children: "Work" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[9px] text-muted-foreground font-display font-medium", children: "About" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "bg-primary text-primary-foreground text-[8px] font-bold font-display px-2 py-0.5 rounded", children: "Contact" })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "p-4 bg-gradient-to-br from-primary/5 to-background", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "font-display font-black text-foreground leading-tight text-lg mb-2", children: siteTitle }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[10px] text-muted-foreground leading-relaxed mb-3 max-w-[200px]", children: "Crafted with care — ready to impress your visitors." }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "bg-primary text-primary-foreground text-[9px] font-bold font-display px-2.5 py-1 rounded", children: "View work" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "border border-primary text-primary text-[9px] font-semibold font-display px-2.5 py-1 rounded", children: "Download CV" })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "px-4 pb-3 grid grid-cols-3 gap-2", children: ["Case Studies", "Recognition", "Available"].map((label) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "bg-card border border-border rounded p-2", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-4 h-4 rounded bg-primary/20 mb-1.5" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[9px] font-bold font-display text-foreground", children: label }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[8px] text-muted-foreground mt-0.5", children: "Details here" })
+        ] }, label)) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "absolute bottom-2 right-2 flex items-center gap-1 bg-primary/10 border border-primary/30 rounded-full px-2 py-0.5", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "w-1.5 h-1.5 rounded-full bg-primary animate-pulse" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[8px] font-bold font-display text-primary", children: "Generated in 8.3s" })
+        ] })
+      ]
+    }
+  );
+}
+function GeneratePage() {
+  const { siteId } = useParams({ from: "/generate/$siteId" });
+  const navigate = useNavigate();
+  const parsedId = BigInt(siteId);
+  const { data: site } = useGetSite(parsedId);
+  const [stepStates, setStepStates] = reactExports.useState(
+    Array(8).fill("pending")
+  );
+  const [progress2, setProgress] = reactExports.useState(0);
+  const [showPreview, setShowPreview] = reactExports.useState(false);
+  const [showCta, setShowCta] = reactExports.useState(false);
+  const animationDone = reactExports.useRef(false);
+  const siteTitle = (site == null ? void 0 : site.name) ?? "My Site";
+  reactExports.useEffect(() => {
+    if (animationDone.current) return;
+    animationDone.current = true;
+    const runStep = (index2) => {
+      if (index2 >= LOG_STEPS.length) {
+        setTimeout(() => {
+          setShowPreview(true);
+          setTimeout(() => setShowCta(true), 1500);
+        }, 700);
+        return;
+      }
+      setStepStates((prev) => {
+        const next = [...prev];
+        next[index2] = "running";
+        return next;
+      });
+      const stepDuration = 380 + Math.random() * 280;
+      setTimeout(() => {
+        setStepStates((prev) => {
+          const next = [...prev];
+          next[index2] = "done";
+          return next;
+        });
+        setProgress(Math.round((index2 + 1) / LOG_STEPS.length * 100));
+        runStep(index2 + 1);
+      }, stepDuration);
+    };
+    setTimeout(() => runStep(0), 500);
+  }, []);
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    "div",
+    {
+      "data-ocid": "generate.page",
+      className: "min-h-screen bg-background flex flex-col",
+      children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("nav", { className: "bg-card border-b border-border px-6 h-14 flex items-center justify-between", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "font-display font-extrabold text-lg text-foreground", children: [
+            "Forge",
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-primary", children: "." })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex items-center gap-2", children: /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs text-muted-foreground font-display", children: "Building your site…" }) })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-1 overflow-hidden", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "w-[360px] flex-shrink-0 bg-card border-r border-border flex flex-col", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "px-6 pt-6 pb-4 border-b border-border", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "font-display font-bold text-[17px] text-foreground mb-1", children: "Building your site…" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[13px] text-muted-foreground", children: "Under 10 seconds. Watch it come together." }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-3 inline-flex items-center gap-1.5 bg-primary/5 border border-primary/30 rounded-full px-3 py-1.5", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Sparkles, { className: "w-3 h-3 text-primary" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[12px] font-display font-semibold text-primary", children: siteTitle })
+              ] })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 overflow-y-auto px-4 py-3 flex flex-col gap-2", children: LOG_STEPS.map((step, i) => {
+              const state = stepStates[i];
+              const Icon2 = step.icon;
+              return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                "div",
+                {
+                  "data-ocid": `generate.log_item.${i + 1}`,
+                  className: `flex items-start gap-3 transition-all duration-300 ${state === "pending" ? "opacity-40" : "opacity-100"}`,
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      "div",
+                      {
+                        className: `w-[30px] h-[30px] rounded-full flex-shrink-0 flex items-center justify-center border transition-all duration-300 mt-0.5 ${state === "done" ? "bg-accent border-accent" : state === "running" ? "bg-primary/10 border-primary" : "bg-card border-border"}`,
+                        children: state === "done" ? /* @__PURE__ */ jsxRuntimeExports.jsx(
+                          "svg",
+                          {
+                            role: "img",
+                            "aria-label": "Done",
+                            className: "w-3 h-3 text-accent-foreground",
+                            viewBox: "0 0 12 12",
+                            fill: "none",
+                            children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                              "path",
+                              {
+                                d: "M2 6l3 3 5-5",
+                                stroke: "currentColor",
+                                strokeWidth: "2",
+                                strokeLinecap: "round",
+                                strokeLinejoin: "round"
+                              }
+                            )
+                          }
+                        ) : /* @__PURE__ */ jsxRuntimeExports.jsx(
+                          Icon2,
+                          {
+                            className: `w-3.5 h-3.5 ${state === "running" ? "text-primary animate-spin" : "text-muted-foreground"}`,
+                            style: state === "running" ? { animationDuration: "1s" } : {}
+                          }
+                        )
+                      }
+                    ),
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "min-w-0 pt-0.5", children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        "p",
+                        {
+                          className: `font-display text-[12px] leading-tight ${state === "running" ? "font-bold text-foreground" : "font-semibold text-foreground"}`,
+                          children: step.label
+                        }
+                      ),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[11px] text-muted-foreground leading-snug mt-0.5", children: step.sub })
+                    ] })
+                  ]
+                },
+                step.label
+              );
+            }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "px-5 py-4 border-t border-border", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between mb-2", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[12px] font-display font-semibold text-muted-foreground", children: "Progress" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                  "span",
+                  {
+                    className: "text-[12px] font-display font-bold text-primary",
+                    "data-ocid": "generate.progress_pct",
+                    children: [
+                      progress2,
+                      "%"
+                    ]
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "h-1 bg-border rounded-full overflow-hidden", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "div",
+                {
+                  "data-ocid": "generate.progress_bar",
+                  className: "h-full bg-primary rounded-full transition-all duration-700",
+                  style: { width: `${progress2}%` }
+                }
+              ) })
+            ] })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 bg-card/50 flex items-center justify-center p-8", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "w-full max-w-[640px]", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[11px] font-display font-bold tracking-widest text-muted-foreground uppercase text-center mb-4", children: "Live preview" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(
+              "div",
+              {
+                "data-ocid": "generate.browser_window",
+                className: "bg-card border border-border rounded-xl overflow-hidden shadow-browser",
+                children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "bg-card border-b border-border px-3 py-2.5 flex items-center gap-2", children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-1.5", children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "w-2.5 h-2.5 rounded-full bg-[#ff5f57]" }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "w-2.5 h-2.5 rounded-full bg-[#28c840]" })
+                    ] }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1 bg-background border border-border rounded px-3 py-1 font-mono text-[11px] text-muted-foreground", children: [
+                      "forge.app/preview/",
+                      siteId.slice(0, 8)
+                    ] })
+                  ] }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "relative", style: { minHeight: 320 }, children: [
+                    !showPreview && /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                      "div",
+                      {
+                        className: "absolute inset-0 p-5 flex flex-col gap-3",
+                        "data-ocid": "generate.skeleton",
+                        children: [
+                          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(SkeletonBlock, { w: "80px", h: "10px" }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2", children: [
+                              /* @__PURE__ */ jsxRuntimeExports.jsx(SkeletonBlock, { w: "36px", h: "8px", delay: 200 }),
+                              /* @__PURE__ */ jsxRuntimeExports.jsx(SkeletonBlock, { w: "36px", h: "8px", delay: 400 }),
+                              /* @__PURE__ */ jsxRuntimeExports.jsx(SkeletonBlock, { w: "52px", h: "20px", delay: 600 })
+                            ] })
+                          ] }),
+                          /* @__PURE__ */ jsxRuntimeExports.jsx(SkeletonBlock, { w: "65%", h: "22px", delay: 100 }),
+                          /* @__PURE__ */ jsxRuntimeExports.jsx(SkeletonBlock, { w: "50%", h: "13px", delay: 200 }),
+                          /* @__PURE__ */ jsxRuntimeExports.jsx(SkeletonBlock, { w: "42%", h: "13px", delay: 300 }),
+                          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2 mt-1", children: [
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(SkeletonBlock, { w: "90px", h: "26px", delay: 400 }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(SkeletonBlock, { w: "80px", h: "26px", delay: 500 })
+                          ] }),
+                          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid grid-cols-3 gap-2 mt-2", children: [
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(SkeletonBlock, { w: "100%", h: "58px", delay: 300 }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(SkeletonBlock, { w: "100%", h: "58px", delay: 450 }),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(SkeletonBlock, { w: "100%", h: "58px", delay: 600 })
+                          ] })
+                        ]
+                      }
+                    ),
+                    showPreview && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "animate-fade-in", children: /* @__PURE__ */ jsxRuntimeExports.jsx(MiniSitePreview, { siteTitle }) })
+                  ] })
+                ]
+              }
+            )
+          ] }) })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "div",
+          {
+            "data-ocid": "generate.cta_bar",
+            className: `bg-card border-t border-border px-6 py-4 flex items-center justify-between transition-all duration-500 ${showCta ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"}`,
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-sm text-muted-foreground", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "font-display font-bold text-foreground", children: "Your site is ready." }),
+                " ",
+                "Create a free account to save it and get a live link."
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "button",
+                  {
+                    type: "button",
+                    "data-ocid": "generate.view_preview_button",
+                    onClick: () => navigate({ to: "/signup", search: { siteId } }),
+                    className: "px-4 py-2 text-[13px] font-display font-semibold border border-border rounded-lg text-foreground hover:bg-muted transition-forge",
+                    children: "View full preview"
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "button",
+                  {
+                    type: "button",
+                    "data-ocid": "generate.save_site_button",
+                    onClick: () => navigate({ to: "/signup", search: { siteId } }),
+                    className: "flex items-center gap-1.5 px-4 py-2 text-[13px] font-display font-bold bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-forge",
+                    children: "Save my site — it's free"
+                  }
+                )
+              ] })
+            ]
+          }
+        )
+      ]
+    }
+  );
+}
+function useReveal() {
+  const ref = reactExports.useRef(null);
+  const [visible, setVisible] = reactExports.useState(false);
+  reactExports.useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          obs.disconnect();
+        }
+      },
+      { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  return { ref, visible };
+}
+function Reveal({
+  children,
+  delay: delay2 = 0,
+  className = ""
+}) {
+  const { ref, visible } = useReveal();
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(
+    "div",
+    {
+      ref,
+      className,
+      style: {
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateY(0)" : "translateY(28px)",
+        transition: `opacity 0.8s cubic-bezier(0.16,1,0.3,1) ${delay2}ms, transform 0.8s cubic-bezier(0.16,1,0.3,1) ${delay2}ms`
+      },
+      children
+    }
+  );
+}
+function Nav({ onStart }) {
+  const [scrolled, setScrolled] = reactExports.useState(false);
+  const [menuOpen, setMenuOpen] = reactExports.useState(false);
+  const navigate = useNavigate();
+  reactExports.useEffect(() => {
+    const h2 = () => setScrolled(window.scrollY > 80);
+    window.addEventListener("scroll", h2, { passive: true });
+    return () => window.removeEventListener("scroll", h2);
+  }, []);
+  const scrollTo = (id2) => {
+    var _a3;
+    setMenuOpen(false);
+    (_a3 = document.getElementById(id2)) == null ? void 0 : _a3.scrollIntoView({ behavior: "smooth" });
+  };
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "nav",
+      {
+        style: {
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 900,
+          padding: "0 48px",
+          height: 68,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          transition: "background 0.4s ease, border-color 0.4s ease",
+          borderBottom: scrolled ? "1px solid #dde2ef" : "1px solid transparent",
+          background: scrolled ? "rgba(255,255,255,0.88)" : "transparent",
+          backdropFilter: scrolled ? "blur(16px)" : "none"
+        },
+        "data-ocid": "landing.nav",
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "a",
+            {
+              href: "/",
+              style: {
+                fontFamily: "Montserrat,sans-serif",
+                fontSize: 26,
+                fontWeight: 700,
+                color: "#0d1117",
+                letterSpacing: "-0.5px",
+                textDecoration: "none"
+              },
+              "data-ocid": "landing.nav_logo",
+              children: [
+                "Forge",
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { style: { color: "#0051ff" }, children: "." })
+              ]
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "ul",
+            {
+              className: "hidden md:flex",
+              style: {
+                display: "flex",
+                alignItems: "center",
+                gap: 36,
+                listStyle: "none",
+                margin: 0,
+                padding: 0
+              },
+              children: NAV_LINKS$1.map((l) => /* @__PURE__ */ jsxRuntimeExports.jsx("li", { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "button",
+                {
+                  type: "button",
+                  onClick: () => scrollTo(l.id),
+                  style: {
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    color: "#4a5568",
+                    fontSize: 14,
+                    fontWeight: 500,
+                    transition: "color 0.2s"
+                  },
+                  onMouseOver: (e) => {
+                    e.currentTarget.style.color = "#0d1117";
+                  },
+                  onFocus: (e) => {
+                    e.currentTarget.style.color = "#0d1117";
+                  },
+                  onBlur: (e) => {
+                    e.currentTarget.style.color = "#4a5568";
+                  },
+                  onMouseOut: (e) => {
+                    e.currentTarget.style.color = "#4a5568";
+                  },
+                  "data-ocid": `landing.nav_link.${l.label.toLowerCase()}`,
+                  children: l.label
+                }
+              ) }, l.label))
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "div",
+            {
+              className: "hidden md:flex",
+              style: { display: "flex", alignItems: "center", gap: 12 },
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "button",
+                  {
+                    type: "button",
+                    onClick: () => navigate({ to: "/dashboard" }),
+                    style: {
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 8,
+                      color: "#4a5568",
+                      fontWeight: 500,
+                      fontSize: 15,
+                      border: "1px solid #dde2ef",
+                      borderRadius: 8,
+                      padding: "13px 24px",
+                      background: "transparent",
+                      cursor: "pointer",
+                      transition: "color 0.25s, border-color 0.25s"
+                    },
+                    onMouseOver: (e) => {
+                      e.currentTarget.style.color = "#0d1117";
+                      e.currentTarget.style.borderColor = "#9aa0b4";
+                    },
+                    onMouseOut: (e) => {
+                      e.currentTarget.style.color = "#4a5568";
+                      e.currentTarget.style.borderColor = "#dde2ef";
+                    },
+                    onFocus: (e) => {
+                      e.currentTarget.style.color = "#0d1117";
+                      e.currentTarget.style.borderColor = "#9aa0b4";
+                    },
+                    onBlur: (e) => {
+                      e.currentTarget.style.color = "#4a5568";
+                      e.currentTarget.style.borderColor = "#dde2ef";
+                    },
+                    "data-ocid": "landing.nav_signin_button",
+                    children: "Sign In"
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "button",
+                  {
+                    type: "button",
+                    onClick: onStart,
+                    style: {
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 8,
+                      background: "linear-gradient(135deg,#0051ff,#3374ff)",
+                      color: "#fff",
+                      fontFamily: "Roboto,sans-serif",
+                      fontWeight: 700,
+                      fontSize: 15,
+                      borderRadius: 8,
+                      padding: "14px 28px",
+                      border: "none",
+                      cursor: "pointer",
+                      transition: "opacity 0.3s, transform 0.3s"
+                    },
+                    onMouseOver: (e) => {
+                      e.currentTarget.style.opacity = "0.88";
+                      e.currentTarget.style.transform = "translateY(-2px)";
+                    },
+                    onMouseOut: (e) => {
+                      e.currentTarget.style.opacity = "1";
+                      e.currentTarget.style.transform = "none";
+                    },
+                    onFocus: (e) => {
+                      e.currentTarget.style.opacity = "0.88";
+                      e.currentTarget.style.transform = "translateY(-2px)";
+                    },
+                    onBlur: (e) => {
+                      e.currentTarget.style.opacity = "1";
+                      e.currentTarget.style.transform = "none";
+                    },
+                    "data-ocid": "landing.nav_start_button",
+                    children: "Start for Free"
+                  }
+                )
+              ]
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "button",
+            {
+              type: "button",
+              className: "flex md:hidden flex-col",
+              onClick: () => setMenuOpen(!menuOpen),
+              "aria-label": "Toggle menu",
+              "aria-expanded": menuOpen,
+              "data-ocid": "landing.hamburger_button",
+              style: {
+                gap: 5,
+                padding: 4,
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                display: "flex",
+                flexDirection: "column"
+              },
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "span",
+                  {
+                    style: {
+                      display: "block",
+                      width: 22,
+                      height: 2,
+                      background: "#4a5568",
+                      borderRadius: 2,
+                      transition: "all 0.3s",
+                      transform: menuOpen ? "translateY(7px) rotate(45deg)" : "none"
+                    }
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "span",
+                  {
+                    style: {
+                      display: "block",
+                      width: 22,
+                      height: 2,
+                      background: "#4a5568",
+                      borderRadius: 2,
+                      transition: "all 0.3s",
+                      opacity: menuOpen ? 0 : 1
+                    }
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "span",
+                  {
+                    style: {
+                      display: "block",
+                      width: 22,
+                      height: 2,
+                      background: "#4a5568",
+                      borderRadius: 2,
+                      transition: "all 0.3s",
+                      transform: menuOpen ? "translateY(-7px) rotate(-45deg)" : "none"
+                    }
+                  }
+                )
+              ]
+            }
+          )
+        ]
+      }
+    ),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "div",
+      {
+        style: {
+          position: "fixed",
+          inset: 0,
+          background: "#fff",
+          zIndex: 800,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 32,
+          opacity: menuOpen ? 1 : 0,
+          pointerEvents: menuOpen ? "all" : "none",
+          transition: "opacity 0.35s"
+        },
+        "data-ocid": "landing.mobile_menu",
+        children: [
+          NAV_LINKS$1.map((l) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "button",
+            {
+              type: "button",
+              onClick: () => scrollTo(l.id),
+              style: {
+                fontFamily: "Montserrat,sans-serif",
+                fontSize: 36,
+                color: "#0d1117",
+                fontWeight: 600,
+                background: "none",
+                border: "none",
+                cursor: "pointer"
+              },
+              children: l.label
+            },
+            l.label
+          )),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "button",
+            {
+              type: "button",
+              onClick: () => {
+                setMenuOpen(false);
+                navigate({ to: "/dashboard" });
+              },
+              style: {
+                fontFamily: "Montserrat,sans-serif",
+                fontSize: 36,
+                color: "#0d1117",
+                fontWeight: 600,
+                background: "none",
+                border: "none",
+                cursor: "pointer"
+              },
+              children: "Sign In"
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "button",
+            {
+              type: "button",
+              onClick: () => {
+                setMenuOpen(false);
+                onStart();
+              },
+              style: {
+                background: "linear-gradient(135deg,#0051ff,#3374ff)",
+                color: "#fff",
+                fontFamily: "Roboto,sans-serif",
+                fontWeight: 700,
+                fontSize: 15,
+                borderRadius: 8,
+                padding: "14px 28px",
+                border: "none",
+                cursor: "pointer",
+                marginTop: 8
+              },
+              "data-ocid": "landing.mobile_start_button",
+              children: "Start for Free"
+            }
+          )
+        ]
+      }
+    )
+  ] });
+}
+function HeroWizard({
+  onGenerate
+}) {
+  const [step, setStep] = reactExports.useState(1);
+  const [answers, setAnswers] = reactExports.useState({
+    siteType: "",
+    niche: "",
+    vibe: "",
+    features: []
+  });
+  const nicheRef = reactExports.useRef(null);
+  const TOTAL = 4;
+  const canProceed = () => {
+    var _a3;
+    if (step === 1) return answers.siteType !== "";
+    if (step === 2)
+      return (((_a3 = nicheRef.current) == null ? void 0 : _a3.value.trim()) ?? answers.niche) !== "";
+    if (step === 3) return answers.vibe !== "";
+    return true;
+  };
+  const handleNext = () => {
+    var _a3;
+    if (step <= TOTAL && !canProceed()) return;
+    const niche = ((_a3 = nicheRef.current) == null ? void 0 : _a3.value.trim()) ?? answers.niche;
+    const updated = { ...answers, niche };
+    if (step === TOTAL) {
+      setAnswers(updated);
+      setStep(5);
+      return;
+    }
+    if (step === 5) {
+      onGenerate(updated);
+      return;
+    }
+    if (step === 2) setAnswers((a2) => ({ ...a2, niche }));
+    setStep((s2) => s2 + 1);
+  };
+  const summary = `Build me a ${answers.siteType || "website"} for ${answers.niche || "my project"}. The design should feel ${answers.vibe || "minimal"}. Include: ${answers.features.length ? answers.features.join(", ") : "no extra features"}.`;
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    "div",
+    {
+      style: {
+        width: "100%",
+        background: "#fff",
+        border: "2px solid #dde2ef",
+        borderRadius: 16,
+        overflow: "hidden"
+      },
+      "data-ocid": "landing.wizard",
+      children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "div",
+          {
+            style: {
+              display: "flex",
+              alignItems: "center",
+              padding: "18px 28px",
+              borderBottom: "1px solid #dde2ef"
+            },
+            children: [1, 2, 3, 4].map((n, idx) => /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                "div",
+                {
+                  style: {
+                    display: "flex",
+                    alignItems: "center",
+                    flex: idx < 3 ? 1 : "none"
+                  },
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      "div",
+                      {
+                        style: {
+                          width: 28,
+                          height: 28,
+                          borderRadius: "50%",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: 11,
+                          fontWeight: 700,
+                          fontFamily: "Montserrat,sans-serif",
+                          flexShrink: 0,
+                          border: n < step ? "1.5px solid #0051ff" : n === step ? "1.5px solid #0051ff" : "1.5px solid #dde2ef",
+                          background: n < step ? "#0051ff" : n === step ? "rgba(0,81,255,0.06)" : "#eef1f8",
+                          color: n < step ? "#fff" : n === step ? "#0051ff" : "#9aa0b4",
+                          transition: "all 0.35s cubic-bezier(0.16,1,0.3,1)"
+                        },
+                        children: n < step ? "✓" : n
+                      }
+                    ),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      "span",
+                      {
+                        style: {
+                          fontSize: 11,
+                          fontWeight: 600,
+                          fontFamily: "Montserrat,sans-serif",
+                          marginLeft: 8,
+                          whiteSpace: "nowrap",
+                          color: n === step ? "#4a5568" : "#9aa0b4",
+                          letterSpacing: "0.3px"
+                        },
+                        children: ["Site type", "Your niche", "Look & feel", "Features"][n - 1]
+                      }
+                    )
+                  ]
+                },
+                n
+              ),
+              idx < 3 && /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "div",
+                {
+                  style: {
+                    flex: 1,
+                    height: 1,
+                    background: n < step ? "rgba(0,81,255,0.35)" : "#dde2ef",
+                    margin: "0 12px",
+                    transition: "background 0.35s"
+                  }
+                },
+                `c${n}`
+              )
+            ] }))
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { padding: "28px 28px 24px" }, children: [
+          step === 1 && /* @__PURE__ */ jsxRuntimeExports.jsx(
+            WizStep1,
+            {
+              answers,
+              setAnswers,
+              onAutoAdvance: () => setTimeout(() => setStep(2), 280)
+            }
+          ),
+          step === 2 && /* @__PURE__ */ jsxRuntimeExports.jsx(WizStep2, { nicheRef, answers }),
+          step === 3 && /* @__PURE__ */ jsxRuntimeExports.jsx(
+            WizStep3,
+            {
+              answers,
+              setAnswers,
+              onAutoAdvance: () => setTimeout(() => setStep(4), 280)
+            }
+          ),
+          step === 4 && /* @__PURE__ */ jsxRuntimeExports.jsx(WizStep4, { answers, setAnswers }),
+          step === 5 && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              "p",
+              {
+                style: {
+                  fontFamily: "Montserrat,sans-serif",
+                  fontSize: 15,
+                  fontWeight: 700,
+                  color: "#0d1117",
+                  marginBottom: 6
+                },
+                children: "Here's your brief — ready to build?"
+              }
+            ),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { style: { fontSize: 13, color: "#9aa0b4", marginBottom: 20 }, children: "Forge has everything it needs. Hit generate and watch it come alive." }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(
+              "div",
+              {
+                style: {
+                  background: "#eef1f8",
+                  border: "1px solid rgba(0,81,255,0.2)",
+                  borderRadius: 12,
+                  padding: "16px 20px"
+                },
+                children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    "div",
+                    {
+                      style: {
+                        fontSize: 10,
+                        fontWeight: 700,
+                        letterSpacing: "1.5px",
+                        textTransform: "uppercase",
+                        color: "#0051ff",
+                        marginBottom: 10,
+                        fontFamily: "Montserrat,sans-serif"
+                      },
+                      children: "Your prompt"
+                    }
+                  ),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    "div",
+                    {
+                      style: {
+                        fontFamily: "Fira Code,monospace",
+                        fontSize: 13,
+                        color: "#4a5568",
+                        lineHeight: 1.7
+                      },
+                      children: summary
+                    }
+                  )
+                ]
+              }
+            )
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "div",
+          {
+            style: {
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "16px 28px 24px",
+              borderTop: "1px solid #dde2ef"
+            },
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "button",
+                {
+                  type: "button",
+                  onClick: () => setStep((s2) => Math.max(1, s2 - 1)),
+                  disabled: step === 1,
+                  style: {
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: "#9aa0b4",
+                    fontFamily: "Montserrat,sans-serif",
+                    padding: "8px 0",
+                    background: "none",
+                    border: "none",
+                    cursor: step === 1 ? "default" : "pointer",
+                    opacity: step === 1 ? 0 : 1,
+                    transition: "opacity 0.2s",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 4
+                  },
+                  "data-ocid": "landing.wizard_back_button",
+                  children: "← Back"
+                }
+              ),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { style: { fontSize: 12, color: "#9aa0b4" }, children: step > TOTAL ? "Ready to launch" : `Step ${step} of ${TOTAL}` }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "button",
+                {
+                  type: "button",
+                  onClick: handleNext,
+                  style: {
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 8,
+                    background: "linear-gradient(135deg,#0051ff,#3374ff)",
+                    color: "#fff",
+                    fontFamily: "Montserrat,sans-serif",
+                    fontWeight: 700,
+                    fontSize: 14,
+                    borderRadius: 10,
+                    padding: "12px 28px",
+                    border: "none",
+                    cursor: "pointer",
+                    transition: "all 0.3s cubic-bezier(0.16,1,0.3,1)"
+                  },
+                  onMouseOver: (e) => {
+                    e.currentTarget.style.opacity = "0.88";
+                    e.currentTarget.style.transform = "translateY(-1px)";
+                  },
+                  onMouseOut: (e) => {
+                    e.currentTarget.style.opacity = "1";
+                    e.currentTarget.style.transform = "none";
+                  },
+                  onFocus: (e) => {
+                    e.currentTarget.style.opacity = "0.88";
+                    e.currentTarget.style.transform = "translateY(-1px)";
+                  },
+                  onBlur: (e) => {
+                    e.currentTarget.style.opacity = "1";
+                    e.currentTarget.style.transform = "none";
+                  },
+                  "data-ocid": "landing.wizard_next_button",
+                  children: step > TOTAL ? "⚡ Generate My Site" : step === TOTAL ? "Review brief →" : "Continue →"
+                }
+              )
+            ]
+          }
+        )
+      ]
+    }
+  );
+}
+function WizOptBtn({
+  selected,
+  onClick,
+  Icon: Icon2,
+  label,
+  dataOcid
+}) {
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    "button",
+    {
+      type: "button",
+      onClick,
+      style: {
+        border: selected ? "1.5px solid #0051ff" : "1.5px solid #dde2ef",
+        borderRadius: 12,
+        padding: "14px 10px",
+        textAlign: "center",
+        cursor: "pointer",
+        background: selected ? "rgba(0,81,255,0.07)" : "rgba(0,81,255,0.025)",
+        transition: "all 0.25s cubic-bezier(0.16,1,0.3,1)"
+      },
+      "aria-pressed": selected,
+      "data-ocid": dataOcid,
+      children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          Icon2,
+          {
+            style: {
+              width: 24,
+              height: 24,
+              display: "block",
+              margin: "0 auto 10px",
+              color: selected ? "#0051ff" : "#4a5568",
+              strokeWidth: 1.75
+            }
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "span",
+          {
+            style: {
+              fontSize: 12,
+              fontWeight: 600,
+              color: selected ? "#0051ff" : "#4a5568",
+              fontFamily: "Montserrat,sans-serif"
+            },
+            children: label
+          }
+        )
+      ]
+    }
+  );
+}
+function WizStep1({
+  answers,
+  setAnswers,
+  onAutoAdvance
+}) {
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "p",
+      {
+        style: {
+          fontFamily: "Montserrat,sans-serif",
+          fontSize: 15,
+          fontWeight: 700,
+          color: "#0d1117",
+          marginBottom: 6
+        },
+        children: "What kind of site do you need?"
+      }
+    ),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("p", { style: { fontSize: 13, color: "#9aa0b4", marginBottom: 20 }, children: "Pick one — we'll tailor everything around it." }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "div",
+      {
+        style: {
+          display: "grid",
+          gridTemplateColumns: "repeat(4,1fr)",
+          gap: 10
+        },
+        role: "radiogroup",
+        children: SITE_TYPES$1.map((t) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+          WizOptBtn,
+          {
+            selected: answers.siteType === t.value,
+            onClick: () => {
+              setAnswers((a2) => ({ ...a2, siteType: t.value }));
+              onAutoAdvance();
+            },
+            Icon: t.Icon,
+            label: t.label,
+            dataOcid: `landing.wizard_site_type.${t.value.replace(/ /g, "_")}`
+          },
+          t.value
+        ))
+      }
+    )
+  ] });
+}
+function WizStep2({
+  nicheRef,
+  answers
+}) {
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "p",
+      {
+        style: {
+          fontFamily: "Montserrat,sans-serif",
+          fontSize: 15,
+          fontWeight: 700,
+          color: "#0d1117",
+          marginBottom: 6
+        },
+        children: "Tell us a little about your project."
+      }
+    ),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("p", { style: { fontSize: 13, color: "#9aa0b4", marginBottom: 20 }, children: "What's it called, and what does it do? A sentence is plenty." }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "input",
+      {
+        ref: nicheRef,
+        defaultValue: answers.niche,
+        type: "text",
+        placeholder: "e.g. Maya Chen — UX designer specialising in fintech apps",
+        maxLength: 120,
+        style: {
+          width: "100%",
+          background: "#eef1f8",
+          border: "1.5px solid #dde2ef",
+          borderRadius: 10,
+          padding: "14px 16px",
+          fontFamily: "Roboto,sans-serif",
+          fontSize: 15,
+          color: "#0d1117",
+          outline: "none",
+          marginBottom: 16,
+          caretColor: "#0051ff",
+          display: "block"
+        },
+        onFocus: (e) => {
+          e.target.style.borderColor = "#0051ff";
+          e.target.style.background = "#fff";
+        },
+        onBlur: (e) => {
+          e.target.style.borderColor = "#dde2ef";
+          e.target.style.background = "#eef1f8";
+        },
+        "data-ocid": "landing.wizard_niche_input"
+      }
+    ),
+    /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "div",
+      {
+        style: { display: "flex", flexWrap: "wrap", gap: 8 },
+        "aria-label": "Quick suggestions",
+        children: CHIPS.map((c2) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "button",
+          {
+            type: "button",
+            onClick: () => {
+              if (nicheRef.current) nicheRef.current.value = c2.fill;
+            },
+            onFocus: (e) => {
+              e.currentTarget.style.borderColor = "rgba(0,81,255,0.4)";
+              e.currentTarget.style.color = "#0d1117";
+            },
+            onBlur: (e) => {
+              e.currentTarget.style.borderColor = "#dde2ef";
+              e.currentTarget.style.color = "#4a5568";
+            },
+            style: {
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 5,
+              border: "1px solid #dde2ef",
+              borderRadius: 999,
+              padding: "6px 14px",
+              fontSize: 12,
+              fontWeight: 500,
+              color: "#4a5568",
+              background: "rgba(0,81,255,0.02)",
+              cursor: "pointer",
+              transition: "all 0.22s"
+            },
+            onMouseOver: (e) => {
+              e.currentTarget.style.borderColor = "rgba(0,81,255,0.4)";
+              e.currentTarget.style.color = "#0d1117";
+            },
+            onMouseOut: (e) => {
+              e.currentTarget.style.borderColor = "#dde2ef";
+              e.currentTarget.style.color = "#4a5568";
+            },
+            "data-ocid": `landing.wizard_chip.${c2.label.toLowerCase()}`,
+            children: c2.label
+          },
+          c2.label
+        ))
+      }
+    )
+  ] });
+}
+function WizStep3({
+  answers,
+  setAnswers,
+  onAutoAdvance
+}) {
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "p",
+      {
+        style: {
+          fontFamily: "Montserrat,sans-serif",
+          fontSize: 15,
+          fontWeight: 700,
+          color: "#0d1117",
+          marginBottom: 6
+        },
+        children: "What vibe should your site have?"
+      }
+    ),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("p", { style: { fontSize: 13, color: "#9aa0b4", marginBottom: 20 }, children: "This shapes the colour palette, layout, and tone of the copy." }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "div",
+      {
+        style: {
+          display: "grid",
+          gridTemplateColumns: "repeat(5,1fr)",
+          gap: 10
+        },
+        role: "radiogroup",
+        children: VIBES$1.map((v2) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+          WizOptBtn,
+          {
+            selected: answers.vibe === v2.value,
+            onClick: () => {
+              setAnswers((a2) => ({ ...a2, vibe: v2.value }));
+              onAutoAdvance();
+            },
+            Icon: v2.Icon,
+            label: v2.label,
+            dataOcid: `landing.wizard_vibe.${v2.value.replace(/ /g, "_")}`
+          },
+          v2.value
+        ))
+      }
+    )
+  ] });
+}
+function WizStep4({
+  answers,
+  setAnswers
+}) {
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "p",
+      {
+        style: {
+          fontFamily: "Montserrat,sans-serif",
+          fontSize: 15,
+          fontWeight: 700,
+          color: "#0d1117",
+          marginBottom: 6
+        },
+        children: "Which features do you need?"
+      }
+    ),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("p", { style: { fontSize: 13, color: "#9aa0b4", marginBottom: 20 }, children: "Pick as many as you like — we'll wire them all up." }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "div",
+      {
+        style: {
+          display: "grid",
+          gridTemplateColumns: "repeat(3,1fr)",
+          gap: 10
+        },
+        children: FEATURES_LIST.map((f) => {
+          const sel = answers.features.includes(f.value);
+          return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "button",
+            {
+              type: "button",
+              onClick: () => {
+                setAnswers((a2) => ({
+                  ...a2,
+                  features: sel ? a2.features.filter((x2) => x2 !== f.value) : [...a2.features, f.value]
+                }));
+              },
+              style: {
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                border: sel ? "1.5px solid #0051ff" : "1.5px solid #dde2ef",
+                borderRadius: 10,
+                padding: "12px 14px",
+                cursor: "pointer",
+                background: sel ? "rgba(0,81,255,0.07)" : "rgba(0,81,255,0.025)",
+                transition: "all 0.22s"
+              },
+              "aria-pressed": sel,
+              "data-ocid": `landing.wizard_feature.${f.value.replace(/ /g, "_")}`,
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "span",
+                  {
+                    style: {
+                      width: 18,
+                      height: 18,
+                      borderRadius: 5,
+                      border: sel ? "1.5px solid #0051ff" : "1.5px solid #dde2ef",
+                      flexShrink: 0,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      background: sel ? "#0051ff" : "transparent",
+                      fontSize: 11,
+                      color: "#fff",
+                      transition: "all 0.2s"
+                    },
+                    children: sel && "✓"
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                  "span",
+                  {
+                    style: {
+                      fontSize: 13,
+                      fontWeight: 500,
+                      color: sel ? "#0d1117" : "#4a5568",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 4
+                    },
+                    children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(f.Icon, { style: { width: 14, height: 14, flexShrink: 0 } }),
+                      f.label
+                    ]
+                  }
+                )
+              ]
+            },
+            f.value
+          );
+        })
+      }
+    )
+  ] });
+}
+function BentoCard({
+  children,
+  cols,
+  delay: delay2 = 0
+}) {
+  const { ref, visible } = useReveal();
+  const [hovered, setHovered] = reactExports.useState(false);
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    "div",
+    {
+      ref,
+      onMouseEnter: () => setHovered(true),
+      onMouseLeave: () => setHovered(false),
+      style: {
+        gridColumn: `span ${cols}`,
+        background: "#eef1f8",
+        border: hovered ? "1px solid rgba(0,81,255,0.35)" : "1px solid #dde2ef",
+        borderRadius: 16,
+        padding: 32,
+        position: "relative",
+        overflow: "hidden",
+        transform: visible ? hovered ? "translateY(-4px)" : "translateY(0)" : "translateY(28px)",
+        opacity: visible ? 1 : 0,
+        boxShadow: hovered ? "0 20px 60px rgba(0,81,255,0.12)" : "none",
+        transition: `opacity 0.8s cubic-bezier(0.16,1,0.3,1) ${delay2}ms, transform 0.35s cubic-bezier(0.16,1,0.3,1), border-color 0.35s, box-shadow 0.35s`
+      },
+      children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "div",
+          {
+            style: {
+              position: "absolute",
+              inset: 0,
+              background: "radial-gradient(circle at top right,rgba(0,81,255,0.05) 0%,transparent 60%)",
+              opacity: hovered ? 1 : 0,
+              transition: "opacity 0.35s",
+              pointerEvents: "none"
+            }
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { position: "relative", zIndex: 1 }, children })
+      ]
+    }
+  );
+}
+function PriceCard({
+  name,
+  price,
+  period,
+  features,
+  missing = [],
+  featured = false,
+  badge,
+  cta,
+  onCta,
+  delay: delay2 = 0
+}) {
+  const { ref, visible } = useReveal();
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    "div",
+    {
+      ref,
+      style: {
+        background: featured ? "linear-gradient(160deg,rgba(0,81,255,0.06) 0%,#eef1f8 40%)" : "#eef1f8",
+        border: featured ? "1px solid rgba(0,81,255,0.4)" : "1px solid #dde2ef",
+        borderRadius: 20,
+        padding: 36,
+        boxShadow: featured ? "0 0 60px rgba(0,81,255,0.08),0 30px 80px rgba(0,0,0,0.06)" : "none",
+        transform: visible ? featured ? "scale(1.04)" : "none" : "translateY(28px)",
+        opacity: visible ? 1 : 0,
+        transition: `opacity 0.8s cubic-bezier(0.16,1,0.3,1) ${delay2}ms, transform 0.35s cubic-bezier(0.16,1,0.3,1)`
+      },
+      children: [
+        badge && /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "div",
+          {
+            style: {
+              display: "inline-block",
+              background: "linear-gradient(135deg,#0051ff,#3374ff)",
+              color: "#fff",
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: 1,
+              textTransform: "uppercase",
+              borderRadius: 999,
+              padding: "4px 12px",
+              marginBottom: 20
+            },
+            children: badge
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "p",
+          {
+            style: {
+              fontSize: 13,
+              fontWeight: 600,
+              letterSpacing: "1.5px",
+              textTransform: "uppercase",
+              color: "#9aa0b4",
+              marginBottom: 12
+            },
+            children: name
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "div",
+          {
+            style: {
+              fontFamily: "Montserrat,sans-serif",
+              fontSize: 56,
+              fontWeight: 700,
+              lineHeight: 1,
+              marginBottom: 4
+            },
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "span",
+                {
+                  style: {
+                    fontSize: 20,
+                    verticalAlign: "super",
+                    fontFamily: "Roboto,sans-serif"
+                  },
+                  children: "$"
+                }
+              ),
+              price
+            ]
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { style: { fontSize: 14, color: "#9aa0b4", marginBottom: 28 }, children: period }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { height: 1, background: "#dde2ef", marginBottom: 24 } }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "ul",
+          {
+            style: {
+              display: "flex",
+              flexDirection: "column",
+              gap: 12,
+              marginBottom: 32,
+              listStyle: "none",
+              padding: 0
+            },
+            children: [
+              features.map((f) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                "li",
+                {
+                  style: {
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: 10,
+                    fontSize: 15,
+                    color: "#4a5568"
+                  },
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      "span",
+                      {
+                        style: {
+                          color: "#0051ff",
+                          flexShrink: 0,
+                          display: "flex",
+                          alignItems: "center",
+                          marginTop: 1
+                        },
+                        children: /* @__PURE__ */ jsxRuntimeExports.jsx(Check, { size: 15, strokeWidth: 2.5 })
+                      }
+                    ),
+                    f
+                  ]
+                },
+                f
+              )),
+              missing.map((f) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                "li",
+                {
+                  style: {
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: 10,
+                    fontSize: 15,
+                    color: "#9aa0b4"
+                  },
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      "span",
+                      {
+                        style: {
+                          flexShrink: 0,
+                          display: "flex",
+                          alignItems: "center",
+                          marginTop: 1
+                        },
+                        children: /* @__PURE__ */ jsxRuntimeExports.jsx(Minus, { size: 14, strokeWidth: 2 })
+                      }
+                    ),
+                    f
+                  ]
+                },
+                f
+              ))
+            ]
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "button",
+          {
+            type: "button",
+            onClick: onCta,
+            style: {
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              ...featured ? {
+                background: "linear-gradient(135deg,#0051ff,#3374ff)",
+                color: "#fff",
+                border: "none",
+                padding: "14px 28px"
+              } : {
+                background: "transparent",
+                color: "#4a5568",
+                border: "1px solid #dde2ef",
+                padding: "13px 24px"
+              },
+              fontFamily: "Roboto,sans-serif",
+              fontWeight: 700,
+              fontSize: 15,
+              borderRadius: 8,
+              cursor: "pointer",
+              transition: "all 0.25s"
+            },
+            "data-ocid": `landing.pricing_cta.${name.toLowerCase()}`,
+            children: cta
+          }
+        )
+      ]
+    }
+  );
+}
+function TestiCard({
+  quote,
+  name,
+  role,
+  initials,
+  offset = 0,
+  delay: delay2 = 0
+}) {
+  const { ref, visible } = useReveal();
+  const [hovered, setHovered] = reactExports.useState(false);
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    "div",
+    {
+      ref,
+      onMouseEnter: () => setHovered(true),
+      onMouseLeave: () => setHovered(false),
+      style: {
+        background: "#eef1f8",
+        border: hovered ? "1px solid rgba(0,81,255,0.2)" : "1px solid #dde2ef",
+        borderRadius: 16,
+        padding: 28,
+        marginTop: offset,
+        transform: visible ? hovered ? "translateY(-4px)" : "none" : "translateY(28px)",
+        opacity: visible ? 1 : 0,
+        transition: `opacity 0.8s cubic-bezier(0.16,1,0.3,1) ${delay2}ms, transform 0.35s cubic-bezier(0.16,1,0.3,1), border-color 0.35s`
+      },
+      children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { display: "flex", gap: 3, marginBottom: 16 }, children: [1, 2, 3, 4, 5].map((i) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+          Star,
+          {
+            size: 13,
+            style: { fill: "#0051ff", color: "#0051ff" }
+          },
+          i
+        )) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "p",
+          {
+            style: {
+              fontSize: 15,
+              color: "#4a5568",
+              lineHeight: 1.7,
+              marginBottom: 20
+            },
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "span",
+                {
+                  style: {
+                    fontFamily: "Montserrat,sans-serif",
+                    fontSize: 36,
+                    color: "rgba(0,81,255,0.3)",
+                    lineHeight: 0,
+                    verticalAlign: -12,
+                    marginRight: 4
+                  },
+                  children: "“"
+                }
+              ),
+              quote
+            ]
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", alignItems: "center", gap: 12 }, children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "div",
+            {
+              style: {
+                width: 38,
+                height: 38,
+                borderRadius: "50%",
+                background: "linear-gradient(135deg,#f4f6fb,#eef1f8)",
+                border: "1px solid #dde2ef",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 13,
+                fontWeight: 700,
+                color: "#0051ff",
+                flexShrink: 0,
+                fontFamily: "Montserrat,sans-serif"
+              },
+              children: initials
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { fontSize: 14, fontWeight: 600, color: "#0d1117" }, children: name }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { fontSize: 12, color: "#9aa0b4", marginTop: 2 }, children: role })
+          ] })
+        ] })
+      ]
+    }
+  );
+}
+function LandingPage() {
+  const navigate = useNavigate();
+  const [heroVisible, setHeroVisible] = reactExports.useState(false);
+  reactExports.useEffect(() => {
+    const t = setTimeout(() => setHeroVisible(true), 80);
+    return () => clearTimeout(t);
+  }, []);
+  function heroEl(i) {
+    return {
+      opacity: heroVisible ? 1 : 0,
+      transform: heroVisible ? "translateY(0)" : "translateY(28px)",
+      transition: `opacity 0.8s cubic-bezier(0.16,1,0.3,1) ${100 + i * 140}ms, transform 0.8s cubic-bezier(0.16,1,0.3,1) ${100 + i * 140}ms`
+    };
+  }
+  const handleStart = () => navigate({ to: "/wizard" });
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    "div",
+    {
+      style: {
+        background: "#ffffff",
+        color: "#0d1117",
+        fontFamily: "Roboto,sans-serif",
+        overflowX: "hidden"
+      },
+      children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grain-overlay", "aria-hidden": "true" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(Nav, { onStart: handleStart }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "section",
+          {
+            style: {
+              minHeight: "100vh",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              textAlign: "center",
+              padding: "120px 24px 80px",
+              position: "relative",
+              overflow: "hidden"
+            },
+            "aria-labelledby": "hero-headline",
+            "data-ocid": "landing.hero_section",
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "div",
+                {
+                  style: {
+                    position: "absolute",
+                    width: 600,
+                    height: 600,
+                    borderRadius: "50%",
+                    background: "radial-gradient(circle,rgba(0,81,255,0.06) 0%,transparent 70%)",
+                    top: -100,
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    pointerEvents: "none"
+                  }
+                }
+              ),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "div",
+                {
+                  style: {
+                    position: "absolute",
+                    width: 400,
+                    height: 400,
+                    borderRadius: "50%",
+                    background: "radial-gradient(circle,rgba(0,81,255,0.04) 0%,transparent 70%)",
+                    bottom: 0,
+                    right: -100,
+                    pointerEvents: "none"
+                  }
+                }
+              ),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                "div",
+                {
+                  style: {
+                    ...heroEl(0),
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 8,
+                    border: "1px solid rgba(0,81,255,0.3)",
+                    borderRadius: 999,
+                    padding: "6px 16px",
+                    fontSize: 13,
+                    fontWeight: 500,
+                    color: "#4a5568",
+                    marginBottom: 32,
+                    background: "rgba(0,81,255,0.04)"
+                  },
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      "span",
+                      {
+                        style: {
+                          width: 6,
+                          height: 6,
+                          borderRadius: "50%",
+                          background: "#0051ff",
+                          boxShadow: "0 0 8px rgba(0,81,255,0.5)",
+                          flexShrink: 0,
+                          display: "inline-block",
+                          animation: "pulse-dot 2s ease-in-out infinite"
+                        },
+                        "aria-hidden": "true"
+                      }
+                    ),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(Sparkles, { size: 13, style: { color: "#0051ff" } }),
+                    "Now in public beta"
+                  ]
+                }
+              ),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                "h1",
+                {
+                  id: "hero-headline",
+                  style: {
+                    ...heroEl(1),
+                    fontFamily: "Montserrat,sans-serif",
+                    fontSize: "clamp(52px,7vw,86px)",
+                    fontWeight: 800,
+                    lineHeight: 1,
+                    letterSpacing: "-2.5px",
+                    marginBottom: 24,
+                    maxWidth: 760
+                  },
+                  children: [
+                    "Describe it.",
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
+                    "We build it.",
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { style: { color: "#0051ff" }, children: "You launch it." })
+                  ]
+                }
+              ),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "p",
+                {
+                  style: {
+                    ...heroEl(2),
+                    fontSize: "clamp(17px,2.2vw,21px)",
+                    color: "#4a5568",
+                    maxWidth: 540,
+                    lineHeight: 1.65,
+                    marginBottom: 48,
+                    fontWeight: 400
+                  },
+                  children: "From prompt to production-ready website or app — in seconds. No code. No templates. No agency."
+                }
+              ),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "div",
+                {
+                  style: {
+                    ...heroEl(3),
+                    width: "100%",
+                    maxWidth: 760,
+                    marginBottom: 20
+                  },
+                  children: /* @__PURE__ */ jsxRuntimeExports.jsx(HeroWizard, { onGenerate: handleStart })
+                }
+              ),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                "div",
+                {
+                  style: {
+                    ...heroEl(4),
+                    fontSize: 13,
+                    color: "#9aa0b4",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 16,
+                    flexWrap: "wrap"
+                  },
+                  "data-ocid": "landing.trust_line",
+                  children: [
+                    "Trusted by 12,400+ builders",
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      "span",
+                      {
+                        style: {
+                          width: 3,
+                          height: 3,
+                          borderRadius: "50%",
+                          background: "#9aa0b4",
+                          display: "inline-block"
+                        },
+                        "aria-hidden": "true"
+                      }
+                    ),
+                    "No credit card required",
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      "span",
+                      {
+                        style: {
+                          width: 3,
+                          height: 3,
+                          borderRadius: "50%",
+                          background: "#9aa0b4",
+                          display: "inline-block"
+                        },
+                        "aria-hidden": "true"
+                      }
+                    ),
+                    "Deploy in 60 seconds"
+                  ]
+                }
+              )
+            ]
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "section",
+          {
+            style: {
+              padding: "72px 0",
+              borderTop: "1px solid #dde2ef",
+              overflow: "hidden"
+            },
+            "aria-label": "Companies whose employees use Forge",
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Reveal, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "p",
+                {
+                  style: {
+                    textAlign: "center",
+                    fontSize: 13,
+                    letterSpacing: "1.2px",
+                    textTransform: "uppercase",
+                    color: "#9aa0b4",
+                    fontWeight: 600,
+                    marginBottom: 36
+                  },
+                  children: "Built by people at companies like"
+                }
+              ) }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { position: "relative", overflow: "hidden" }, children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "div",
+                  {
+                    style: {
+                      position: "absolute",
+                      top: 0,
+                      bottom: 0,
+                      left: 0,
+                      width: 120,
+                      background: "linear-gradient(to right,#fff,transparent)",
+                      zIndex: 2,
+                      pointerEvents: "none"
+                    }
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "div",
+                  {
+                    style: {
+                      position: "absolute",
+                      top: 0,
+                      bottom: 0,
+                      right: 0,
+                      width: 120,
+                      background: "linear-gradient(to left,#fff,transparent)",
+                      zIndex: 2,
+                      pointerEvents: "none"
+                    }
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "div",
+                  {
+                    className: "marquee-track",
+                    style: { display: "flex", gap: 60, width: "max-content" },
+                    "aria-hidden": "true",
+                    children: [...LOGOS, ...LOGOS].map((l, i) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      "span",
+                      {
+                        style: {
+                          fontFamily: "Montserrat,sans-serif",
+                          fontSize: 22,
+                          fontWeight: 600,
+                          color: "#9aa0b4",
+                          whiteSpace: "nowrap"
+                        },
+                        children: l
+                      },
+                      `logo-${l}-${i % LOGOS.length}`
+                    ))
+                  }
+                )
+              ] })
+            ]
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "section",
+          {
+            id: "how-it-works",
+            style: { padding: "100px 48px", maxWidth: 1200, margin: "0 auto" },
+            "aria-labelledby": "hiw-headline",
+            "data-ocid": "landing.how_it_works_section",
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Reveal, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "p",
+                {
+                  style: {
+                    fontSize: 12,
+                    letterSpacing: 2,
+                    textTransform: "uppercase",
+                    color: "#0051ff",
+                    fontWeight: 600,
+                    marginBottom: 16
+                  },
+                  children: "How it works"
+                }
+              ) }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Reveal, { delay: 80, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                "h2",
+                {
+                  id: "hiw-headline",
+                  style: {
+                    fontFamily: "Montserrat,sans-serif",
+                    fontSize: "clamp(36px,4.5vw,56px)",
+                    fontWeight: 800,
+                    lineHeight: 1.05,
+                    letterSpacing: "-1.5px",
+                    marginBottom: 20
+                  },
+                  children: [
+                    "Three steps.",
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
+                    "One result."
+                  ]
+                }
+              ) }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Reveal, { delay: 160, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "p",
+                {
+                  style: {
+                    fontSize: 18,
+                    color: "#4a5568",
+                    maxWidth: 520,
+                    lineHeight: 1.65,
+                    marginBottom: 64
+                  },
+                  children: "No learning curve. No setup. Just describe what you want and watch it come alive."
+                }
+              ) }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                "div",
+                {
+                  style: {
+                    display: "grid",
+                    gridTemplateColumns: "repeat(3,1fr)",
+                    gap: 0,
+                    position: "relative"
+                  },
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      "div",
+                      {
+                        style: {
+                          position: "absolute",
+                          top: 42,
+                          left: "calc(16.66% + 24px)",
+                          right: "calc(16.66% + 24px)",
+                          height: 1,
+                          background: "linear-gradient(to right,transparent,#dde2ef 20%,#dde2ef 80%,transparent)"
+                        }
+                      }
+                    ),
+                    HOW_IT_WORKS_STEPS.map((s2, i) => /* @__PURE__ */ jsxRuntimeExports.jsx(Reveal, { delay: i * 120, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                      "div",
+                      {
+                        style: {
+                          padding: 32,
+                          position: "relative",
+                          borderRadius: 16,
+                          border: "1px solid transparent",
+                          transition: "border-color 0.3s, transform 0.35s cubic-bezier(0.16,1,0.3,1)"
+                        },
+                        onMouseOver: (e) => {
+                          const d2 = e.currentTarget;
+                          d2.style.borderColor = "rgba(0,81,255,0.2)";
+                          d2.style.transform = "translateY(-4px)";
+                        },
+                        onFocus: (e) => {
+                          const d2 = e.currentTarget;
+                          d2.style.borderColor = "rgba(0,81,255,0.2)";
+                          d2.style.transform = "translateY(-4px)";
+                        },
+                        onMouseOut: (e) => {
+                          const d2 = e.currentTarget;
+                          d2.style.borderColor = "transparent";
+                          d2.style.transform = "none";
+                        },
+                        onBlur: (e) => {
+                          const d2 = e.currentTarget;
+                          d2.style.borderColor = "transparent";
+                          d2.style.transform = "none";
+                        },
+                        "data-ocid": `landing.how_it_works_step.${i + 1}`,
+                        children: [
+                          /* @__PURE__ */ jsxRuntimeExports.jsx(
+                            "div",
+                            {
+                              style: {
+                                fontFamily: "Montserrat,sans-serif",
+                                fontSize: 80,
+                                fontWeight: 700,
+                                color: "#dde2ef",
+                                lineHeight: 1,
+                                marginBottom: 24
+                              },
+                              children: s2.num
+                            }
+                          ),
+                          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { marginBottom: 16, color: "#0051ff" }, children: /* @__PURE__ */ jsxRuntimeExports.jsx(s2.Icon, { size: 28, strokeWidth: 1.75 }) }),
+                          /* @__PURE__ */ jsxRuntimeExports.jsx(
+                            "h3",
+                            {
+                              style: {
+                                fontFamily: "Montserrat,sans-serif",
+                                fontSize: 26,
+                                fontWeight: 600,
+                                marginBottom: 12,
+                                color: "#0d1117"
+                              },
+                              children: s2.title
+                            }
+                          ),
+                          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { style: { fontSize: 15, color: "#4a5568", lineHeight: 1.65 }, children: s2.desc })
+                        ]
+                      }
+                    ) }, s2.title))
+                  ]
+                }
+              )
+            ]
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "section",
+          {
+            id: "features",
+            style: { padding: "100px 48px", maxWidth: 1200, margin: "0 auto" },
+            "aria-labelledby": "feat-headline",
+            "data-ocid": "landing.features_section",
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Reveal, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "p",
+                {
+                  style: {
+                    fontSize: 12,
+                    letterSpacing: 2,
+                    textTransform: "uppercase",
+                    color: "#0051ff",
+                    fontWeight: 600,
+                    marginBottom: 16
+                  },
+                  children: "What you get"
+                }
+              ) }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Reveal, { delay: 80, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "h2",
+                {
+                  id: "feat-headline",
+                  style: {
+                    fontFamily: "Montserrat,sans-serif",
+                    fontSize: "clamp(36px,4.5vw,56px)",
+                    fontWeight: 800,
+                    lineHeight: 1.05,
+                    letterSpacing: "-1.5px",
+                    marginBottom: 20
+                  },
+                  children: "Everything, included."
+                }
+              ) }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Reveal, { delay: 160, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "p",
+                {
+                  style: {
+                    fontSize: 18,
+                    color: "#4a5568",
+                    maxWidth: 520,
+                    lineHeight: 1.65,
+                    marginBottom: 64
+                  },
+                  children: "No plugins. No add-ons. No spreadsheet of monthly fees. One tool that does the whole job."
+                }
+              ) }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                "div",
+                {
+                  style: {
+                    display: "grid",
+                    gridTemplateColumns: "repeat(12,1fr)",
+                    gridAutoRows: "auto",
+                    gap: 16
+                  },
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs(BentoCard, { cols: 7, children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        "span",
+                        {
+                          style: {
+                            display: "inline-flex",
+                            color: "#0051ff",
+                            marginBottom: 20
+                          },
+                          children: /* @__PURE__ */ jsxRuntimeExports.jsx(Brain, { size: 32, strokeWidth: 1.5 })
+                        }
+                      ),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        "h3",
+                        {
+                          style: {
+                            fontFamily: "Montserrat,sans-serif",
+                            fontSize: 24,
+                            fontWeight: 600,
+                            marginBottom: 12,
+                            color: "#0d1117"
+                          },
+                          children: "AI Understands Context"
+                        }
+                      ),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { style: { fontSize: 15, color: "#4a5568", lineHeight: 1.65 }, children: "It reads between the lines. Industry, tone, target audience, and brand voice — all inferred automatically. Your bakery site won't look like a SaaS dashboard." }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        "div",
+                        {
+                          style: {
+                            display: "flex",
+                            gap: 8,
+                            marginTop: 20,
+                            flexWrap: "wrap"
+                          },
+                          children: ["Context-aware", "Brand-fit", "Industry-tuned"].map((t) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+                            "span",
+                            {
+                              style: {
+                                fontSize: 11,
+                                fontWeight: 600,
+                                letterSpacing: "0.8px",
+                                textTransform: "uppercase",
+                                color: "#0051ff",
+                                background: "rgba(0,81,255,0.08)",
+                                border: "1px solid rgba(0,81,255,0.2)",
+                                borderRadius: 4,
+                                padding: "3px 8px"
+                              },
+                              children: t
+                            },
+                            t
+                          ))
+                        }
+                      )
+                    ] }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs(BentoCard, { cols: 5, delay: 80, children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        "span",
+                        {
+                          style: {
+                            display: "inline-flex",
+                            color: "#0051ff",
+                            marginBottom: 20
+                          },
+                          children: /* @__PURE__ */ jsxRuntimeExports.jsx(Download, { size: 32, strokeWidth: 1.5 })
+                        }
+                      ),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        "h3",
+                        {
+                          style: {
+                            fontFamily: "Montserrat,sans-serif",
+                            fontSize: 24,
+                            fontWeight: 600,
+                            marginBottom: 12,
+                            color: "#0d1117"
+                          },
+                          children: "Full Code Ownership"
+                        }
+                      ),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { style: { fontSize: 15, color: "#4a5568", lineHeight: 1.65 }, children: "Export clean, commented code any time. No lock-in, ever. It's yours." }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { display: "flex", gap: 8, marginTop: 20 }, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        "span",
+                        {
+                          style: {
+                            fontSize: 11,
+                            fontWeight: 600,
+                            letterSpacing: "0.8px",
+                            textTransform: "uppercase",
+                            color: "#0051ff",
+                            background: "rgba(0,81,255,0.08)",
+                            border: "1px solid rgba(0,81,255,0.2)",
+                            borderRadius: 4,
+                            padding: "3px 8px"
+                          },
+                          children: "Export anytime"
+                        }
+                      ) })
+                    ] }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs(BentoCard, { cols: 4, delay: 40, children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        "span",
+                        {
+                          style: {
+                            display: "inline-flex",
+                            color: "#0051ff",
+                            marginBottom: 20
+                          },
+                          children: /* @__PURE__ */ jsxRuntimeExports.jsx(PenLine, { size: 32, strokeWidth: 1.5 })
+                        }
+                      ),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        "h3",
+                        {
+                          style: {
+                            fontFamily: "Montserrat,sans-serif",
+                            fontSize: 24,
+                            fontWeight: 600,
+                            marginBottom: 12,
+                            color: "#0d1117"
+                          },
+                          children: "Live Editing After Generation"
+                        }
+                      ),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { style: { fontSize: 15, color: "#4a5568", lineHeight: 1.65 }, children: "Prompt again to refine. Or click directly on any element to edit inline." })
+                    ] }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs(BentoCard, { cols: 4, delay: 120, children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        "span",
+                        {
+                          style: {
+                            display: "inline-flex",
+                            color: "#0051ff",
+                            marginBottom: 20
+                          },
+                          children: /* @__PURE__ */ jsxRuntimeExports.jsx(Globe, { size: 32, strokeWidth: 1.5 })
+                        }
+                      ),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        "h3",
+                        {
+                          style: {
+                            fontFamily: "Montserrat,sans-serif",
+                            fontSize: 24,
+                            fontWeight: 600,
+                            marginBottom: 12,
+                            color: "#0d1117"
+                          },
+                          children: "One-Click Deployment"
+                        }
+                      ),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { style: { fontSize: 15, color: "#4a5568", lineHeight: 1.65 }, children: "Deploy to our global CDN or connect your own custom domain in seconds." })
+                    ] }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs(BentoCard, { cols: 8, delay: 160, children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        "span",
+                        {
+                          style: {
+                            display: "inline-flex",
+                            color: "#0051ff",
+                            marginBottom: 20
+                          },
+                          children: /* @__PURE__ */ jsxRuntimeExports.jsx(Cpu, { size: 32, strokeWidth: 1.5 })
+                        }
+                      ),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        "h3",
+                        {
+                          style: {
+                            fontFamily: "Montserrat,sans-serif",
+                            fontSize: 24,
+                            fontWeight: 600,
+                            marginBottom: 12,
+                            color: "#0d1117"
+                          },
+                          children: "App Logic Included"
+                        }
+                      ),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { style: { fontSize: 15, color: "#4a5568", lineHeight: 1.65 }, children: 'Forms, databases, user authentication, and payments — all prompt-driven. No backend setup, no DevOps, no headaches. "Add a Stripe checkout" is a complete instruction.' }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        "div",
+                        {
+                          style: {
+                            display: "flex",
+                            gap: 8,
+                            marginTop: 20,
+                            flexWrap: "wrap"
+                          },
+                          children: ["Auth", "Stripe", "Database", "Forms"].map((t) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+                            "span",
+                            {
+                              style: {
+                                fontSize: 11,
+                                fontWeight: 600,
+                                letterSpacing: "0.8px",
+                                textTransform: "uppercase",
+                                color: "#0051ff",
+                                background: "rgba(0,81,255,0.08)",
+                                border: "1px solid rgba(0,81,255,0.2)",
+                                borderRadius: 4,
+                                padding: "3px 8px"
+                              },
+                              children: t
+                            },
+                            t
+                          ))
+                        }
+                      )
+                    ] }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs(BentoCard, { cols: 4, delay: 200, children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        "span",
+                        {
+                          style: {
+                            display: "inline-flex",
+                            color: "#0051ff",
+                            marginBottom: 20
+                          },
+                          children: /* @__PURE__ */ jsxRuntimeExports.jsx(History, { size: 32, strokeWidth: 1.5 })
+                        }
+                      ),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        "h3",
+                        {
+                          style: {
+                            fontFamily: "Montserrat,sans-serif",
+                            fontSize: 24,
+                            fontWeight: 600,
+                            marginBottom: 12,
+                            color: "#0d1117"
+                          },
+                          children: "Version History"
+                        }
+                      ),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { style: { fontSize: 15, color: "#4a5568", lineHeight: 1.65 }, children: "Every generation is automatically saved. Roll back to any version at any time." })
+                    ] })
+                  ]
+                }
+              )
+            ]
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "section",
+          {
+            id: "examples",
+            style: { padding: "100px 48px", maxWidth: 1200, margin: "0 auto" },
+            "aria-labelledby": "demo-headline",
+            "data-ocid": "landing.demo_section",
+            children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+              "div",
+              {
+                style: {
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1.15fr",
+                  gap: 72,
+                  alignItems: "center"
+                },
+                children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(Reveal, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      "p",
+                      {
+                        style: {
+                          fontSize: 12,
+                          letterSpacing: 2,
+                          textTransform: "uppercase",
+                          color: "#0051ff",
+                          fontWeight: 600,
+                          marginBottom: 16
+                        },
+                        children: "See it in action"
+                      }
+                    ) }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(Reveal, { delay: 80, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      "h2",
+                      {
+                        id: "demo-headline",
+                        style: {
+                          fontFamily: "Montserrat,sans-serif",
+                          fontSize: "clamp(36px,4.5vw,56px)",
+                          fontWeight: 800,
+                          lineHeight: 1.05,
+                          letterSpacing: "-1.5px",
+                          marginBottom: 20
+                        },
+                        children: "From prompt to pixel-perfect — in under 10 seconds."
+                      }
+                    ) }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(Reveal, { delay: 160, children: /* @__PURE__ */ jsxRuntimeExports.jsx("p", { style: { fontSize: 18, color: "#4a5568", lineHeight: 1.65 }, children: "Tell Forge what you need. It handles the design, the copy, the structure, and the code. You just approve and launch." }) }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(Reveal, { delay: 240, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      "ul",
+                      {
+                        style: {
+                          listStyle: "none",
+                          padding: 0,
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 14,
+                          marginTop: 32
+                        },
+                        children: DEMO_CHECKLIST.map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                          "li",
+                          {
+                            style: {
+                              display: "flex",
+                              alignItems: "flex-start",
+                              gap: 12,
+                              fontSize: 16,
+                              color: "#4a5568",
+                              lineHeight: 1.5
+                            },
+                            children: [
+                              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                "span",
+                                {
+                                  style: {
+                                    color: "#0051ff",
+                                    flexShrink: 0,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    marginTop: 2
+                                  },
+                                  children: /* @__PURE__ */ jsxRuntimeExports.jsx(Check, { size: 15, strokeWidth: 2.5 })
+                                }
+                              ),
+                              item
+                            ]
+                          },
+                          item
+                        ))
+                      }
+                    ) })
+                  ] }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Reveal, { delay: 200, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                    "div",
+                    {
+                      style: {
+                        border: "1px solid #dde2ef",
+                        borderRadius: 12,
+                        overflow: "hidden",
+                        boxShadow: "0 40px 100px rgba(0,0,0,0.08)"
+                      },
+                      role: "img",
+                      "aria-label": "Preview of a Forge-generated website",
+                      children: [
+                        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                          "div",
+                          {
+                            style: {
+                              background: "#f4f6fb",
+                              padding: "12px 16px",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 10,
+                              borderBottom: "1px solid #dde2ef"
+                            },
+                            children: [
+                              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { display: "flex", gap: 6 }, children: [
+                                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                  "span",
+                                  {
+                                    style: {
+                                      width: 10,
+                                      height: 10,
+                                      borderRadius: "50%",
+                                      background: "#ff5f57",
+                                      display: "block"
+                                    }
+                                  }
+                                ),
+                                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                  "span",
+                                  {
+                                    style: {
+                                      width: 10,
+                                      height: 10,
+                                      borderRadius: "50%",
+                                      background: "#ffbd2e",
+                                      display: "block"
+                                    }
+                                  }
+                                ),
+                                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                  "span",
+                                  {
+                                    style: {
+                                      width: 10,
+                                      height: 10,
+                                      borderRadius: "50%",
+                                      background: "#28c840",
+                                      display: "block"
+                                    }
+                                  }
+                                )
+                              ] }),
+                              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                "div",
+                                {
+                                  style: {
+                                    flex: 1,
+                                    background: "#eef1f8",
+                                    border: "1px solid #dde2ef",
+                                    borderRadius: 4,
+                                    padding: "5px 14px",
+                                    fontFamily: "Fira Code,monospace",
+                                    fontSize: 12,
+                                    color: "#9aa0b4"
+                                  },
+                                  children: "forge.app/sites/maya-portfolio"
+                                }
+                              )
+                            ]
+                          }
+                        ),
+                        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                          "div",
+                          {
+                            style: {
+                              background: "#eef1f8",
+                              minHeight: 320,
+                              position: "relative",
+                              overflow: "hidden"
+                            },
+                            children: [
+                              /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                                "div",
+                                {
+                                  style: {
+                                    background: "rgba(244,246,251,0.96)",
+                                    padding: "14px 20px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    borderBottom: "1px solid #dde2ef"
+                                  },
+                                  children: [
+                                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                      "div",
+                                      {
+                                        style: {
+                                          width: 60,
+                                          height: 10,
+                                          background: "rgba(0,81,255,0.08)",
+                                          borderRadius: 3
+                                        }
+                                      }
+                                    ),
+                                    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { style: { display: "flex", gap: 12 }, children: [0, 1, 2].map((i) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                      "div",
+                                      {
+                                        style: {
+                                          width: 35,
+                                          height: 8,
+                                          background: "rgba(0,81,255,0.05)",
+                                          borderRadius: 3
+                                        }
+                                      },
+                                      i
+                                    )) })
+                                  ]
+                                }
+                              ),
+                              /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                                "div",
+                                {
+                                  style: {
+                                    padding: "28px 20px",
+                                    background: "linear-gradient(135deg,rgba(0,81,255,0.06) 0%,transparent 60%)"
+                                  },
+                                  children: [
+                                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                      "div",
+                                      {
+                                        style: {
+                                          height: 20,
+                                          background: "rgba(0,81,255,0.15)",
+                                          borderRadius: 4,
+                                          width: "55%",
+                                          marginBottom: 10
+                                        }
+                                      }
+                                    ),
+                                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                      "div",
+                                      {
+                                        style: {
+                                          height: 12,
+                                          background: "rgba(0,81,255,0.06)",
+                                          borderRadius: 3,
+                                          width: "40%",
+                                          marginBottom: 20
+                                        }
+                                      }
+                                    ),
+                                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                      "div",
+                                      {
+                                        style: {
+                                          height: 30,
+                                          width: 100,
+                                          background: "linear-gradient(135deg,#0051ff,#3374ff)",
+                                          borderRadius: 4,
+                                          opacity: 0.8
+                                        }
+                                      }
+                                    )
+                                  ]
+                                }
+                              ),
+                              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                "div",
+                                {
+                                  style: {
+                                    padding: "16px 20px",
+                                    display: "grid",
+                                    gridTemplateColumns: "repeat(3,1fr)",
+                                    gap: 10
+                                  },
+                                  children: [0, 1, 2].map((i) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                                    "div",
+                                    {
+                                      style: {
+                                        background: "rgba(0,81,255,0.03)",
+                                        border: "1px solid #dde2ef",
+                                        borderRadius: 8,
+                                        padding: 14
+                                      },
+                                      children: [
+                                        /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                          "div",
+                                          {
+                                            style: {
+                                              height: 8,
+                                              background: "rgba(0,81,255,0.07)",
+                                              borderRadius: 3,
+                                              marginBottom: 6
+                                            }
+                                          }
+                                        ),
+                                        /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                          "div",
+                                          {
+                                            style: {
+                                              height: 8,
+                                              background: "rgba(0,81,255,0.07)",
+                                              borderRadius: 3,
+                                              width: "65%"
+                                            }
+                                          }
+                                        )
+                                      ]
+                                    },
+                                    i
+                                  ))
+                                }
+                              ),
+                              /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                                "div",
+                                {
+                                  style: {
+                                    position: "absolute",
+                                    bottom: 16,
+                                    right: 16,
+                                    background: "rgba(0,81,255,0.12)",
+                                    border: "1px solid rgba(0,81,255,0.4)",
+                                    borderRadius: 999,
+                                    padding: "6px 14px",
+                                    fontSize: 12,
+                                    fontWeight: 600,
+                                    color: "#0051ff",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 6
+                                  },
+                                  children: [
+                                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                                      "span",
+                                      {
+                                        style: {
+                                          width: 6,
+                                          height: 6,
+                                          borderRadius: "50%",
+                                          background: "#0051ff",
+                                          animation: "pulse-dot 2s infinite",
+                                          display: "inline-block"
+                                        }
+                                      }
+                                    ),
+                                    "Generated in 8.3s"
+                                  ]
+                                }
+                              )
+                            ]
+                          }
+                        )
+                      ]
+                    }
+                  ) })
+                ]
+              }
+            )
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "section",
+          {
+            id: "pricing",
+            style: { padding: "100px 48px" },
+            "data-ocid": "landing.pricing_section",
+            children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { maxWidth: 1200, margin: "0 auto" }, children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { textAlign: "center", marginBottom: 64 }, children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Reveal, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "p",
+                  {
+                    style: {
+                      fontSize: 12,
+                      letterSpacing: 2,
+                      textTransform: "uppercase",
+                      color: "#0051ff",
+                      fontWeight: 600,
+                      marginBottom: 16
+                    },
+                    children: "Pricing"
+                  }
+                ) }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Reveal, { delay: 80, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "h2",
+                  {
+                    style: {
+                      fontFamily: "Montserrat,sans-serif",
+                      fontSize: "clamp(36px,4.5vw,56px)",
+                      fontWeight: 800,
+                      lineHeight: 1.05,
+                      letterSpacing: "-1.5px",
+                      marginBottom: 20
+                    },
+                    children: "Start free. Scale when ready."
+                  }
+                ) }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Reveal, { delay: 160, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "p",
+                  {
+                    style: {
+                      fontSize: 18,
+                      color: "#4a5568",
+                      lineHeight: 1.65,
+                      maxWidth: 400,
+                      margin: "0 auto",
+                      textAlign: "center"
+                    },
+                    children: "No contracts. No surprise bills. Cancel anytime."
+                  }
+                ) })
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                "div",
+                {
+                  style: {
+                    display: "grid",
+                    gridTemplateColumns: "repeat(3,1fr)",
+                    gap: 20,
+                    alignItems: "start"
+                  },
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      PriceCard,
+                      {
+                        name: "Free",
+                        price: 0,
+                        period: "forever free",
+                        features: [
+                          "3 active projects",
+                          "Forge subdomain hosting",
+                          "Basic AI generation",
+                          "Community support"
+                        ],
+                        missing: ["Custom domain", "App logic & payments"],
+                        cta: "Get Started",
+                        onCta: handleStart
+                      }
+                    ),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      PriceCard,
+                      {
+                        name: "Pro",
+                        price: 29,
+                        period: "per month",
+                        features: [
+                          "Unlimited projects",
+                          "Custom domain included",
+                          "Full app logic & payments",
+                          "Code export",
+                          "Version history (30 days)",
+                          "Priority generation queue"
+                        ],
+                        featured: true,
+                        badge: "Most Popular",
+                        cta: "Start Pro Trial",
+                        onCta: handleStart,
+                        delay: 80
+                      }
+                    ),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      PriceCard,
+                      {
+                        name: "Team",
+                        price: 79,
+                        period: "per month",
+                        features: [
+                          "Everything in Pro",
+                          "Up to 10 team members",
+                          "Real-time collaboration",
+                          "White-label options",
+                          "Unlimited version history",
+                          "Dedicated account manager"
+                        ],
+                        cta: "Talk to Sales",
+                        onCta: handleStart,
+                        delay: 160
+                      }
+                    )
+                  ]
+                }
+              )
+            ] })
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "section",
+          {
+            style: { padding: "100px 48px" },
+            "data-ocid": "landing.testimonials_section",
+            children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { maxWidth: 1200, margin: "0 auto" }, children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { textAlign: "center", marginBottom: 56 }, children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Reveal, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "p",
+                  {
+                    style: {
+                      fontSize: 12,
+                      letterSpacing: 2,
+                      textTransform: "uppercase",
+                      color: "#0051ff",
+                      fontWeight: 600,
+                      marginBottom: 16
+                    },
+                    children: "What people are saying"
+                  }
+                ) }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Reveal, { delay: 80, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                  "h2",
+                  {
+                    style: {
+                      fontFamily: "Montserrat,sans-serif",
+                      fontSize: "clamp(36px,4.5vw,56px)",
+                      fontWeight: 800,
+                      lineHeight: 1.05,
+                      letterSpacing: "-1.5px"
+                    },
+                    children: [
+                      "Built by real people.",
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
+                      "Loved by real builders."
+                    ]
+                  }
+                ) })
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "div",
+                {
+                  style: {
+                    display: "grid",
+                    gridTemplateColumns: "repeat(3,1fr)",
+                    gap: 20
+                  },
+                  children: TESTIMONIALS.map((t, i) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    TestiCard,
+                    {
+                      quote: t.quote,
+                      name: t.name,
+                      role: t.role,
+                      initials: t.initials,
+                      offset: i === 1 ? 24 : i === 4 ? -24 : 0,
+                      delay: i * 80
+                    },
+                    t.name
+                  ))
+                }
+              )
+            ] })
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "section",
+          {
+            style: {
+              margin: "0 48px 80px",
+              borderRadius: 24,
+              padding: "96px 48px",
+              textAlign: "center",
+              background: "radial-gradient(ellipse 60% 80% at 50% 100%,rgba(0,81,255,0.12) 0%,transparent 70%),radial-gradient(ellipse 40% 60% at 50% 0%,rgba(0,81,255,0.06) 0%,transparent 70%),#f0f4ff",
+              border: "1px solid rgba(0,81,255,0.15)",
+              position: "relative",
+              overflow: "hidden"
+            },
+            "data-ocid": "landing.cta_section",
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Reveal, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "p",
+                {
+                  style: {
+                    fontSize: 12,
+                    letterSpacing: 2,
+                    textTransform: "uppercase",
+                    color: "#0051ff",
+                    fontWeight: 600,
+                    marginBottom: 16
+                  },
+                  children: "Ready when you are"
+                }
+              ) }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Reveal, { delay: 80, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                "h2",
+                {
+                  style: {
+                    fontFamily: "Montserrat,sans-serif",
+                    fontSize: "clamp(40px,5.5vw,68px)",
+                    fontWeight: 800,
+                    lineHeight: 1.05,
+                    letterSpacing: "-2px",
+                    marginBottom: 16
+                  },
+                  children: [
+                    "Your idea is already",
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { style: { color: "#0051ff" }, children: "good enough." })
+                  ]
+                }
+              ) }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Reveal, { delay: 160, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "p",
+                {
+                  style: {
+                    fontSize: 18,
+                    color: "#4a5568",
+                    maxWidth: 400,
+                    margin: "0 auto 48px",
+                    lineHeight: 1.65
+                  },
+                  children: "Stop waiting. Stop second-guessing. Start building."
+                }
+              ) }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Reveal, { delay: 240, children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                "div",
+                {
+                  style: {
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 16,
+                    flexWrap: "wrap"
+                  },
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      "button",
+                      {
+                        type: "button",
+                        onClick: handleStart,
+                        style: {
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 8,
+                          background: "linear-gradient(135deg,#0051ff,#3374ff)",
+                          color: "#fff",
+                          fontFamily: "Roboto,sans-serif",
+                          fontWeight: 700,
+                          fontSize: 16,
+                          borderRadius: 8,
+                          padding: "16px 36px",
+                          border: "none",
+                          cursor: "pointer",
+                          transition: "opacity 0.3s,transform 0.3s"
+                        },
+                        onMouseOver: (e) => {
+                          e.currentTarget.style.opacity = "0.88";
+                          e.currentTarget.style.transform = "translateY(-2px)";
+                        },
+                        onFocus: (e) => {
+                          e.currentTarget.style.opacity = "0.88";
+                          e.currentTarget.style.transform = "translateY(-2px)";
+                        },
+                        onMouseOut: (e) => {
+                          e.currentTarget.style.opacity = "1";
+                          e.currentTarget.style.transform = "none";
+                        },
+                        onBlur: (e) => {
+                          e.currentTarget.style.opacity = "1";
+                          e.currentTarget.style.transform = "none";
+                        },
+                        "data-ocid": "landing.cta_start_button",
+                        children: "Start for Free"
+                      }
+                    ),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      "button",
+                      {
+                        type: "button",
+                        onClick: () => {
+                          var _a3;
+                          return (_a3 = document.getElementById("examples")) == null ? void 0 : _a3.scrollIntoView({ behavior: "smooth" });
+                        },
+                        style: {
+                          fontSize: 15,
+                          color: "#4a5568",
+                          fontWeight: 500,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 6,
+                          background: "none",
+                          border: "none",
+                          cursor: "pointer",
+                          transition: "color 0.2s"
+                        },
+                        onMouseOver: (e) => {
+                          e.currentTarget.style.color = "#0d1117";
+                        },
+                        onFocus: (e) => {
+                          e.currentTarget.style.color = "#0d1117";
+                        },
+                        onMouseOut: (e) => {
+                          e.currentTarget.style.color = "#4a5568";
+                        },
+                        onBlur: (e) => {
+                          e.currentTarget.style.color = "#4a5568";
+                        },
+                        "data-ocid": "landing.cta_examples_link",
+                        children: "See Example Projects →"
+                      }
+                    )
+                  ]
+                }
+              ) })
+            ]
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "footer",
+          {
+            style: { borderTop: "1px solid #dde2ef", padding: "64px 48px 40px" },
+            children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { style: { maxWidth: 1200, margin: "0 auto" }, children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                "div",
+                {
+                  style: {
+                    display: "grid",
+                    gridTemplateColumns: "2fr repeat(4,1fr)",
+                    gap: 48,
+                    marginBottom: 56
+                  },
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                        "a",
+                        {
+                          href: "/",
+                          style: {
+                            fontFamily: "Montserrat,sans-serif",
+                            fontSize: 26,
+                            fontWeight: 700,
+                            color: "#0d1117",
+                            letterSpacing: "-0.5px",
+                            textDecoration: "none",
+                            display: "block",
+                            marginBottom: 12
+                          },
+                          children: [
+                            "Forge",
+                            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { style: { color: "#0051ff" }, children: "." })
+                          ]
+                        }
+                      ),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        "p",
+                        {
+                          style: {
+                            fontSize: 14,
+                            color: "#9aa0b4",
+                            lineHeight: 1.65,
+                            maxWidth: 220
+                          },
+                          children: "The AI that turns plain language into production-ready websites and apps."
+                        }
+                      )
+                    ] }),
+                    FOOTER_COLS.map((col) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        "h4",
+                        {
+                          style: {
+                            fontSize: 13,
+                            fontWeight: 600,
+                            color: "#4a5568",
+                            marginBottom: 16
+                          },
+                          children: col.title
+                        }
+                      ),
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        "ul",
+                        {
+                          style: {
+                            listStyle: "none",
+                            padding: 0,
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 10
+                          },
+                          children: col.links.map((l) => /* @__PURE__ */ jsxRuntimeExports.jsx("li", { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                            "a",
+                            {
+                              href: `#${l.toLowerCase().replace(/\s+/g, "-")}`,
+                              style: {
+                                fontSize: 14,
+                                color: "#9aa0b4",
+                                textDecoration: "none",
+                                transition: "color 0.2s"
+                              },
+                              onMouseOver: (e) => {
+                                e.currentTarget.style.color = "#4a5568";
+                              },
+                              onFocus: (e) => {
+                                e.currentTarget.style.color = "#4a5568";
+                              },
+                              onMouseOut: (e) => {
+                                e.currentTarget.style.color = "#9aa0b4";
+                              },
+                              onBlur: (e) => {
+                                e.currentTarget.style.color = "#9aa0b4";
+                              },
+                              children: l
+                            }
+                          ) }, l))
+                        }
+                      )
+                    ] }, col.title))
+                  ]
+                }
+              ),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                "div",
+                {
+                  style: {
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    paddingTop: 28,
+                    borderTop: "1px solid #dde2ef",
+                    flexWrap: "wrap",
+                    gap: 12
+                  },
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { style: { fontSize: 13, color: "#9aa0b4" }, children: [
+                      "© ",
+                      (/* @__PURE__ */ new Date()).getFullYear(),
+                      " Forge, Inc. All rights reserved. Built with love using",
+                      " ",
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        "a",
+                        {
+                          href: `https://caffeine.ai?utm_source=caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(typeof window !== "undefined" ? window.location.hostname : "")}`,
+                          target: "_blank",
+                          rel: "noopener noreferrer",
+                          style: { color: "#9aa0b4", textDecoration: "none" },
+                          children: "caffeine.ai"
+                        }
+                      )
+                    ] }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      "div",
+                      {
+                        style: { display: "flex", gap: 16 },
+                        "aria-label": "Social media links",
+                        children: SOCIAL_ICONS.map((s2) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+                          "a",
+                          {
+                            href: "https://twitter.com",
+                            "aria-label": s2.label,
+                            rel: "noopener noreferrer",
+                            target: "_blank",
+                            style: {
+                              display: "flex",
+                              alignItems: "center",
+                              color: "#9aa0b4",
+                              transition: "color 0.2s"
+                            },
+                            onMouseOver: (e) => {
+                              e.currentTarget.style.color = "#4a5568";
+                            },
+                            onFocus: (e) => {
+                              e.currentTarget.style.color = "#4a5568";
+                            },
+                            onMouseOut: (e) => {
+                              e.currentTarget.style.color = "#9aa0b4";
+                            },
+                            onBlur: (e) => {
+                              e.currentTarget.style.color = "#9aa0b4";
+                            },
+                            children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                              "svg",
+                              {
+                                role: "img",
+                                "aria-label": s2.label,
+                                width: 18,
+                                height: 18,
+                                viewBox: "0 0 24 24",
+                                fill: "currentColor",
+                                children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: s2.path })
+                              }
+                            )
+                          },
+                          s2.label
+                        ))
+                      }
+                    )
+                  ]
+                }
+              )
+            ] })
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("style", { children: "@keyframes pulse-dot{0%,100%{opacity:1;box-shadow:0 0 8px rgba(0,81,255,0.5)}50%{opacity:0.6;box-shadow:0 0 14px rgba(0,81,255,0.7)}}" })
+      ]
+    }
+  );
+}
+const NAV_LINKS$1 = [
+  { label: "Features", id: "features" },
+  { label: "Pricing", id: "pricing" },
+  { label: "Examples", id: "examples" },
+  { label: "Changelog", id: "changelog" }
+];
+const LOGOS = [
+  "Notion",
+  "Figma",
+  "Stripe",
+  "Linear",
+  "Vercel",
+  "Arc",
+  "Raycast",
+  "Loom"
+];
+const SITE_TYPES$1 = [
+  { value: "portfolio", label: "Portfolio", Icon: LayoutTemplate },
+  { value: "landing page", label: "Landing Page", Icon: Rocket },
+  { value: "eCommerce store", label: "eCommerce", Icon: ShoppingCart },
+  { value: "SaaS dashboard", label: "SaaS / App", Icon: ChartNoAxesColumn },
+  { value: "blog or content site", label: "Blog", Icon: PencilLine },
+  { value: "booking and appointment site", label: "Booking", Icon: Calendar },
+  { value: "restaurant or menu site", label: "Restaurant", Icon: Utensils },
+  { value: "agency or studio site", label: "Agency", Icon: Building2 }
+];
+const VIBES$1 = [
+  { value: "minimal and clean", label: "Minimal", Icon: Square },
+  { value: "bold and high-impact", label: "Bold", Icon: Zap },
+  { value: "warm and friendly", label: "Warm", Icon: Leaf },
+  { value: "luxury and premium", label: "Luxury", Icon: Star },
+  { value: "playful and colourful", label: "Playful", Icon: Sparkles }
+];
+const FEATURES_LIST = [
+  { value: "contact form", label: "Contact Form", Icon: Mail },
+  { value: "blog section", label: "Blog / Articles", Icon: BookOpen },
+  { value: "Stripe payment integration", label: "Payments", Icon: CreditCard },
+  {
+    value: "user login and authentication",
+    label: "User Accounts",
+    Icon: User
+  },
+  {
+    value: "image gallery or portfolio section",
+    label: "Image Gallery",
+    Icon: Image
+  },
+  {
+    value: "booking calendar and appointment system",
+    label: "Booking Calendar",
+    Icon: CalendarCheck
+  },
+  { value: "newsletter signup", label: "Newsletter", Icon: MailOpen },
+  { value: "live chat widget", label: "Live Chat", Icon: MessageCircle },
+  { value: "testimonials section", label: "Testimonials", Icon: Quote }
+];
+const CHIPS = [
+  { fill: "a freelance photographer based in New York", label: "Photographer" },
+  { fill: "an online bakery selling custom cakes", label: "Bakery" },
+  { fill: "a life coach helping busy professionals", label: "Life Coach" },
+  { fill: "a B2B SaaS tool for project management", label: "SaaS Tool" },
+  { fill: "a creative agency specialising in branding", label: "Agency" },
+  { fill: "an indie developer building side projects", label: "Developer" }
+];
+const HOW_IT_WORKS_STEPS = [
+  {
+    num: "01",
+    title: "Describe",
+    desc: "Type your idea in plain English. Be as specific or as vague as you want — Forge figures out the rest.",
+    Icon: PencilLine
+  },
+  {
+    num: "02",
+    title: "Generate",
+    desc: "Our AI architects your site structure, writes copy tailored to your audience, designs layouts, and wires up all the logic.",
+    Icon: Zap
+  },
+  {
+    num: "03",
+    title: "Launch",
+    desc: "One click. Your site is live — with a custom domain, global CDN hosting, and analytics included from day one.",
+    Icon: Rocket
+  }
+];
+const DEMO_CHECKLIST = [
+  "Custom layout & visual design, unique to your brand",
+  "Written copy, tailored to your niche and audience",
+  "Mobile-optimized and fully responsive out of the box",
+  "SEO metadata & Open Graph tags, pre-configured",
+  "Integrated contact forms, CTA flows, and analytics"
+];
+const TESTIMONIALS = [
+  {
+    initials: "PM",
+    name: "Priya M.",
+    role: "Strategy Consultant, independent",
+    quote: "I described my consulting site in one paragraph and had a live URL in my Slack DMs 40 seconds later. Legitimately wild. I've been recommending this to every founder I know."
+  },
+  {
+    initials: "TA",
+    name: "Tom A.",
+    role: "Founder, Launchly",
+    quote: "We replaced a $12,000 agency project with Forge. Same quality, zero back-and-forth, zero revision rounds. We launched in a week instead of three months."
+  },
+  {
+    initials: "DR",
+    name: "Dev R.",
+    role: "Indie Hacker & Maker",
+    quote: "The app logic feature is criminally underrated. Full auth and Stripe in one prompt. I stopped spinning up backends manually. This is what every indie hacker has been waiting for."
+  },
+  {
+    initials: "SK",
+    name: "Sarah K.",
+    role: "Executive Coach, SKCoaching",
+    quote: "As a coach with no technical background, I always thought building a proper site was out of reach. Forge changed that completely. My site looks better than most agencies I've seen."
+  },
+  {
+    initials: "ML",
+    name: "Marcus L.",
+    role: "Serial Maker & Builder",
+    quote: "I ship new micro-projects every week. Forge is the only tool that keeps up. It doesn't just make templates — it understands what I'm building and makes actual decisions."
+  },
+  {
+    initials: "AW",
+    name: "Anita W.",
+    role: "Creative Director, Studiohaus",
+    quote: "Our design team uses Forge for rapid client prototyping. We show clients a live, working site in the first meeting now. Close rates are up 40% since we started."
+  }
+];
+const FOOTER_COLS = [
+  {
+    title: "Product",
+    links: ["Features", "Pricing", "Examples", "Changelog", "Roadmap"]
+  },
+  { title: "Company", links: ["About", "Blog", "Careers", "Press"] },
+  {
+    title: "Resources",
+    links: [
+      "Documentation",
+      "API Reference",
+      "Templates",
+      "Community",
+      "Status"
+    ]
+  },
+  {
+    title: "Legal",
+    links: ["Privacy Policy", "Terms of Service", "Cookie Policy", "Security"]
+  }
+];
+const SOCIAL_ICONS = [
+  {
+    label: "Forge on X (Twitter)",
+    path: "M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.213 5.567L18.243 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+  },
+  {
+    label: "Forge on GitHub",
+    path: "M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.495.997.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.334-5.466-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"
+  },
+  {
+    label: "Forge on LinkedIn",
+    path: "M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"
+  }
+];
+const CONFETTI_COLORS = [
+  "#0051ff",
+  "#3374ff",
+  "#e8eeff",
+  "#16a34a",
+  "#dcfce7",
+  "#fbbf24",
+  "#ffffff"
+];
+function ConfettiCanvas() {
+  const canvasRef = reactExports.useRef(null);
+  reactExports.useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const particles = Array.from({ length: 100 }, () => ({
+      x: Math.random() * canvas.width,
+      y: -10 - Math.random() * 180,
+      w: 5 + Math.random() * 8,
+      h: 9 + Math.random() * 6,
+      color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
+      vx: (Math.random() - 0.5) * 2,
+      vy: 2 + Math.random() * 3,
+      angle: Math.random() * 360,
+      spin: (Math.random() - 0.5) * 4,
+      opacity: 1
+    }));
+    let frame2 = 0;
+    let rafId;
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (const p2 of particles) {
+        ctx.save();
+        ctx.globalAlpha = p2.opacity;
+        ctx.translate(p2.x, p2.y);
+        ctx.rotate(p2.angle * Math.PI / 180);
+        ctx.fillStyle = p2.color;
+        ctx.fillRect(-p2.w / 2, -p2.h / 2, p2.w, p2.h);
+        ctx.restore();
+        p2.x += p2.vx;
+        p2.y += p2.vy;
+        p2.angle += p2.spin;
+        if (p2.y > canvas.height * 0.65) p2.opacity -= 0.016;
+      }
+      frame2++;
+      if (frame2 < 200) {
+        rafId = requestAnimationFrame(draw);
+      } else {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    };
+    rafId = requestAnimationFrame(draw);
+    return () => cancelAnimationFrame(rafId);
+  }, []);
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(
+    "canvas",
+    {
+      ref: canvasRef,
+      className: "absolute inset-0 pointer-events-none",
+      "aria-hidden": true
+    }
+  );
+}
+function LivePage() {
+  const navigate = useNavigate();
+  const [copied, setCopied] = reactExports.useState(false);
+  const { siteUrl: siteUrl2 } = useSearch({ from: "/live" });
+  const liveUrl = siteUrl2 ?? "https://my-site.forge.app";
+  function copyUrl() {
+    var _a3;
+    (_a3 = navigator.clipboard) == null ? void 0 : _a3.writeText(liveUrl).catch(() => {
+    });
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2e3);
+  }
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    "div",
+    {
+      "data-ocid": "live.page",
+      className: "min-h-screen bg-card flex items-center justify-center relative overflow-hidden",
+      children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(ConfettiCanvas, {}),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "relative z-10 text-center max-w-[500px] w-full px-6 animate-slide-up", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "div",
+            {
+              className: "w-[76px] h-[76px] rounded-full flex items-center justify-center mx-auto mb-6",
+              style: {
+                background: "oklch(0.590 0.160 142.5 / 0.15)",
+                animation: "pop-in 0.5s cubic-bezier(0.22,1,0.36,1) 0.2s both"
+              },
+              "data-ocid": "live.success_state",
+              children: /* @__PURE__ */ jsxRuntimeExports.jsx(Check, { className: "w-8 h-8 text-accent", strokeWidth: 3 })
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "h1",
+            {
+              className: "font-display font-black text-foreground mb-3 leading-none",
+              style: { fontSize: 36, letterSpacing: "-1px" },
+              children: [
+                "You're ",
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-primary", children: "live." })
+              ]
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[15px] text-muted-foreground leading-relaxed mb-7", children: "Your site is published and open to the world. Share it, add it to your bio, and watch visitors arrive." }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "div",
+            {
+              "data-ocid": "live.url_box",
+              className: "flex items-stretch border-2 border-primary rounded-xl overflow-hidden mb-6",
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 bg-primary/5 px-4 py-3 font-mono text-[13px] text-primary overflow-hidden text-ellipsis whitespace-nowrap text-left", children: liveUrl }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "button",
+                  {
+                    type: "button",
+                    "data-ocid": "live.copy_button",
+                    onClick: copyUrl,
+                    className: "bg-primary text-primary-foreground px-4 flex items-center gap-2 font-display font-bold text-[12px] hover:opacity-90 transition-forge whitespace-nowrap",
+                    children: copied ? /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(Check, { className: "w-3.5 h-3.5" }),
+                      "Copied!"
+                    ] }) : /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                        "svg",
+                        {
+                          className: "w-3.5 h-3.5",
+                          fill: "none",
+                          viewBox: "0 0 14 14",
+                          role: "img",
+                          "aria-label": "Copy icon",
+                          children: [
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(
+                              "rect",
+                              {
+                                x: "4",
+                                y: "4",
+                                width: "8",
+                                height: "8",
+                                rx: "1.5",
+                                stroke: "currentColor",
+                                strokeWidth: "1.5"
+                              }
+                            ),
+                            /* @__PURE__ */ jsxRuntimeExports.jsx(
+                              "path",
+                              {
+                                d: "M10 4V3a1 1 0 00-1-1H3a1 1 0 00-1 1v6a1 1 0 001 1h1",
+                                stroke: "currentColor",
+                                strokeWidth: "1.5",
+                                strokeLinecap: "round"
+                              }
+                            )
+                          ]
+                        }
+                      ),
+                      "Copy link"
+                    ] })
+                  }
+                )
+              ]
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-wrap items-center justify-center gap-2 mb-8", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(
+              "button",
+              {
+                type: "button",
+                "data-ocid": "live.view_site_button",
+                className: "flex items-center gap-1.5 px-4 py-2 border border-border rounded-lg text-[13px] font-display font-semibold text-foreground bg-card hover:bg-muted transition-forge",
+                children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(ExternalLink, { className: "w-3.5 h-3.5" }),
+                  "View live site"
+                ]
+              }
+            ),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(
+              "button",
+              {
+                type: "button",
+                "data-ocid": "live.share_button",
+                className: "flex items-center gap-1.5 px-4 py-2 border border-border rounded-lg text-[13px] font-display font-semibold text-foreground bg-card hover:bg-muted transition-forge",
+                children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Share2, { className: "w-3.5 h-3.5" }),
+                  "Share"
+                ]
+              }
+            ),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(
+              "button",
+              {
+                type: "button",
+                "data-ocid": "live.dashboard_button",
+                onClick: () => navigate({ to: "/dashboard" }),
+                className: "flex items-center gap-1.5 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-[13px] font-display font-bold hover:opacity-90 transition-forge",
+                children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(LayoutDashboard, { className: "w-3.5 h-3.5" }),
+                  "Dashboard"
+                ]
+              }
+            )
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex items-center justify-center gap-7 pt-6 border-t border-border", children: [
+            { value: "8.3s", label: "Build time" },
+            { value: "97", label: "Lighthouse score" },
+            { value: "7", label: "Sections built" },
+            { value: "100%", label: "Mobile ready" }
+          ].map((stat) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-center", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "font-display font-extrabold text-[22px] text-foreground leading-none mb-0.5", children: stat.value }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[11px] text-muted-foreground", children: stat.label })
+          ] }, stat.label)) })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("style", { children: `
+        @keyframes pop-in {
+          from { opacity: 0; transform: scale(0.5); }
+          to   { opacity: 1; transform: scale(1); }
+        }
+      ` })
+      ]
+    }
+  );
+}
+var REACT_LAZY_TYPE = Symbol.for("react.lazy");
+var use = React$5[" use ".trim().toString()];
+function isPromiseLike(value) {
+  return typeof value === "object" && value !== null && "then" in value;
+}
+function isLazyComponent(element) {
+  return element != null && typeof element === "object" && "$$typeof" in element && element.$$typeof === REACT_LAZY_TYPE && "_payload" in element && isPromiseLike(element._payload);
+}
+// @__NO_SIDE_EFFECTS__
+function createSlot(ownerName) {
+  const SlotClone = /* @__PURE__ */ createSlotClone(ownerName);
+  const Slot2 = reactExports.forwardRef((props, forwardedRef) => {
+    let { children, ...slotProps } = props;
+    if (isLazyComponent(children) && typeof use === "function") {
+      children = use(children._payload);
+    }
+    const childrenArray = reactExports.Children.toArray(children);
+    const slottable = childrenArray.find(isSlottable);
+    if (slottable) {
+      const newElement = slottable.props.children;
+      const newChildren = childrenArray.map((child) => {
+        if (child === slottable) {
+          if (reactExports.Children.count(newElement) > 1) return reactExports.Children.only(null);
+          return reactExports.isValidElement(newElement) ? newElement.props.children : null;
+        } else {
+          return child;
+        }
+      });
+      return /* @__PURE__ */ jsxRuntimeExports.jsx(SlotClone, { ...slotProps, ref: forwardedRef, children: reactExports.isValidElement(newElement) ? reactExports.cloneElement(newElement, void 0, newChildren) : null });
+    }
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(SlotClone, { ...slotProps, ref: forwardedRef, children });
+  });
+  Slot2.displayName = `${ownerName}.Slot`;
+  return Slot2;
+}
+var Slot = /* @__PURE__ */ createSlot("Slot");
+// @__NO_SIDE_EFFECTS__
+function createSlotClone(ownerName) {
+  const SlotClone = reactExports.forwardRef((props, forwardedRef) => {
+    let { children, ...slotProps } = props;
+    if (isLazyComponent(children) && typeof use === "function") {
+      children = use(children._payload);
+    }
+    if (reactExports.isValidElement(children)) {
+      const childrenRef = getElementRef(children);
+      const props2 = mergeProps(slotProps, children.props);
+      if (children.type !== reactExports.Fragment) {
+        props2.ref = forwardedRef ? composeRefs$1(forwardedRef, childrenRef) : childrenRef;
+      }
+      return reactExports.cloneElement(children, props2);
+    }
+    return reactExports.Children.count(children) > 1 ? reactExports.Children.only(null) : null;
+  });
+  SlotClone.displayName = `${ownerName}.SlotClone`;
+  return SlotClone;
+}
+var SLOTTABLE_IDENTIFIER = Symbol("radix.slottable");
+function isSlottable(child) {
+  return reactExports.isValidElement(child) && typeof child.type === "function" && "__radixId" in child.type && child.type.__radixId === SLOTTABLE_IDENTIFIER;
+}
+function mergeProps(slotProps, childProps) {
+  const overrideProps = { ...childProps };
+  for (const propName in childProps) {
+    const slotPropValue = slotProps[propName];
+    const childPropValue = childProps[propName];
+    const isHandler = /^on[A-Z]/.test(propName);
+    if (isHandler) {
+      if (slotPropValue && childPropValue) {
+        overrideProps[propName] = (...args) => {
+          const result = childPropValue(...args);
+          slotPropValue(...args);
+          return result;
+        };
+      } else if (slotPropValue) {
+        overrideProps[propName] = slotPropValue;
+      }
+    } else if (propName === "style") {
+      overrideProps[propName] = { ...slotPropValue, ...childPropValue };
+    } else if (propName === "className") {
+      overrideProps[propName] = [slotPropValue, childPropValue].filter(Boolean).join(" ");
+    }
+  }
+  return { ...slotProps, ...overrideProps };
+}
+function getElementRef(element) {
+  var _a3, _b3;
+  let getter = (_a3 = Object.getOwnPropertyDescriptor(element.props, "ref")) == null ? void 0 : _a3.get;
+  let mayWarn = getter && "isReactWarning" in getter && getter.isReactWarning;
+  if (mayWarn) {
+    return element.ref;
+  }
+  getter = (_b3 = Object.getOwnPropertyDescriptor(element, "ref")) == null ? void 0 : _b3.get;
+  mayWarn = getter && "isReactWarning" in getter && getter.isReactWarning;
+  if (mayWarn) {
+    return element.props.ref;
+  }
+  return element.props.ref || element.ref;
+}
+const falsyToString = (value) => typeof value === "boolean" ? `${value}` : value === 0 ? "0" : value;
+const cx = clsx;
+const cva = (base, config) => (props) => {
+  var _config_compoundVariants;
+  if ((config === null || config === void 0 ? void 0 : config.variants) == null) return cx(base, props === null || props === void 0 ? void 0 : props.class, props === null || props === void 0 ? void 0 : props.className);
+  const { variants, defaultVariants } = config;
+  const getVariantClassNames = Object.keys(variants).map((variant) => {
+    const variantProp = props === null || props === void 0 ? void 0 : props[variant];
+    const defaultVariantProp = defaultVariants === null || defaultVariants === void 0 ? void 0 : defaultVariants[variant];
+    if (variantProp === null) return null;
+    const variantKey = falsyToString(variantProp) || falsyToString(defaultVariantProp);
+    return variants[variant][variantKey];
+  });
+  const propsWithoutUndefined = props && Object.entries(props).reduce((acc, param) => {
+    let [key, value] = param;
+    if (value === void 0) {
+      return acc;
+    }
+    acc[key] = value;
+    return acc;
+  }, {});
+  const getCompoundVariantClassNames = config === null || config === void 0 ? void 0 : (_config_compoundVariants = config.compoundVariants) === null || _config_compoundVariants === void 0 ? void 0 : _config_compoundVariants.reduce((acc, param) => {
+    let { class: cvClass, className: cvClassName, ...compoundVariantOptions } = param;
+    return Object.entries(compoundVariantOptions).every((param2) => {
+      let [key, value] = param2;
+      return Array.isArray(value) ? value.includes({
+        ...defaultVariants,
+        ...propsWithoutUndefined
+      }[key]) : {
+        ...defaultVariants,
+        ...propsWithoutUndefined
+      }[key] === value;
+    }) ? [
+      ...acc,
+      cvClass,
+      cvClassName
+    ] : acc;
+  }, []);
+  return cx(base, getVariantClassNames, getCompoundVariantClassNames, props === null || props === void 0 ? void 0 : props.class, props === null || props === void 0 ? void 0 : props.className);
+};
+const buttonVariants = cva(
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+  {
+    variants: {
+      variant: {
+        default: "bg-primary text-primary-foreground shadow-xs hover:bg-primary/90",
+        destructive: "bg-destructive text-destructive-foreground shadow-xs hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
+        outline: "border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50",
+        secondary: "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80",
+        ghost: "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
+        link: "text-primary underline-offset-4 hover:underline"
+      },
+      size: {
+        default: "h-9 px-4 py-2 has-[>svg]:px-3",
+        sm: "h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
+        lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
+        icon: "size-9"
+      }
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default"
+    }
+  }
+);
+function Button({
+  className,
+  variant,
+  size,
+  asChild = false,
+  ...props
+}) {
+  const Comp = asChild ? Slot : "button";
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(
+    Comp,
+    {
+      "data-slot": "button",
+      className: cn(buttonVariants({ variant, size, className })),
+      ...props
+    }
+  );
+}
+const NAV_LINKS = [
+  { label: "Dashboard", href: "/dashboard", authRequired: true },
+  { label: "New Project", href: "/wizard", authRequired: true }
+];
+function Layout({ children }) {
+  const { isAuthenticated, isInitializing, isLoggingIn, login, clear } = useInternetIdentity();
+  const qc = useQueryClient();
+  const [mobileOpen, setMobileOpen] = reactExports.useState(false);
+  const routerState = useRouterState();
+  const currentPath = routerState.location.pathname;
+  const handleAuth = () => {
+    if (isAuthenticated) {
+      clear();
+      qc.clear();
+    } else {
+      login();
+    }
+  };
+  const visibleLinks = NAV_LINKS.filter(
+    (l) => !l.authRequired || isAuthenticated
+  );
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "min-h-screen flex flex-col bg-background", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "sticky top-0 z-40 bg-card border-b border-border shadow-subtle", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "container mx-auto px-4 h-16 flex items-center justify-between", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          Link$1,
+          {
+            to: "/",
+            className: "flex items-center gap-2 group",
+            "data-ocid": "nav.logo_link",
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-elevated group-hover:scale-105 transition-smooth", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+                Zap,
+                {
+                  className: "w-4 h-4 text-primary-foreground",
+                  fill: "currentColor"
+                }
+              ) }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "font-display font-bold text-lg text-foreground tracking-tight", children: "Forge" })
+            ]
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("nav", { className: "hidden md:flex items-center gap-1", children: visibleLinks.map((link) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+          Link$1,
+          {
+            to: link.href,
+            className: `px-4 py-2 rounded-md text-sm font-medium transition-smooth ${currentPath === link.href ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`,
+            "data-ocid": `nav.${link.label.toLowerCase().replace(/ /g, "_")}_link`,
+            children: link.label
+          },
+          link.href
+        )) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3", children: [
+          isAuthenticated ? /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            Button,
+            {
+              variant: "ghost",
+              size: "sm",
+              onClick: handleAuth,
+              disabled: isInitializing || isLoggingIn,
+              className: "hidden md:flex items-center gap-2 text-muted-foreground hover:text-foreground",
+              "data-ocid": "nav.logout_button",
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(LogOut, { className: "w-4 h-4" }),
+                "Sign Out"
+              ]
+            }
+          ) : /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            Button,
+            {
+              size: "sm",
+              onClick: handleAuth,
+              disabled: isInitializing || isLoggingIn,
+              className: "hidden md:flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground",
+              "data-ocid": "nav.login_button",
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(LogIn, { className: "w-4 h-4" }),
+                isInitializing ? "Loading…" : isLoggingIn ? "Signing in…" : "Sign In"
+              ]
+            }
+          ),
+          isAuthenticated && /* @__PURE__ */ jsxRuntimeExports.jsx(Link$1, { to: "/dashboard", "data-ocid": "nav.dashboard_icon_link", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Button, { variant: "ghost", size: "icon", className: "hidden md:flex", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(LayoutDashboard, { className: "w-4 h-4" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "sr-only", children: "Dashboard" })
+          ] }) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "button",
+            {
+              type: "button",
+              className: "md:hidden p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-smooth",
+              onClick: () => setMobileOpen((v2) => !v2),
+              "aria-label": "Toggle menu",
+              "data-ocid": "nav.mobile_menu_button",
+              children: mobileOpen ? /* @__PURE__ */ jsxRuntimeExports.jsx(X, { className: "w-5 h-5" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(Menu, { className: "w-5 h-5" })
+            }
+          )
+        ] })
+      ] }),
+      mobileOpen && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "md:hidden border-t border-border bg-card px-4 py-3 flex flex-col gap-1 animate-slide-up", children: [
+        visibleLinks.map((link) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+          Link$1,
+          {
+            to: link.href,
+            className: `px-4 py-2.5 rounded-md text-sm font-medium transition-smooth ${currentPath === link.href ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`,
+            onClick: () => setMobileOpen(false),
+            "data-ocid": `nav.mobile.${link.label.toLowerCase().replace(/ /g, "_")}_link`,
+            children: link.label
+          },
+          link.href
+        )),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "pt-2 border-t border-border mt-1", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+          Button,
+          {
+            variant: isAuthenticated ? "ghost" : "default",
+            size: "sm",
+            onClick: () => {
+              handleAuth();
+              setMobileOpen(false);
+            },
+            disabled: isInitializing || isLoggingIn,
+            className: "w-full justify-start gap-2",
+            "data-ocid": "nav.mobile.auth_button",
+            children: isAuthenticated ? /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(LogOut, { className: "w-4 h-4" }),
+              " Sign Out"
+            ] }) : /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(LogIn, { className: "w-4 h-4" }),
+              " Sign In"
+            ] })
+          }
+        ) })
+      ] })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("main", { className: "flex-1 bg-background", children }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("footer", { className: "bg-card border-t border-border", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "container mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-3", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-6 h-6 rounded-md bg-primary flex items-center justify-center", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+          Zap,
+          {
+            className: "w-3 h-3 text-primary-foreground",
+            fill: "currentColor"
+          }
+        ) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "font-display font-semibold text-sm text-foreground", children: "Forge" })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-xs text-muted-foreground", children: [
+        "© ",
+        (/* @__PURE__ */ new Date()).getFullYear(),
+        ".",
+        " ",
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "a",
+          {
+            href: `https://caffeine.ai?utm_source=caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(typeof window !== "undefined" ? window.location.hostname : "")}`,
+            target: "_blank",
+            rel: "noopener noreferrer",
+            className: "hover:text-foreground transition-smooth",
+            children: "Built with love using caffeine.ai"
+          }
+        )
+      ] })
+    ] }) })
+  ] });
+}
+function LoginPage() {
+  const { isAuthenticated, isInitializing, isLoggingIn, login } = useInternetIdentity();
+  const navigate = useNavigate();
+  reactExports.useEffect(() => {
+    if (isAuthenticated) {
+      navigate({ to: "/dashboard" });
+    }
+  }, [isAuthenticated, navigate]);
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(Layout, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+    "div",
+    {
+      className: "flex-1 flex items-center justify-center min-h-[80vh] px-4 py-12",
+      "data-ocid": "login.page",
+      children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-full max-w-md", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "bg-card border border-border rounded-2xl p-8 shadow-elevated animate-slide-up", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col items-center mb-8 gap-3", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-16 h-16 rounded-2xl bg-primary flex items-center justify-center shadow-elevated", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+            Zap,
+            {
+              className: "w-8 h-8 text-primary-foreground",
+              fill: "currentColor",
+              strokeWidth: 0
+            }
+          ) }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "font-display font-bold text-xl text-foreground tracking-tight", children: "Forge" })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-center mb-8", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "font-display font-bold text-2xl text-foreground mb-2", children: "Welcome back" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-muted-foreground text-sm leading-relaxed", children: "Sign in with Internet Identity to create and manage your AI-generated sites." })
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          Button,
+          {
+            size: "lg",
+            className: "w-full gap-3 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold",
+            onClick: login,
+            disabled: isInitializing || isLoggingIn,
+            "data-ocid": "login.sign_in_button",
+            children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx(LogIn, { className: "w-5 h-5" }),
+              isInitializing ? "Loading…" : isLoggingIn ? "Opening sign-in…" : "Sign In with Internet Identity"
+            ]
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 mt-6 p-3 rounded-lg bg-muted/40 border border-border", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Shield, { className: "w-4 h-4 text-muted-foreground shrink-0" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-muted-foreground leading-snug", children: "Internet Identity is a secure, privacy-preserving login system. No passwords, no email required." })
+        ] })
+      ] }) })
+    }
+  ) });
+}
+function StepHeader({
+  step,
+  title,
+  subtitle
+}) {
+  const steps = [
+    { n: 1, label: "Your URL" },
+    { n: 2, label: "Final checks" },
+    { n: 3, label: "Go live" }
+  ];
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "border-b border-forge-border p-7 pb-5", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mb-5 flex items-center gap-0", children: steps.map(({ n, label }, i) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "div",
+          {
+            className: `flex h-6 w-6 items-center justify-center rounded-full border text-[11px] font-bold transition-all duration-300 ease-out ${n < step ? "border-forge-green bg-forge-green text-white" : n === step ? "border-forge-blue bg-forge-blue-pale text-forge-blue" : "border-forge-border bg-forge-card text-forge-text-muted"}`,
+            children: n < step ? /* @__PURE__ */ jsxRuntimeExports.jsx(Check, { className: "h-3 w-3" }) : n
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "span",
+          {
+            className: `text-[11px] font-semibold ${n === step ? "text-forge-text-secondary" : "text-forge-text-muted"}`,
+            children: label
+          }
+        )
+      ] }),
+      i < steps.length - 1 && /* @__PURE__ */ jsxRuntimeExports.jsx(
+        "div",
+        {
+          className: `mx-3 h-px w-10 transition-all duration-300 ease-out ${n < step ? "bg-forge-green/50" : "bg-forge-border"}`
+        }
+      )
+    ] }, n)) }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "font-display text-lg font-bold text-forge-text-primary", children: title }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-1 text-sm text-forge-text-secondary", children: subtitle })
+  ] });
+}
+function CheckItem({
+  label,
+  status,
+  ocid
+}) {
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    "div",
+    {
+      className: `flex items-center gap-3 rounded-lg border px-3.5 py-3 transition-all duration-300 ease-out ${status === "pass" ? "border-forge-green/40 bg-forge-green-pale/60" : status === "running" ? "border-forge-blue/30 bg-forge-blue-faint" : "border-forge-border bg-forge-surface"}`,
+      "data-ocid": ocid,
+      children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "div",
+          {
+            className: `flex h-7 w-7 shrink-0 items-center justify-center rounded-full border transition-all duration-300 ease-out ${status === "pass" ? "border-forge-green bg-forge-green" : status === "running" ? "border-forge-blue/50" : "border-forge-border bg-forge-card"}`,
+            children: status === "pass" ? /* @__PURE__ */ jsxRuntimeExports.jsx(Check, { className: "h-3 w-3 text-white" }) : status === "running" ? /* @__PURE__ */ jsxRuntimeExports.jsx(LoaderCircle, { className: "h-3 w-3 animate-spin text-forge-blue" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(LoaderCircle, { className: "h-3 w-3 text-forge-text-muted" })
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "span",
+          {
+            className: `text-sm font-semibold ${status === "pass" ? "text-forge-green" : "text-forge-text-primary"}`,
+            children: label
+          }
+        )
+      ]
+    }
+  );
+}
+function PublishPage() {
+  const { siteId } = useParams({ from: "/publish/$siteId" });
+  const siteIdBigInt = reactExports.useMemo(() => BigInt(siteId), [siteId]);
+  const navigate = useNavigate();
+  const { data: checks } = useGetPreLaunchChecks(siteIdBigInt);
+  const { data: site } = useGetSite(siteIdBigInt);
+  const publishMutation = usePublishSite();
+  const [step, setStep] = reactExports.useState(1);
+  const [urlType, setUrlType] = reactExports.useState("subdomain");
+  const [checksComplete, setChecksComplete] = reactExports.useState(false);
+  const [checkState, setCheckState] = reactExports.useState({
+    mobile: "idle",
+    seo: "idle",
+    speed: "idle",
+    forms: "idle"
+  });
+  const slug = (site == null ? void 0 : site.slug) ?? "my-site";
+  reactExports.useEffect(() => {
+    if (step !== 2) return;
+    setChecksComplete(false);
+    setCheckState({
+      mobile: "idle",
+      seo: "idle",
+      speed: "idle",
+      forms: "idle"
+    });
+    const keys = ["mobile", "seo", "speed", "forms"];
+    const delays = [0, 800, 1600, 2400];
+    keys.forEach((key, i) => {
+      setTimeout(() => {
+        setCheckState((prev) => ({ ...prev, [key]: "running" }));
+        setTimeout(() => {
+          void (checks ? key === "mobile" ? checks.mobile : key === "seo" ? checks.seo : key === "speed" ? checks.speed : checks.forms : true);
+          setCheckState((prev) => ({ ...prev, [key]: "pass" }));
+          if (i === keys.length - 1) {
+            setTimeout(() => setChecksComplete(true), 300);
+          }
+        }, 600);
+      }, delays[i]);
+    });
+  }, [step, checks]);
+  const stepMeta = {
+    1: {
+      title: "Choose your URL",
+      subtitle: "Pick where your site lives. You can change this any time."
+    },
+    2: {
+      title: "Final checks",
+      subtitle: "Checking everything looks perfect before going live."
+    },
+    3: {
+      title: "Ready to launch",
+      subtitle: "Hit Launch and your site is live instantly."
+    }
+  };
+  async function handleLaunch() {
+    try {
+      await publishMutation.mutateAsync(siteIdBigInt);
+      const publishedUrl = (site == null ? void 0 : site.siteUrl) ?? `https://${slug}.forge.app`;
+      navigate({ to: "/live", search: { siteUrl: publishedUrl } });
+    } catch {
+    }
+  }
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(
+    "div",
+    {
+      className: "fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm",
+      "data-ocid": "publish.dialog",
+      children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "w-[520px] overflow-hidden rounded-2xl bg-white shadow-2xl", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          StepHeader,
+          {
+            step,
+            title: stepMeta[step].title,
+            subtitle: stepMeta[step].subtitle
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "px-7 py-6", children: [
+          step === 1 && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col gap-3", "data-ocid": "publish.url_step", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(
+              "button",
+              {
+                type: "button",
+                onClick: () => setUrlType("subdomain"),
+                className: `flex w-full cursor-pointer flex-col gap-1.5 rounded-xl border-[1.5px] p-4 text-left transition-all duration-300 ease-out ${urlType === "subdomain" ? "border-forge-blue bg-forge-blue-faint" : "border-forge-border bg-white hover:border-forge-blue/40"}`,
+                "data-ocid": "publish.subdomain_option",
+                children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 text-sm font-bold text-forge-text-primary", children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(Globe, { className: "h-4 w-4 text-forge-blue" }),
+                      "Forge subdomain"
+                    ] }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "rounded-full bg-forge-green-pale px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-forge-green", children: "Free" })
+                  ] }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "font-mono text-xs text-forge-text-secondary", children: [
+                    slug,
+                    ".forge.app"
+                  ] })
+                ]
+              }
+            ),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs(
+              "button",
+              {
+                type: "button",
+                onClick: () => setUrlType("custom"),
+                className: `flex w-full cursor-pointer flex-col gap-1.5 rounded-xl border-[1.5px] p-4 text-left transition-all duration-300 ease-out ${urlType === "custom" ? "border-forge-blue bg-forge-blue-faint" : "border-forge-border bg-white hover:border-forge-blue/40"}`,
+                "data-ocid": "publish.custom_domain_option",
+                children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 text-sm font-bold text-forge-text-primary", children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx(Link, { className: "h-4 w-4 text-forge-blue" }),
+                      "Custom domain"
+                    ] }),
+                    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "rounded-full bg-forge-blue-pale px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-forge-blue", children: "Pro" })
+                  ] }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-forge-text-secondary", children: "Connect your own domain" })
+                ]
+              }
+            )
+          ] }),
+          step === 2 && /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "div",
+            {
+              className: "flex flex-col gap-2.5",
+              "data-ocid": "publish.checks_step",
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  CheckItem,
+                  {
+                    label: "Mobile responsive",
+                    status: checkState.mobile,
+                    ocid: "publish.check.mobile"
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  CheckItem,
+                  {
+                    label: "SEO metadata",
+                    status: checkState.seo,
+                    ocid: "publish.check.seo"
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  CheckItem,
+                  {
+                    label: "Page speed score",
+                    status: checkState.speed,
+                    ocid: "publish.check.speed"
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  CheckItem,
+                  {
+                    label: "Forms connected",
+                    status: checkState.forms,
+                    ocid: "publish.check.forms"
+                  }
+                )
+              ]
+            }
+          ),
+          step === 3 && /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "div",
+            {
+              className: "flex flex-col items-center gap-4 py-4 text-center",
+              "data-ocid": "publish.launch_step",
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex h-16 w-16 items-center justify-center rounded-full bg-forge-blue-faint", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Rocket, { className: "h-8 w-8 text-forge-blue" }) }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "font-display text-base font-bold text-forge-text-primary", children: "Everything looks great." }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "mt-1 text-sm text-forge-text-secondary", children: [
+                    "Your site will be live at",
+                    " ",
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "font-mono font-semibold text-forge-blue", children: [
+                      "https://",
+                      slug,
+                      ".forge.app"
+                    ] }),
+                    " ",
+                    "the moment you hit Launch."
+                  ] })
+                ] })
+              ]
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between border-t border-forge-border px-7 py-4", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "button",
+            {
+              type: "button",
+              onClick: () => step === 1 ? navigate({ to: "/dashboard" }) : setStep((s2) => s2 - 1),
+              className: "flex items-center gap-1.5 text-sm font-semibold text-forge-text-muted transition-all duration-300 ease-out hover:text-forge-text-secondary",
+              "data-ocid": step === 1 ? "publish.cancel_button" : "publish.back_button",
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowLeft, { className: "h-4 w-4" }),
+                step === 1 ? "Cancel" : "Back"
+              ]
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-xs text-forge-text-muted", children: [
+            "Step ",
+            step,
+            " of 3"
+          ] }),
+          step < 3 ? /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "button",
+            {
+              type: "button",
+              disabled: step === 2 && !checksComplete,
+              onClick: () => setStep((s2) => s2 + 1),
+              className: "flex items-center gap-1.5 rounded-lg bg-forge-blue px-5 py-2 text-sm font-bold text-white transition-all duration-300 ease-out hover:bg-forge-blue-lt disabled:cursor-not-allowed disabled:opacity-40",
+              "data-ocid": "publish.continue_button",
+              children: [
+                "Continue ",
+                /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowRight, { className: "h-4 w-4" })
+              ]
+            }
+          ) : /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "button",
+            {
+              type: "button",
+              disabled: publishMutation.isPending,
+              onClick: handleLaunch,
+              className: "flex items-center gap-1.5 rounded-lg bg-forge-blue px-5 py-2 text-sm font-bold text-white transition-all duration-300 ease-out hover:bg-forge-blue-lt disabled:cursor-not-allowed disabled:opacity-40",
+              "data-ocid": "publish.launch_button",
+              children: [
+                publishMutation.isPending ? /* @__PURE__ */ jsxRuntimeExports.jsx(LoaderCircle, { className: "h-4 w-4 animate-spin" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(Rocket, { className: "h-4 w-4" }),
+                "Launch site"
+              ]
+            }
+          )
+        ] }),
+        publishMutation.isError && /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "div",
+          {
+            className: "mx-7 mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700",
+            "data-ocid": "publish.error_state",
+            children: "Publish failed. Please try again."
+          }
+        )
+      ] })
+    }
+  );
+}
+function GoogleIcon() {
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    "svg",
+    {
+      className: "w-5 h-5 flex-shrink-0",
+      viewBox: "0 0 24 24",
+      role: "img",
+      "aria-label": "Google logo",
+      children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "path",
+          {
+            d: "M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z",
+            fill: "#4285F4"
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "path",
+          {
+            d: "M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z",
+            fill: "#34A853"
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "path",
+          {
+            d: "M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z",
+            fill: "#FBBC05"
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "path",
+          {
+            d: "M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z",
+            fill: "#EA4335"
+          }
+        )
+      ]
+    }
+  );
+}
+function GitHubIcon() {
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(
+    "svg",
+    {
+      className: "w-5 h-5 flex-shrink-0 text-foreground",
+      viewBox: "0 0 24 24",
+      fill: "currentColor",
+      role: "img",
+      "aria-label": "GitHub logo",
+      children: /* @__PURE__ */ jsxRuntimeExports.jsx("path", { d: "M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z" })
+    }
+  );
+}
+function Skel({ w: w2, h: h2, delay: delay2 = 0 }) {
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(
+    "div",
+    {
+      className: "rounded bg-primary/10 animate-pulse",
+      style: { width: w2, height: h2, animationDelay: `${delay2}ms` }
+    }
+  );
+}
+function SignupPage() {
+  const navigate = useNavigate();
+  const { siteId } = useSearch({ from: "/signup" });
+  function handleAuth() {
+    if (siteId) {
+      navigate({ to: "/editor/$siteId", params: { siteId } });
+    } else {
+      navigate({ to: "/dashboard" });
+    }
+  }
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { "data-ocid": "signup.page", className: "min-h-screen bg-background flex", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "hidden lg:flex flex-col items-center justify-center bg-primary/5 border-r border-border relative overflow-hidden flex-1 p-12", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        "div",
+        {
+          className: "absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full pointer-events-none",
+          style: {
+            background: "radial-gradient(circle, oklch(0.54 0.247 265.6 / 0.07) 0%, transparent 70%)"
+          }
+        }
+      ),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 bg-card border border-border rounded-full px-3.5 py-2 mb-6 shadow-sm", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "w-2 h-2 rounded-full bg-accent animate-pulse" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[13px] font-display font-bold text-foreground", children: "Your site is ready" })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(
+        "div",
+        {
+          "data-ocid": "signup.site_preview",
+          className: "w-full max-w-[400px] bg-card border border-border rounded-xl overflow-hidden shadow-browser",
+          children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "bg-card border-b border-border px-3 py-2 flex items-center gap-2", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-1.5", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "w-2 h-2 rounded-full bg-[#ff5f57]" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "w-2 h-2 rounded-full bg-[#ffbd2e]" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "w-2 h-2 rounded-full bg-[#28c840]" })
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 bg-background border border-border rounded px-2 py-0.5 font-mono text-[10px] text-muted-foreground", children: "forge.app/preview/my-site" })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "p-5 bg-primary/5", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between mb-4", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Skel, { w: "70px", h: "9px" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Skel, { w: "30px", h: "7px", delay: 100 }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Skel, { w: "30px", h: "7px", delay: 200 }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(Skel, { w: "44px", h: "18px", delay: 300 })
+                ] })
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Skel, { w: "60%", h: "20px" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-2 mb-1", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Skel, { w: "48%", h: "10px", delay: 100 }) }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(Skel, { w: "40%", h: "10px", delay: 200 }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2 mt-4", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Skel, { w: "80px", h: "24px", delay: 300 }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Skel, { w: "72px", h: "24px", delay: 400 })
+              ] })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "px-5 py-3 grid grid-cols-3 gap-2", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "bg-card border border-border rounded p-2", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Skel, { w: "100%", h: "7px" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-1", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Skel, { w: "70%", h: "7px", delay: 200 }) })
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "bg-card border border-border rounded p-2", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Skel, { w: "100%", h: "7px", delay: 100 }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-1", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Skel, { w: "70%", h: "7px", delay: 300 }) })
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "bg-card border border-border rounded p-2", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Skel, { w: "100%", h: "7px", delay: 200 }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-1", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Skel, { w: "70%", h: "7px", delay: 400 }) })
+              ] })
+            ] })
+          ]
+        }
+      ),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mt-5 text-center", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "font-display font-bold text-foreground text-[17px] mb-1", children: "Generated in 8.3 seconds ⚡" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[13px] text-muted-foreground", children: "A live URL and editor are one step away." })
+      ] })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "w-full lg:w-[440px] flex-shrink-0 bg-card flex flex-col justify-center px-10 py-12 overflow-y-auto", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "font-display font-extrabold text-[21px] text-foreground mb-7", children: [
+        "Forge",
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-primary", children: "." })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "font-display font-extrabold text-[25px] text-foreground leading-tight tracking-tight mb-2", children: "Save your site." }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-[14px] text-muted-foreground leading-relaxed mb-7", children: [
+        "Create a free account to get a",
+        " ",
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-primary font-semibold", children: "live link" }),
+        ", edit anything, and publish — in under 2 minutes. No credit card needed."
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(
+        "button",
+        {
+          type: "button",
+          "data-ocid": "signup.google_button",
+          onClick: handleAuth,
+          className: "w-full flex items-center gap-3 border border-border rounded-lg px-4 py-3 text-[14px] font-display font-semibold text-foreground bg-card hover:bg-muted hover:border-primary transition-forge mb-3",
+          children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(GoogleIcon, {}),
+            "Continue with Google"
+          ]
+        }
+      ),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(
+        "button",
+        {
+          type: "button",
+          "data-ocid": "signup.github_button",
+          onClick: handleAuth,
+          className: "w-full flex items-center gap-3 border border-border rounded-lg px-4 py-3 text-[14px] font-display font-semibold text-foreground bg-card hover:bg-muted hover:border-primary transition-forge mb-3",
+          children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(GitHubIcon, {}),
+            "Continue with GitHub"
+          ]
+        }
+      ),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3 my-4", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 h-px bg-border" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[12px] text-muted-foreground font-medium", children: "or use email" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex-1 h-px bg-border" })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        "input",
+        {
+          "data-ocid": "signup.email_input",
+          type: "email",
+          placeholder: "you@example.com",
+          className: "w-full border border-input rounded-lg px-3.5 py-3 text-[14px] text-foreground bg-background placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-primary/40 transition-forge mb-3"
+        }
+      ),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs(
+        "button",
+        {
+          type: "button",
+          "data-ocid": "signup.magic_link_button",
+          onClick: handleAuth,
+          className: "w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground font-display font-bold text-[14px] rounded-lg py-3 hover:opacity-90 transition-forge",
+          children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowRight, { className: "w-4 h-4" }),
+            "Send magic link"
+          ]
+        }
+      ),
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-[11px] text-muted-foreground text-center mt-5 leading-relaxed", children: [
+        "By continuing you agree to our",
+        " ",
+        /* @__PURE__ */ jsxRuntimeExports.jsx("a", { href: "/terms", className: "text-primary hover:underline", children: "Terms" }),
+        " ",
+        "and",
+        " ",
+        /* @__PURE__ */ jsxRuntimeExports.jsx("a", { href: "/privacy", className: "text-primary hover:underline", children: "Privacy Policy" }),
+        ".",
+        /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
+        "Free forever on the Starter plan."
+      ] })
+    ] })
+  ] });
 }
 const LayoutGroupContext = reactExports.createContext({});
 function useConstant(init) {
@@ -48808,1295 +53802,6 @@ const featureBundle = {
   ...layout
 };
 const motion = /* @__PURE__ */ createMotionProxy(featureBundle, createDomVisualElement);
-const LOADING_STEPS = [
-  { message: "Analyzing your business...", icon: Zap },
-  { message: "Designing your layout...", icon: Palette },
-  { message: "Writing your content...", icon: FileText },
-  { message: "Building your pages...", icon: CodeXml },
-  { message: "Almost there...", icon: Sparkles }
-];
-function OrbitRing({
-  radius,
-  duration,
-  color: color2
-}) {
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(
-    motion.div,
-    {
-      className: "absolute rounded-full border opacity-20",
-      style: {
-        width: radius * 2,
-        height: radius * 2,
-        borderColor: color2,
-        top: "50%",
-        left: "50%",
-        marginTop: -radius,
-        marginLeft: -radius
-      },
-      animate: { rotate: 360 },
-      transition: {
-        duration,
-        repeat: Number.POSITIVE_INFINITY,
-        ease: "linear"
-      },
-      children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-        "div",
-        {
-          className: "absolute w-2 h-2 rounded-full -translate-x-1/2 -translate-y-1/2",
-          style: { backgroundColor: color2, top: 0, left: "50%" }
-        }
-      )
-    }
-  );
-}
-function GeneratePage() {
-  const { siteId } = useParams({ from: "/generate/$siteId" });
-  const navigate = useNavigate();
-  const parsedId = BigInt(siteId);
-  const { data: site, isLoading } = useGetSite(parsedId);
-  const [stepIndex, setStepIndex] = reactExports.useState(0);
-  const [progress2, setProgress] = reactExports.useState(0);
-  const [revealed, setRevealed] = reactExports.useState(false);
-  const [showSuccess, setShowSuccess] = reactExports.useState(false);
-  const intervalRef = reactExports.useRef(null);
-  const generatedData = site == null ? void 0 : site.generatedData;
-  const isReady = !isLoading && !!generatedData;
-  reactExports.useEffect(() => {
-    if (revealed) return;
-    intervalRef.current = setInterval(() => {
-      setStepIndex((i) => (i + 1) % LOADING_STEPS.length);
-    }, 1500);
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [revealed]);
-  reactExports.useEffect(() => {
-    if (revealed) return;
-    const target = isReady ? 100 : Math.min(progress2 + 2, 92);
-    const timer = setTimeout(() => setProgress(target), isReady ? 0 : 80);
-    return () => clearTimeout(timer);
-  });
-  reactExports.useEffect(() => {
-    if (!isReady || revealed) return;
-    setProgress(100);
-    const timer = setTimeout(() => {
-      setRevealed(true);
-      setTimeout(() => setShowSuccess(true), 200);
-    }, 600);
-    return () => clearTimeout(timer);
-  }, [isReady, revealed]);
-  const StepIcon = LOADING_STEPS[stepIndex].icon;
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(ProtectedRoute, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
-    "div",
-    {
-      "data-ocid": "generate.page",
-      className: "min-h-screen bg-background flex items-center justify-center relative overflow-hidden",
-      children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "absolute inset-0 pointer-events-none", "aria-hidden": true, children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-          motion.div,
-          {
-            className: "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full",
-            style: {
-              background: "radial-gradient(circle, oklch(0.65 0.25 300 / 0.12) 0%, transparent 70%)"
-            },
-            animate: showSuccess ? { scale: [1, 1.3, 1], opacity: [0.12, 0.28, 0.18] } : { scale: [1, 1.08, 1] },
-            transition: showSuccess ? { duration: 1.2, ease: "easeOut" } : {
-              duration: 4,
-              repeat: Number.POSITIVE_INFINITY,
-              ease: "easeInOut"
-            }
-          }
-        ) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(AnimatePresence, { mode: "wait", children: !revealed ? (
-          /* ─── Loading State ─────────────────────────────────────── */
-          /* @__PURE__ */ jsxRuntimeExports.jsxs(
-            motion.div,
-            {
-              "data-ocid": "generate.loading_state",
-              className: "flex flex-col items-center gap-8 px-6 text-center max-w-md w-full",
-              initial: { opacity: 0, y: 16 },
-              animate: { opacity: 1, y: 0 },
-              exit: { opacity: 0, scale: 0.95 },
-              transition: { duration: 0.4 },
-              children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "relative flex items-center justify-center w-32 h-32", children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(
-                    OrbitRing,
-                    {
-                      radius: 64,
-                      duration: 8,
-                      color: "oklch(0.65 0.25 300)"
-                    }
-                  ),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(
-                    OrbitRing,
-                    {
-                      radius: 48,
-                      duration: 5,
-                      color: "oklch(0.75 0.18 55)"
-                    }
-                  ),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(
-                    OrbitRing,
-                    {
-                      radius: 32,
-                      duration: 3,
-                      color: "oklch(0.65 0.25 300)"
-                    }
-                  ),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(AnimatePresence, { mode: "wait", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-                    motion.div,
-                    {
-                      className: "relative z-10 w-14 h-14 rounded-2xl bg-primary/20 border border-primary/40 flex items-center justify-center",
-                      initial: { scale: 0.7, opacity: 0 },
-                      animate: { scale: 1, opacity: 1 },
-                      exit: { scale: 0.7, opacity: 0 },
-                      transition: { duration: 0.25 },
-                      children: /* @__PURE__ */ jsxRuntimeExports.jsx(StepIcon, { className: "w-6 h-6 text-primary" })
-                    },
-                    stepIndex
-                  ) })
-                ] }),
-                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col gap-1", children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "font-display text-2xl font-bold text-foreground tracking-tight", children: "Forge is building your site" }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-muted-foreground text-sm", children: "AI is designing every detail — won't take long" })
-                ] }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx(AnimatePresence, { mode: "wait", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                  motion.div,
-                  {
-                    className: "flex items-center gap-2 px-4 py-2 rounded-full bg-card border border-border",
-                    initial: { opacity: 0, y: 8 },
-                    animate: { opacity: 1, y: 0 },
-                    exit: { opacity: 0, y: -8 },
-                    transition: { duration: 0.3 },
-                    children: [
-                      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "w-2 h-2 rounded-full bg-primary animate-pulse" }),
-                      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-sm font-medium text-foreground", children: LOADING_STEPS[stepIndex].message })
-                    ]
-                  },
-                  LOADING_STEPS[stepIndex].message
-                ) }),
-                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "w-full", children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-full h-1.5 bg-muted rounded-full overflow-hidden", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-                    motion.div,
-                    {
-                      className: "h-full rounded-full",
-                      style: {
-                        background: "linear-gradient(90deg, oklch(0.65 0.25 300), oklch(0.75 0.18 55))"
-                      },
-                      animate: { width: `${progress2}%` },
-                      transition: { duration: 0.5, ease: "easeOut" }
-                    }
-                  ) }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "mt-2 text-xs text-muted-foreground text-right", children: [
-                    Math.round(progress2),
-                    "%"
-                  ] })
-                ] }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex gap-2", children: LOADING_STEPS.map((step, i) => /* @__PURE__ */ jsxRuntimeExports.jsx(
-                  motion.div,
-                  {
-                    className: "rounded-full",
-                    animate: {
-                      width: i === stepIndex ? 20 : 6,
-                      backgroundColor: i === stepIndex ? "oklch(0.65 0.25 300)" : "oklch(0.28 0.02 260)"
-                    },
-                    style: { height: 6 },
-                    transition: { duration: 0.3 }
-                  },
-                  step.message
-                )) })
-              ]
-            },
-            "loading"
-          )
-        ) : (
-          /* ─── Success State ─────────────────────────────────────── */
-          /* @__PURE__ */ jsxRuntimeExports.jsxs(
-            motion.div,
-            {
-              "data-ocid": "generate.success_state",
-              className: "flex flex-col items-center gap-8 px-6 text-center max-w-lg w-full",
-              initial: { opacity: 0, scale: 0.95, y: 20 },
-              animate: { opacity: 1, scale: 1, y: 0 },
-              transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
-              children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                  motion.div,
-                  {
-                    className: "relative",
-                    initial: { scale: 0.5, opacity: 0 },
-                    animate: { scale: 1, opacity: 1 },
-                    transition: {
-                      delay: 0.1,
-                      duration: 0.5,
-                      ease: [0.22, 1, 0.36, 1]
-                    },
-                    children: [
-                      /* @__PURE__ */ jsxRuntimeExports.jsx(
-                        motion.div,
-                        {
-                          className: "absolute inset-0 rounded-full",
-                          style: {
-                            boxShadow: "0 0 60px 20px oklch(0.65 0.25 300 / 0.35)"
-                          },
-                          animate: { opacity: [0.4, 0.8, 0.4] },
-                          transition: {
-                            duration: 2.5,
-                            repeat: Number.POSITIVE_INFINITY,
-                            ease: "easeInOut"
-                          }
-                        }
-                      ),
-                      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-20 h-20 rounded-full bg-primary/20 border-2 border-primary/60 flex items-center justify-center", children: /* @__PURE__ */ jsxRuntimeExports.jsx(CircleCheckBig, { className: "w-10 h-10 text-primary" }) })
-                    ]
-                  }
-                ),
-                /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                  motion.div,
-                  {
-                    className: "flex flex-col gap-2",
-                    initial: { opacity: 0, y: 12 },
-                    animate: { opacity: 1, y: 0 },
-                    transition: { delay: 0.2, duration: 0.4 },
-                    children: [
-                      /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "font-display text-4xl font-bold text-foreground tracking-tight", children: "Your site is ready!" }),
-                      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-muted-foreground text-base", children: "Forge has built your site from scratch — review and publish when you're ready." })
-                    ]
-                  }
-                ),
-                generatedData && /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                  motion.div,
-                  {
-                    "data-ocid": "generate.card",
-                    className: "w-full rounded-2xl bg-card border border-border p-6 text-left relative overflow-hidden",
-                    initial: { opacity: 0, y: 16 },
-                    animate: { opacity: 1, y: 0 },
-                    transition: { delay: 0.3, duration: 0.4 },
-                    children: [
-                      /* @__PURE__ */ jsxRuntimeExports.jsx(
-                        "div",
-                        {
-                          className: "absolute top-0 left-0 right-0 h-0.5",
-                          style: {
-                            background: "linear-gradient(90deg, transparent, oklch(0.65 0.25 300), oklch(0.75 0.18 55), transparent)"
-                          }
-                        }
-                      ),
-                      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-start gap-3", children: [
-                        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-1 w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Sparkles, { className: "w-4 h-4 text-primary" }) }),
-                        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "min-w-0", children: [
-                          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs font-medium text-muted-foreground uppercase tracking-widest mb-1", children: "Site Generated" }),
-                          /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "font-display text-xl font-bold text-foreground truncate", children: generatedData.siteTitle }),
-                          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-muted-foreground text-sm mt-1 line-clamp-2", children: generatedData.tagline }),
-                          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-4 mt-3", children: [
-                            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-xs text-muted-foreground", children: [
-                              generatedData.sections.length,
-                              " sections"
-                            ] }),
-                            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-xs text-muted-foreground", children: [
-                              generatedData.layout.contentWidth,
-                              " layout"
-                            ] }),
-                            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "inline-flex items-center gap-1 text-xs font-medium text-primary", children: [
-                              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "w-1.5 h-1.5 rounded-full bg-primary" }),
-                              "Ready to edit"
-                            ] })
-                          ] })
-                        ] })
-                      ] })
-                    ]
-                  }
-                ),
-                /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                  motion.div,
-                  {
-                    className: "flex flex-col sm:flex-row gap-3 w-full",
-                    initial: { opacity: 0, y: 12 },
-                    animate: { opacity: 1, y: 0 },
-                    transition: { delay: 0.45, duration: 0.4 },
-                    children: [
-                      /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                        Button,
-                        {
-                          "data-ocid": "generate.open_editor_button",
-                          size: "lg",
-                          className: "flex-1 font-semibold gap-2 transition-smooth",
-                          onClick: () => navigate({ to: "/editor/$siteId", params: { siteId } }),
-                          children: [
-                            "Open Editor",
-                            /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowRight, { className: "w-4 h-4" })
-                          ]
-                        }
-                      ),
-                      /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                        Button,
-                        {
-                          "data-ocid": "generate.dashboard_button",
-                          size: "lg",
-                          variant: "outline",
-                          className: "flex-1 font-semibold gap-2 transition-smooth",
-                          onClick: () => navigate({ to: "/dashboard" }),
-                          children: [
-                            /* @__PURE__ */ jsxRuntimeExports.jsx(LayoutDashboard, { className: "w-4 h-4" }),
-                            "Back to Dashboard"
-                          ]
-                        }
-                      )
-                    ]
-                  }
-                ),
-                /* @__PURE__ */ jsxRuntimeExports.jsx(
-                  motion.p,
-                  {
-                    className: "text-xs text-muted-foreground",
-                    initial: { opacity: 0 },
-                    animate: { opacity: 1 },
-                    transition: { delay: 0.6 },
-                    children: "You can preview and publish from the editor at any time."
-                  }
-                )
-              ]
-            },
-            "success"
-          )
-        ) })
-      ]
-    }
-  ) });
-}
-function LandingPage() {
-  const { isAuthenticated } = useInternetIdentity();
-  const scrollToDemo = () => {
-    var _a3;
-    (_a3 = document.getElementById("demo")) == null ? void 0 : _a3.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs(Layout, { children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs(
-      "section",
-      {
-        className: "relative flex items-center justify-center min-h-[90vh] overflow-hidden",
-        "data-ocid": "landing.hero_section",
-        children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            "div",
-            {
-              className: "absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20",
-              style: {
-                backgroundImage: "url('/assets/generated/forge-hero.dim_1400x788.jpg')"
-              }
-            }
-          ),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "absolute inset-0 bg-gradient-to-b from-background/50 via-background/20 to-background" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-primary/5 blur-3xl pointer-events-none" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-accent/5 blur-3xl pointer-events-none" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "relative z-10 container mx-auto px-4 text-center", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-medium mb-6 animate-fade-in", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Sparkles, { className: "w-3.5 h-3.5" }),
-              "AI-powered. No code. No agency."
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("h1", { className: "font-display font-bold text-5xl sm:text-6xl lg:text-7xl text-foreground leading-[1.1] tracking-tight mb-6 animate-slide-up", children: [
-              "From idea to live site",
-              /* @__PURE__ */ jsxRuntimeExports.jsx("br", {}),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-primary", children: "in minutes." })
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(
-              "p",
-              {
-                className: "text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 animate-slide-up",
-                style: { animationDelay: "0.1s" },
-                children: "No code. No agency. Just describe what you want and Forge builds it."
-              }
-            ),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs(
-              "div",
-              {
-                className: "flex flex-wrap items-center justify-center gap-4 animate-slide-up",
-                style: { animationDelay: "0.2s" },
-                children: [
-                  isAuthenticated ? /* @__PURE__ */ jsxRuntimeExports.jsx(Link, { to: "/wizard", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                    Button,
-                    {
-                      size: "lg",
-                      className: "gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-8",
-                      "data-ocid": "landing.start_building_button",
-                      children: [
-                        /* @__PURE__ */ jsxRuntimeExports.jsx(Zap, { className: "w-5 h-5", fill: "currentColor" }),
-                        "Start Building Free",
-                        /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowRight, { className: "w-4 h-4" })
-                      ]
-                    }
-                  ) }) : /* @__PURE__ */ jsxRuntimeExports.jsx(Link, { to: "/login", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                    Button,
-                    {
-                      size: "lg",
-                      className: "gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-8",
-                      "data-ocid": "landing.get_started_button",
-                      children: [
-                        /* @__PURE__ */ jsxRuntimeExports.jsx(Zap, { className: "w-5 h-5", fill: "currentColor" }),
-                        "Start Building Free",
-                        /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowRight, { className: "w-4 h-4" })
-                      ]
-                    }
-                  ) }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                    Button,
-                    {
-                      variant: "outline",
-                      size: "lg",
-                      className: "gap-2 border-border text-muted-foreground hover:text-foreground hover:border-primary/40",
-                      onClick: scrollToDemo,
-                      "data-ocid": "landing.see_example_button",
-                      children: [
-                        /* @__PURE__ */ jsxRuntimeExports.jsx(MousePointerClick, { className: "w-4 h-4" }),
-                        "See an example"
-                      ]
-                    }
-                  )
-                ]
-              }
-            )
-          ] })
-        ]
-      }
-    ),
-    /* @__PURE__ */ jsxRuntimeExports.jsx(
-      "section",
-      {
-        id: "features",
-        className: "bg-muted/30 border-y border-border py-20",
-        "data-ocid": "landing.features_section",
-        children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "container mx-auto px-4", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-center mb-14", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "font-display font-bold text-3xl sm:text-4xl text-foreground mb-3", children: "Everything you need. Nothing you don't." }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-muted-foreground max-w-xl mx-auto", children: "Forge handles every step — from design to deployment — so you can focus on your business." })
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto", children: FEATURES.map((f, i) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
-            "div",
-            {
-              className: "bg-card border border-border rounded-xl p-6 flex flex-col gap-3 hover:border-primary/40 transition-smooth animate-slide-up",
-              style: { animationDelay: `${i * 0.1}s` },
-              "data-ocid": `landing.feature_card.${i + 1}`,
-              children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center", children: /* @__PURE__ */ jsxRuntimeExports.jsx(f.Icon, { className: "w-5 h-5 text-primary" }) }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "font-display font-semibold text-foreground", children: f.title }),
-                /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-muted-foreground leading-relaxed", children: f.description })
-              ]
-            },
-            f.title
-          )) })
-        ] })
-      }
-    ),
-    /* @__PURE__ */ jsxRuntimeExports.jsx(
-      "section",
-      {
-        id: "demo",
-        className: "bg-background py-24",
-        "data-ocid": "landing.how_it_works_section",
-        children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "container mx-auto px-4", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-center mb-14", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "font-display font-bold text-3xl sm:text-4xl text-foreground mb-3", children: "How it works" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-muted-foreground max-w-lg mx-auto", children: "Four steps from blank page to live site. No waiting, no guessing." })
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "max-w-3xl mx-auto", children: HOW_IT_WORKS.map((step, i) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
-            "div",
-            {
-              className: "flex items-start gap-5 mb-10 last:mb-0 animate-slide-up",
-              style: { animationDelay: `${i * 0.12}s` },
-              "data-ocid": `landing.how_it_works_step.${i + 1}`,
-              children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col items-center", children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-11 h-11 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center shrink-0", children: /* @__PURE__ */ jsxRuntimeExports.jsx(step.Icon, { className: "w-5 h-5 text-primary" }) }),
-                  i < HOW_IT_WORKS.length - 1 && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-px flex-1 mt-2 bg-gradient-to-b from-primary/20 to-transparent min-h-[2.5rem]" })
-                ] }),
-                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "pt-1.5", children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "inline-block text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full mb-1", children: [
-                    "Step ",
-                    i + 1
-                  ] }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "font-display font-semibold text-lg text-foreground mb-1", children: step.title }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-muted-foreground leading-relaxed", children: step.description })
-                ] })
-              ]
-            },
-            step.title
-          )) })
-        ] })
-      }
-    ),
-    /* @__PURE__ */ jsxRuntimeExports.jsx(
-      "section",
-      {
-        className: "bg-muted/30 border-t border-border py-24",
-        "data-ocid": "landing.cta_section",
-        children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "container mx-auto px-4 text-center", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "max-w-2xl mx-auto", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-6", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-            Zap,
-            {
-              className: "w-7 h-7 text-primary",
-              fill: "currentColor",
-              strokeWidth: 0
-            }
-          ) }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "font-display font-bold text-3xl sm:text-4xl text-foreground mb-4", children: "Ready to build?" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-muted-foreground mb-8 max-w-lg mx-auto", children: "Join thousands of businesses that launched with Forge — no code, no agency, no waiting." }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Link, { to: isAuthenticated ? "/wizard" : "/login", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
-            Button,
-            {
-              size: "lg",
-              className: "gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-10",
-              "data-ocid": "landing.cta_primary_button",
-              children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsx(Zap, { className: "w-5 h-5", fill: "currentColor" }),
-                "Get Started Free"
-              ]
-            }
-          ) })
-        ] }) })
-      }
-    )
-  ] });
-}
-const FEATURES = [
-  {
-    Icon: Sparkles,
-    title: "AI Generation",
-    description: "Describe your business in plain language and watch Forge design, write, and structure your entire site automatically."
-  },
-  {
-    Icon: Layers,
-    title: "Visual Editor",
-    description: "Preview your site across desktop, tablet, and mobile. Tweak layouts and content with a pixel-perfect canvas editor."
-  },
-  {
-    Icon: Globe,
-    title: "One-Click Publish",
-    description: "Pre-launch checks verify SEO, performance, and mobile layout — then deploy to a live URL in seconds."
-  }
-];
-const HOW_IT_WORKS = [
-  {
-    Icon: Pencil,
-    title: "Describe your site",
-    description: "Tell Forge what kind of site you need — your business, your audience, your goals. A few sentences is all it takes."
-  },
-  {
-    Icon: Sparkles,
-    title: "Generate everything",
-    description: "Forge's AI generates your full site in seconds: layout, copy, color palette, sections, and features — all tailored to you."
-  },
-  {
-    Icon: Layers,
-    title: "Edit in the visual editor",
-    description: "Preview across desktop, tablet, and mobile. Tweak sections, headlines, and styles — no code required."
-  },
-  {
-    Icon: Rocket,
-    title: "Publish live",
-    description: "Run automated pre-launch checks, then deploy to a free Forge subdomain or your own custom domain with one click."
-  }
-];
-function LoginPage() {
-  const { isAuthenticated, isInitializing, isLoggingIn, login } = useInternetIdentity();
-  const navigate = useNavigate();
-  reactExports.useEffect(() => {
-    if (isAuthenticated) {
-      navigate({ to: "/dashboard" });
-    }
-  }, [isAuthenticated, navigate]);
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(Layout, { children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-    "div",
-    {
-      className: "flex-1 flex items-center justify-center min-h-[80vh] px-4 py-12",
-      "data-ocid": "login.page",
-      children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-full max-w-md", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "bg-card border border-border rounded-2xl p-8 shadow-elevated animate-slide-up", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col items-center mb-8 gap-3", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-16 h-16 rounded-2xl bg-primary flex items-center justify-center shadow-elevated", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-            Zap,
-            {
-              className: "w-8 h-8 text-primary-foreground",
-              fill: "currentColor",
-              strokeWidth: 0
-            }
-          ) }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "font-display font-bold text-xl text-foreground tracking-tight", children: "Forge" })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "text-center mb-8", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "font-display font-bold text-2xl text-foreground mb-2", children: "Welcome back" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-muted-foreground text-sm leading-relaxed", children: "Sign in with Internet Identity to create and manage your AI-generated sites." })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(
-          Button,
-          {
-            size: "lg",
-            className: "w-full gap-3 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold",
-            onClick: login,
-            disabled: isInitializing || isLoggingIn,
-            "data-ocid": "login.sign_in_button",
-            children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(LogIn, { className: "w-5 h-5" }),
-              isInitializing ? "Loading…" : isLoggingIn ? "Opening sign-in…" : "Sign In with Internet Identity"
-            ]
-          }
-        ),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 mt-6 p-3 rounded-lg bg-muted/40 border border-border", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Shield, { className: "w-4 h-4 text-muted-foreground shrink-0" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-muted-foreground leading-snug", children: "Internet Identity is a secure, privacy-preserving login system. No passwords, no email required." })
-        ] })
-      ] }) })
-    }
-  ) });
-}
-function Input({ className, type, ...props }) {
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(
-    "input",
-    {
-      type,
-      "data-slot": "input",
-      className: cn(
-        "file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
-        "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
-        "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
-        className
-      ),
-      ...props
-    }
-  );
-}
-const CHECK_ITEMS = [
-  {
-    key: "seoTitle",
-    label: "SEO Title & Meta",
-    passHint: "Title and meta description are set correctly.",
-    failHint: "Add a page title and meta description in Settings.",
-    icon: Search
-  },
-  {
-    key: "mobileLayout",
-    label: "Mobile Layout",
-    passHint: "Your site renders perfectly on mobile devices.",
-    failHint: "Preview on mobile and adjust any overflowing sections.",
-    icon: Smartphone
-  },
-  {
-    key: "performance",
-    label: "Performance",
-    passHint: "Assets are optimised for fast load times.",
-    failHint: "Compress images and remove unused sections to improve speed.",
-    icon: Zap
-  },
-  {
-    key: "formsWorking",
-    label: "Forms & Actions",
-    passHint: "Contact forms and CTAs are configured and functional.",
-    failHint: "Set a destination email for your contact form.",
-    icon: Monitor
-  }
-];
-const PUBLISH_MESSAGES = [
-  "Bundling your site assets…",
-  "Optimising images for the web…",
-  "Configuring your subdomain…",
-  "Running final validation checks…",
-  "Deploying to the global edge network…",
-  "Your site is going live!"
-];
-function Confetti() {
-  const particles = reactExports.useMemo(() => {
-    return Array.from({ length: 60 }, (_2, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      delay: Math.random() * 1.5,
-      duration: 2 + Math.random() * 2,
-      size: 6 + Math.random() * 8,
-      color: [
-        "hsl(300 60% 65%)",
-        "hsl(55 80% 65%)",
-        "hsl(200 70% 65%)",
-        "hsl(140 60% 55%)",
-        "hsl(25 80% 65%)"
-      ][Math.floor(Math.random() * 5)],
-      rotate: Math.random() * 360
-    }));
-  }, []);
-  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "pointer-events-none fixed inset-0 z-50 overflow-hidden", children: particles.map((p2) => /* @__PURE__ */ jsxRuntimeExports.jsx(
-    motion.div,
-    {
-      className: "absolute rounded-sm",
-      style: {
-        left: `${p2.x}%`,
-        top: "-20px",
-        width: p2.size,
-        height: p2.size,
-        backgroundColor: p2.color,
-        rotate: p2.rotate
-      },
-      animate: {
-        y: [0, window.innerHeight + 40],
-        rotate: [p2.rotate, p2.rotate + 360 + Math.random() * 360],
-        opacity: [1, 1, 0]
-      },
-      transition: {
-        duration: p2.duration,
-        delay: p2.delay,
-        ease: "easeIn"
-      }
-    },
-    p2.id
-  )) });
-}
-function CheckRow({
-  item,
-  passing,
-  index: index2
-}) {
-  const Icon2 = item.icon;
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs(
-    motion.div,
-    {
-      initial: { opacity: 0, x: -16 },
-      animate: { opacity: 1, x: 0 },
-      transition: { delay: index2 * 0.1, duration: 0.4, ease: "easeOut" },
-      className: `flex items-start gap-4 rounded-xl border p-4 transition-smooth ${passing ? "border-green-500/20 bg-green-500/5" : "border-amber-500/20 bg-amber-500/5"}`,
-      "data-ocid": `publish.check.item.${index2 + 1}`,
-      children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          "div",
-          {
-            className: `mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${passing ? "bg-green-500/15" : "bg-amber-500/15"}`,
-            children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-              Icon2,
-              {
-                className: `h-4 w-4 ${passing ? "text-green-400" : "text-amber-400"}`
-              }
-            )
-          }
-        ),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "min-w-0 flex-1", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "font-display text-sm font-semibold text-foreground", children: item.label }),
-            passing ? /* @__PURE__ */ jsxRuntimeExports.jsx(
-              motion.div,
-              {
-                initial: { scale: 0 },
-                animate: { scale: 1 },
-                transition: {
-                  delay: index2 * 0.1 + 0.2,
-                  type: "spring",
-                  stiffness: 400
-                },
-                children: /* @__PURE__ */ jsxRuntimeExports.jsx(CircleCheck, { className: "h-4 w-4 text-green-400" })
-              }
-            ) : /* @__PURE__ */ jsxRuntimeExports.jsx(
-              motion.div,
-              {
-                initial: { scale: 0 },
-                animate: { scale: 1 },
-                transition: {
-                  delay: index2 * 0.1 + 0.2,
-                  type: "spring",
-                  stiffness: 400
-                },
-                children: /* @__PURE__ */ jsxRuntimeExports.jsx(TriangleAlert, { className: "h-4 w-4 text-amber-400" })
-              }
-            )
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-0.5 text-xs text-muted-foreground", children: passing ? item.passHint : item.failHint })
-        ] })
-      ]
-    }
-  );
-}
-function CheckRowSkeleton({ index: index2 }) {
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs(
-    "div",
-    {
-      className: "flex items-start gap-4 rounded-xl border border-border p-4",
-      "data-ocid": `publish.check.loading.${index2 + 1}`,
-      children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx(Skeleton, { className: "mt-0.5 h-8 w-8 shrink-0 rounded-full" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1 space-y-2", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Skeleton, { className: "h-4 w-40" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(Skeleton, { className: "h-3 w-64" })
-        ] })
-      ]
-    }
-  );
-}
-function PublishingState() {
-  const [msgIndex, setMsgIndex] = reactExports.useState(0);
-  reactExports.useEffect(() => {
-    const interval = setInterval(() => {
-      setMsgIndex((i) => Math.min(i + 1, PUBLISH_MESSAGES.length - 1));
-    }, 900);
-    return () => clearInterval(interval);
-  }, []);
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs(
-    motion.div,
-    {
-      initial: { opacity: 0, scale: 0.96 },
-      animate: { opacity: 1, scale: 1 },
-      exit: { opacity: 0, scale: 0.96 },
-      className: "flex flex-col items-center gap-6 py-12 text-center",
-      "data-ocid": "publish.loading_state",
-      children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "relative", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex h-20 w-20 items-center justify-center rounded-full border border-primary/30 bg-primary/10", children: /* @__PURE__ */ jsxRuntimeExports.jsx(LoaderCircle, { className: "h-8 w-8 animate-spin text-primary" }) }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            motion.div,
-            {
-              className: "absolute inset-0 rounded-full border-2 border-primary/20",
-              animate: { scale: [1, 1.4, 1], opacity: [0.6, 0, 0.6] },
-              transition: { repeat: Number.POSITIVE_INFINITY, duration: 2 }
-            }
-          )
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "font-display text-xl font-bold text-foreground", children: "Publishing Your Site" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(AnimatePresence, { mode: "wait", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-            motion.p,
-            {
-              initial: { opacity: 0, y: 8 },
-              animate: { opacity: 1, y: 0 },
-              exit: { opacity: 0, y: -8 },
-              transition: { duration: 0.3 },
-              className: "mt-2 text-sm text-muted-foreground",
-              children: PUBLISH_MESSAGES[msgIndex]
-            },
-            msgIndex
-          ) })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex gap-1.5", children: PUBLISH_MESSAGES.map((msg, i) => /* @__PURE__ */ jsxRuntimeExports.jsx(
-          motion.div,
-          {
-            className: "h-1.5 rounded-full bg-primary/30",
-            animate: {
-              width: i <= msgIndex ? 24 : 8
-            },
-            transition: { duration: 0.4 }
-          },
-          msg
-        )) })
-      ]
-    },
-    "publishing"
-  );
-}
-function SuccessState({
-  liveUrl,
-  onDashboard
-}) {
-  const [copied, setCopied] = reactExports.useState(false);
-  function handleCopy() {
-    navigator.clipboard.writeText(liveUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2e3);
-  }
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs(
-    motion.div,
-    {
-      initial: { opacity: 0, scale: 0.96 },
-      animate: { opacity: 1, scale: 1 },
-      exit: { opacity: 0 },
-      className: "flex flex-col items-center gap-8 py-8 text-center",
-      "data-ocid": "publish.success_state",
-      children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(
-          motion.div,
-          {
-            initial: { scale: 0 },
-            animate: { scale: 1 },
-            transition: { type: "spring", stiffness: 260, damping: 20, delay: 0.1 },
-            className: "relative flex h-24 w-24 items-center justify-center rounded-full bg-green-500/15 text-green-400",
-            children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(CircleCheck, { className: "h-12 w-12", strokeWidth: 1.5 }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx(
-                motion.div,
-                {
-                  className: "absolute inset-0 rounded-full border-2 border-green-400/30",
-                  animate: { scale: [1, 1.5, 1], opacity: [0.5, 0, 0.5] },
-                  transition: {
-                    repeat: Number.POSITIVE_INFINITY,
-                    duration: 2.5,
-                    delay: 0.5
-                  }
-                }
-              )
-            ]
-          }
-        ),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            motion.h2,
-            {
-              initial: { opacity: 0, y: 12 },
-              animate: { opacity: 1, y: 0 },
-              transition: { delay: 0.25 },
-              className: "font-display text-3xl font-bold text-foreground",
-              children: "You're Live! 🚀"
-            }
-          ),
-          /* @__PURE__ */ jsxRuntimeExports.jsx(
-            motion.p,
-            {
-              initial: { opacity: 0, y: 8 },
-              animate: { opacity: 1, y: 0 },
-              transition: { delay: 0.35 },
-              className: "mt-2 text-muted-foreground",
-              children: "Your site is now deployed and accessible to the world."
-            }
-          )
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsx(
-          motion.div,
-          {
-            initial: { opacity: 0, y: 12 },
-            animate: { opacity: 1, y: 0 },
-            transition: { delay: 0.45 },
-            className: "w-full max-w-md rounded-xl border border-green-500/25 bg-green-500/5 p-1",
-            children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 rounded-lg bg-card px-3 py-2", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Globe, { className: "h-4 w-4 shrink-0 text-green-400" }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx(
-                "span",
-                {
-                  className: "min-w-0 flex-1 truncate text-sm font-medium text-foreground",
-                  "data-ocid": "publish.live_url",
-                  children: liveUrl
-                }
-              ),
-              /* @__PURE__ */ jsxRuntimeExports.jsx(
-                Button,
-                {
-                  type: "button",
-                  variant: "ghost",
-                  size: "icon",
-                  className: "h-7 w-7 shrink-0",
-                  onClick: handleCopy,
-                  "data-ocid": "publish.copy_url_button",
-                  "aria-label": "Copy URL",
-                  children: copied ? /* @__PURE__ */ jsxRuntimeExports.jsx(CircleCheck, { className: "h-3.5 w-3.5 text-green-400" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(Copy, { className: "h-3.5 w-3.5" })
-                }
-              )
-            ] })
-          }
-        ),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs(
-          motion.div,
-          {
-            initial: { opacity: 0, y: 8 },
-            animate: { opacity: 1, y: 0 },
-            transition: { delay: 0.55 },
-            className: "flex w-full max-w-md flex-col gap-3 sm:flex-row",
-            children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                Button,
-                {
-                  type: "button",
-                  className: "flex-1 gap-2",
-                  onClick: () => window.open(liveUrl, "_blank"),
-                  "data-ocid": "publish.view_live_button",
-                  children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsx(ExternalLink, { className: "h-4 w-4" }),
-                    "View Live Site"
-                  ]
-                }
-              ),
-              /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                Button,
-                {
-                  type: "button",
-                  variant: "outline",
-                  className: "flex-1 gap-2",
-                  onClick: onDashboard,
-                  "data-ocid": "publish.back_to_dashboard_button",
-                  children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowLeft, { className: "h-4 w-4" }),
-                    "Back to Dashboard"
-                  ]
-                }
-              )
-            ]
-          }
-        )
-      ]
-    },
-    "success"
-  );
-}
-function PublishPage() {
-  const { siteId } = useParams({ from: "/publish/$siteId" });
-  const siteIdBigInt = reactExports.useMemo(() => BigInt(siteId), [siteId]);
-  const navigate = useNavigate();
-  const { data: checks, isLoading: checksLoading } = useGetPreLaunchChecks(siteIdBigInt);
-  const { data: site } = useGetSite(siteIdBigInt);
-  const publishMutation = usePublishSite();
-  const [customDomain, setCustomDomain] = reactExports.useState("");
-  const [publishPhase, setPublishPhase] = reactExports.useState("idle");
-  const [showConfetti, setShowConfetti] = reactExports.useState(false);
-  const confettiTimerRef = reactExports.useRef(null);
-  const subdomain = (site == null ? void 0 : site.subdomain) ?? `my-site-${siteId}.forge.app`;
-  const liveUrl = (site == null ? void 0 : site.publishedUrl) ?? `https://${subdomain}`;
-  const allPassing = checks ? Object.values(checks).every(Boolean) : false;
-  const anyFailing = checks ? !allPassing : false;
-  const checksReady = !checksLoading && checks !== null && checks !== void 0;
-  reactExports.useEffect(() => {
-    return () => {
-      if (confettiTimerRef.current) clearTimeout(confettiTimerRef.current);
-    };
-  }, []);
-  async function handlePublish() {
-    setPublishPhase("publishing");
-    try {
-      await publishMutation.mutateAsync(siteIdBigInt);
-      setTimeout(() => {
-        setPublishPhase("success");
-        setShowConfetti(true);
-        confettiTimerRef.current = setTimeout(
-          () => setShowConfetti(false),
-          5e3
-        );
-      }, PUBLISH_MESSAGES.length * 900);
-    } catch {
-      setPublishPhase("idle");
-    }
-  }
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(ProtectedRoute, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "min-h-screen bg-background", "data-ocid": "publish.page", children: [
-    showConfetti && /* @__PURE__ */ jsxRuntimeExports.jsx(Confetti, {}),
-    /* @__PURE__ */ jsxRuntimeExports.jsx("header", { className: "sticky top-0 z-10 border-b border-border bg-card shadow-subtle", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mx-auto flex max-w-3xl items-center gap-4 px-6 py-4", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(
-        Button,
-        {
-          type: "button",
-          variant: "ghost",
-          size: "icon",
-          className: "h-8 w-8 shrink-0",
-          onClick: () => navigate({ to: "/dashboard" }),
-          "data-ocid": "publish.back_button",
-          "aria-label": "Back to editor",
-          children: /* @__PURE__ */ jsxRuntimeExports.jsx(ArrowLeft, { className: "h-4 w-4" })
-        }
-      ),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "font-display text-lg font-bold text-foreground", children: "Pre-Launch Checklist" }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-xs text-muted-foreground", children: [
-          (site == null ? void 0 : site.title) ?? "Your site",
-          " — review before going live"
-        ] })
-      ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex items-center gap-2", children: [1, 2, 3, 4].map((step) => /* @__PURE__ */ jsxRuntimeExports.jsx(
-        "div",
-        {
-          className: `h-2 w-2 rounded-full ${step < 4 ? "bg-primary" : "bg-primary/30"}`
-        },
-        step
-      )) })
-    ] }) }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx("main", { className: "mx-auto max-w-3xl px-6 py-10", children: /* @__PURE__ */ jsxRuntimeExports.jsx(AnimatePresence, { mode: "wait", children: publishPhase === "publishing" ? /* @__PURE__ */ jsxRuntimeExports.jsx(PublishingState, {}, "publishing") : publishPhase === "success" ? /* @__PURE__ */ jsxRuntimeExports.jsx(
-      SuccessState,
-      {
-        liveUrl,
-        onDashboard: () => navigate({ to: "/dashboard" })
-      },
-      "success"
-    ) : /* @__PURE__ */ jsxRuntimeExports.jsxs(
-      motion.div,
-      {
-        initial: { opacity: 0 },
-        animate: { opacity: 1 },
-        exit: { opacity: 0 },
-        className: "space-y-8",
-        children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { "data-ocid": "publish.checks.section", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs(
-              motion.div,
-              {
-                initial: { opacity: 0, y: -8 },
-                animate: { opacity: 1, y: 0 },
-                className: "mb-5",
-                children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "font-display text-xl font-bold text-foreground", children: "Site Health Checks" }),
-                    checksReady && /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                      Badge,
-                      {
-                        variant: "secondary",
-                        className: `gap-1.5 text-xs ${allPassing ? "border-green-500/30 bg-green-500/15 text-green-400" : "border-amber-500/30 bg-amber-500/15 text-amber-400"}`,
-                        "data-ocid": "publish.checks.status_badge",
-                        children: [
-                          allPassing ? /* @__PURE__ */ jsxRuntimeExports.jsx(CircleCheck, { className: "h-3 w-3" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(TriangleAlert, { className: "h-3 w-3" }),
-                          allPassing ? "All checks passed" : "Issues found"
-                        ]
-                      }
-                    )
-                  ] }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-1 text-sm text-muted-foreground", children: "Automated checks run against your site to ensure it's production-ready." })
-                ]
-              }
-            ),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-3", "data-ocid": "publish.checks.list", children: checksLoading ? CHECK_ITEMS.map((item, i) => /* @__PURE__ */ jsxRuntimeExports.jsx(CheckRowSkeleton, { index: i }, item.key)) : CHECK_ITEMS.map((item, i) => /* @__PURE__ */ jsxRuntimeExports.jsx(
-              CheckRow,
-              {
-                item,
-                passing: checks ? Boolean(checks[item.key]) : false,
-                index: i
-              },
-              item.key
-            )) })
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs(
-            motion.section,
-            {
-              initial: { opacity: 0, y: 12 },
-              animate: { opacity: 1, y: 0 },
-              transition: { delay: 0.3 },
-              className: "rounded-2xl border border-border bg-card p-6",
-              "data-ocid": "publish.domain.section",
-              children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mb-5 flex items-center gap-3", children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex h-9 w-9 items-center justify-center rounded-lg bg-primary/15", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Globe, { className: "h-4 w-4 text-primary" }) }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "font-display text-base font-bold text-foreground", children: "Domain Setup" }),
-                    /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-muted-foreground", children: "Your site will be live at the address below" })
-                  ] })
-                ] }),
-                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-4", children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mb-1.5 text-xs font-medium text-muted-foreground", children: "Free subdomain" }),
-                    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2.5", children: [
-                      /* @__PURE__ */ jsxRuntimeExports.jsx(Globe, { className: "h-4 w-4 shrink-0 text-primary" }),
-                      /* @__PURE__ */ jsxRuntimeExports.jsx(
-                        "span",
-                        {
-                          className: "min-w-0 flex-1 truncate font-mono text-sm text-foreground",
-                          "data-ocid": "publish.domain.subdomain",
-                          children: subdomain
-                        }
-                      ),
-                      /* @__PURE__ */ jsxRuntimeExports.jsx(
-                        Badge,
-                        {
-                          variant: "secondary",
-                          className: "shrink-0 border-green-500/30 bg-green-500/10 text-xs text-green-400",
-                          children: "Free"
-                        }
-                      )
-                    ] })
-                  ] }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                      "label",
-                      {
-                        htmlFor: "custom-domain",
-                        className: "mb-1.5 block text-xs font-medium text-muted-foreground",
-                        children: [
-                          "Custom domain",
-                          " ",
-                          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-primary", children: "(optional)" })
-                        ]
-                      }
-                    ),
-                    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex gap-2", children: [
-                      /* @__PURE__ */ jsxRuntimeExports.jsx(
-                        Input,
-                        {
-                          id: "custom-domain",
-                          type: "text",
-                          placeholder: "yourdomain.com",
-                          value: customDomain,
-                          onChange: (e) => setCustomDomain(e.target.value),
-                          className: "flex-1 font-mono text-sm",
-                          "data-ocid": "publish.domain.custom_input"
-                        }
-                      ),
-                      /* @__PURE__ */ jsxRuntimeExports.jsx(
-                        Button,
-                        {
-                          type: "button",
-                          variant: "outline",
-                          className: "shrink-0",
-                          disabled: true,
-                          "data-ocid": "publish.domain.connect_button",
-                          children: "Connect"
-                        }
-                      )
-                    ] }),
-                    /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-1.5 text-xs text-muted-foreground", children: "Custom domain configuration coming soon. Your free subdomain is always available." })
-                  ] })
-                ] })
-              ]
-            }
-          ),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs(
-            motion.div,
-            {
-              initial: { opacity: 0, y: 12 },
-              animate: { opacity: 1, y: 0 },
-              transition: { delay: 0.45 },
-              className: "rounded-2xl border border-border bg-muted/30 p-6",
-              children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col items-start gap-4 sm:flex-row sm:items-center", children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1", children: [
-                    /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "font-display text-base font-bold text-foreground", children: "Ready to go live?" }),
-                    /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "mt-0.5 text-sm text-muted-foreground", children: checksReady && anyFailing ? "Some checks failed — you can still publish, but we recommend fixing them first." : checksReady ? "All checks passed. Your site is ready for the world!" : "Running checks… please wait before publishing." })
-                  ] }),
-                  /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex shrink-0 items-center gap-3", children: [
-                    checksReady && anyFailing && /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                      Badge,
-                      {
-                        variant: "secondary",
-                        className: "border-amber-500/30 bg-amber-500/10 text-xs text-amber-400",
-                        "data-ocid": "publish.warning_badge",
-                        children: [
-                          /* @__PURE__ */ jsxRuntimeExports.jsx(TriangleAlert, { className: "mr-1 h-3 w-3" }),
-                          "Issues found"
-                        ]
-                      }
-                    ),
-                    /* @__PURE__ */ jsxRuntimeExports.jsx(
-                      Button,
-                      {
-                        type: "button",
-                        disabled: !checksReady || publishMutation.isPending,
-                        onClick: handlePublish,
-                        className: `gap-2 px-6 font-semibold transition-smooth ${checksReady && allPassing ? "border-0 bg-green-600 text-white hover:bg-green-500" : ""}`,
-                        "data-ocid": "publish.publish_button",
-                        children: publishMutation.isPending ? /* @__PURE__ */ jsxRuntimeExports.jsx(LoaderCircle, { className: "h-4 w-4 animate-spin" }) : checksReady && allPassing ? /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-                          /* @__PURE__ */ jsxRuntimeExports.jsx(CircleCheck, { className: "h-4 w-4" }),
-                          "Publish Live"
-                        ] }) : checksReady && anyFailing ? /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-                          /* @__PURE__ */ jsxRuntimeExports.jsx(TriangleAlert, { className: "h-4 w-4" }),
-                          "Publish Anyway"
-                        ] }) : /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
-                          /* @__PURE__ */ jsxRuntimeExports.jsx(LoaderCircle, { className: "h-4 w-4 animate-spin" }),
-                          "Checking…"
-                        ] })
-                      }
-                    )
-                  ] })
-                ] }),
-                publishMutation.isError && /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                  motion.div,
-                  {
-                    initial: { opacity: 0, height: 0 },
-                    animate: { opacity: 1, height: "auto" },
-                    className: "mt-4 flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive-foreground",
-                    "data-ocid": "publish.error_state",
-                    children: [
-                      /* @__PURE__ */ jsxRuntimeExports.jsx(CircleX, { className: "h-4 w-4 shrink-0" }),
-                      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "Publish failed. Please try again." })
-                    ]
-                  }
-                )
-              ]
-            }
-          )
-        ]
-      },
-      "checklist"
-    ) }) })
-  ] }) });
-}
 var isCheckBoxInput = (element) => element.type === "checkbox";
 var isDateObject = (value) => value instanceof Date;
 var isNullOrUndefined = (value) => value == null;
@@ -52030,86 +55735,79 @@ function useForm(props = {}) {
 const TOTAL_STEPS = 4;
 const SITE_TYPES = [
   {
-    value: "business",
-    label: "Business",
+    value: SiteType.agency,
+    label: "Agency",
     icon: /* @__PURE__ */ jsxRuntimeExports.jsx(Monitor, { size: 28 }),
     desc: "Professional company site"
   },
   {
-    value: "portfolio",
+    value: SiteType.portfolio,
     label: "Portfolio",
     icon: /* @__PURE__ */ jsxRuntimeExports.jsx(User, { size: 28 }),
     desc: "Showcase your work"
   },
   {
-    value: "blog",
+    value: SiteType.blog,
     label: "Blog",
     icon: /* @__PURE__ */ jsxRuntimeExports.jsx(BookOpen, { size: 28 }),
     desc: "Share your story"
   },
   {
-    value: "ecommerce",
+    value: SiteType.ecommerce,
     label: "E-commerce",
     icon: /* @__PURE__ */ jsxRuntimeExports.jsx(ShoppingBag, { size: 28 }),
     desc: "Sell products online"
   },
   {
-    value: "landing",
+    value: SiteType.landingPage,
     label: "Landing Page",
     icon: /* @__PURE__ */ jsxRuntimeExports.jsx(Zap, { size: 28 }),
     desc: "High-conversion single page"
   }
 ];
-const PALETTES = [
-  {
-    value: "modern-dark",
-    label: "Modern Dark",
-    colors: ["#7c3aed", "#4f46e5", "#1e1b4b"]
-  },
-  {
-    value: "clean-light",
-    label: "Clean Light",
-    colors: ["#0ea5e9", "#38bdf8", "#f0f9ff"]
-  },
-  {
-    value: "warm-earthy",
-    label: "Warm Earthy",
-    colors: ["#d97706", "#92400e", "#fffbeb"]
-  },
-  {
-    value: "bold-vibrant",
-    label: "Bold Vibrant",
-    colors: ["#db2777", "#7c3aed", "#fff"]
-  }
-];
-const FONTS = [
-  { value: "Inter", label: "Inter", preview: "Clean & Modern" },
-  {
-    value: "Playfair Display",
-    label: "Playfair + Inter",
-    preview: "Elegant Editorial"
-  },
-  { value: "Space Grotesk", label: "Space Grotesk", preview: "Techy & Bold" },
-  { value: "Roboto", label: "Roboto + Georgia", preview: "Reliable Classic" }
+const VIBES = [
+  { value: VisualStyle.minimal, label: "Minimal", desc: "Clean and simple" },
+  { value: VisualStyle.bold, label: "Bold", desc: "High-impact and striking" },
+  { value: VisualStyle.warm, label: "Warm", desc: "Friendly and approachable" },
+  { value: VisualStyle.luxury, label: "Luxury", desc: "Premium and refined" },
+  { value: VisualStyle.playful, label: "Playful", desc: "Fun and colourful" }
 ];
 const FEATURE_LIST = [
   {
-    key: "contactForm",
+    value: SelectedFeature.contactForm,
     label: "Contact Form",
     desc: "Let visitors reach you easily",
     icon: /* @__PURE__ */ jsxRuntimeExports.jsx(Mail, { size: 22 })
   },
   {
-    key: "bookings",
+    value: SelectedFeature.bookingCalendar,
     label: "Bookings",
     desc: "Accept appointments or reservations",
     icon: /* @__PURE__ */ jsxRuntimeExports.jsx(Calendar, { size: 22 })
   },
   {
-    key: "auth",
-    label: "Authentication",
+    value: SelectedFeature.userAccounts,
+    label: "User Accounts",
     desc: "User accounts and protected areas",
     icon: /* @__PURE__ */ jsxRuntimeExports.jsx(Lock, { size: 22 })
+  },
+  {
+    value: SelectedFeature.newsletter,
+    label: "Newsletter",
+    desc: "Email signup and notifications",
+    icon: /* @__PURE__ */ jsxRuntimeExports.jsx(Mail, { size: 22 })
+  },
+  {
+    value: SelectedFeature.blog,
+    label: "Blog",
+    desc: "Articles and content publishing",
+    icon: /* @__PURE__ */ jsxRuntimeExports.jsx(BookOpen, { size: 22 })
+  },
+  {
+    value: SelectedFeature.payments,
+    label: "Payments",
+    desc: "Accept payments online",
+    icon: /* @__PURE__ */ jsxRuntimeExports.jsx(ShoppingBag, { size: 22 })
   }
 ];
 function ProgressBar({ step }) {
@@ -52127,7 +55825,7 @@ function ProgressBar({ step }) {
             /* @__PURE__ */ jsxRuntimeExports.jsx(
               "div",
               {
-                className: `w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-smooth ${done ? "bg-primary text-primary-foreground" : active ? "bg-primary/20 border-2 border-primary text-primary" : "bg-muted text-muted-foreground"}`,
+                className: `w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300 ease-out ${done ? "bg-primary text-primary-foreground" : active ? "bg-primary/20 border-2 border-primary text-primary" : "bg-muted text-muted-foreground"}`,
                 children: done ? /* @__PURE__ */ jsxRuntimeExports.jsx(Check, { size: 14 }) : num
               }
             ),
@@ -52174,12 +55872,12 @@ function StepSiteType({
           type: "button",
           "data-ocid": `wizard.site_type.${t.value}`,
           onClick: () => onChange(t.value),
-          className: `relative flex flex-col items-start gap-3 p-5 rounded-xl border-2 text-left transition-smooth group ${selected ? "border-primary bg-primary/10" : "border-border bg-card hover:border-primary/50 hover:bg-muted/60"}`,
+          className: `relative flex flex-col items-start gap-3 p-5 rounded-xl border-2 text-left transition-all duration-300 ease-out group ${selected ? "border-primary bg-primary/10" : "border-border bg-card hover:border-primary/50 hover:bg-muted/60"}`,
           children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx(
               "div",
               {
-                className: `p-2.5 rounded-lg transition-smooth ${selected ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground group-hover:text-primary"}`,
+                className: `p-2.5 rounded-lg transition-all duration-300 ease-out ${selected ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground group-hover:text-primary"}`,
                 children: t.icon
               }
             ),
@@ -52223,7 +55921,7 @@ function StepDescribeBusiness({
           maxLength,
           rows: 7,
           placeholder: "e.g. We're a boutique coffee roastery in Portland crafting single-origin beans for home enthusiasts. Our monthly subscription delivers freshly roasted bags right to your door.",
-          className: "w-full resize-none rounded-xl border border-input bg-card text-foreground placeholder:text-muted-foreground/60 p-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-smooth"
+          className: "w-full resize-none rounded-xl border border-input bg-card text-foreground placeholder:text-muted-foreground/60 p-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all duration-300 ease-out"
         }
       ),
       /* @__PURE__ */ jsxRuntimeExports.jsxs(
@@ -52241,74 +55939,36 @@ function StepDescribeBusiness({
   ] });
 }
 function StepVisualStyle({
-  palette,
-  fontFamily,
-  onPaletteChange,
-  onFontChange
+  vibe,
+  onChange
 }) {
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "text-2xl font-display font-bold text-foreground mb-1", children: "Pick your visual style" }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-muted-foreground mb-8", children: "Choose a color palette and typography that feel right for your brand." }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "mb-8", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm font-semibold text-foreground mb-3", children: "Color Palette" }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid grid-cols-2 gap-3", children: PALETTES.map((p2) => {
-        const selected = palette === p2.value;
-        return /* @__PURE__ */ jsxRuntimeExports.jsxs(
-          "button",
-          {
-            type: "button",
-            "data-ocid": `wizard.palette.${p2.value}`,
-            onClick: () => onPaletteChange(p2.value),
-            className: `flex items-center gap-3 p-3.5 rounded-xl border-2 text-left transition-smooth ${selected ? "border-primary bg-primary/10" : "border-border bg-card hover:border-primary/50"}`,
-            children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex gap-1", children: p2.colors.map((c2, ci) => /* @__PURE__ */ jsxRuntimeExports.jsx(
-                "span",
-                {
-                  className: "w-5 h-5 rounded-full border border-border/40",
-                  style: { backgroundColor: c2 }
-                },
-                `${p2.value}-color-${ci}`
-              )) }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx(
-                "span",
-                {
-                  className: `text-sm font-medium ${selected ? "text-primary" : "text-foreground"}`,
-                  children: p2.label
-                }
-              ),
-              selected && /* @__PURE__ */ jsxRuntimeExports.jsx(Check, { size: 14, className: "ml-auto text-primary shrink-0" })
-            ]
-          },
-          p2.value
-        );
-      }) })
-    ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm font-semibold text-foreground mb-3", children: "Typography" }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid grid-cols-2 gap-3", children: FONTS.map((f) => {
-        const selected = fontFamily === f.value;
-        return /* @__PURE__ */ jsxRuntimeExports.jsxs(
-          "button",
-          {
-            type: "button",
-            "data-ocid": `wizard.font.${f.value.toLowerCase().replace(/\s+/g, "-")}`,
-            onClick: () => onFontChange(f.value),
-            className: `flex flex-col p-3.5 rounded-xl border-2 text-left transition-smooth ${selected ? "border-primary bg-primary/10" : "border-border bg-card hover:border-primary/50"}`,
-            children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(
-                "span",
-                {
-                  className: `text-sm font-semibold ${selected ? "text-primary" : "text-foreground"}`,
-                  children: f.label
-                }
-              ),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs text-muted-foreground mt-0.5", children: f.preview })
-            ]
-          },
-          f.value
-        );
-      }) })
-    ] })
+    /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-muted-foreground mb-8", children: "Choose the vibe that feels right for your brand." }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-3", children: VIBES.map((v2) => {
+      const selected = vibe === v2.value;
+      return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+        "button",
+        {
+          type: "button",
+          "data-ocid": `wizard.vibe.${v2.value}`,
+          onClick: () => onChange(v2.value),
+          className: `flex flex-col p-4 rounded-xl border-2 text-left transition-all duration-300 ease-out ${selected ? "border-primary bg-primary/10" : "border-border bg-card hover:border-primary/50"}`,
+          children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              "span",
+              {
+                className: `text-sm font-semibold mb-1 ${selected ? "text-primary" : "text-foreground"}`,
+                children: v2.label
+              }
+            ),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs text-muted-foreground", children: v2.desc }),
+            selected && /* @__PURE__ */ jsxRuntimeExports.jsx(Check, { size: 14, className: "mt-2 text-primary" })
+          ]
+        },
+        v2.value
+      );
+    }) })
   ] });
 }
 function StepFeatures({
@@ -52319,19 +55979,19 @@ function StepFeatures({
     /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "text-2xl font-display font-bold text-foreground mb-1", children: "What features do you need?" }),
     /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-muted-foreground mb-8", children: "Enable the functionality you want built into your site." }),
     /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex flex-col gap-4", children: FEATURE_LIST.map((feat) => {
-      const enabled = features[feat.key];
+      const enabled = features.includes(feat.value);
       return /* @__PURE__ */ jsxRuntimeExports.jsxs(
         "button",
         {
           type: "button",
-          "data-ocid": `wizard.feature.${feat.key}`,
-          onClick: () => onChange(feat.key, !enabled),
-          className: `flex items-center gap-4 p-5 rounded-xl border-2 text-left transition-smooth ${enabled ? "border-primary bg-primary/10" : "border-border bg-card hover:border-primary/50 hover:bg-muted/40"}`,
+          "data-ocid": `wizard.feature.${feat.value}`,
+          onClick: () => onChange(feat.value),
+          className: `flex items-center gap-4 p-5 rounded-xl border-2 text-left transition-all duration-300 ease-out ${enabled ? "border-primary bg-primary/10" : "border-border bg-card hover:border-primary/50 hover:bg-muted/40"}`,
           children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx(
               "div",
               {
-                className: `p-2.5 rounded-lg transition-smooth flex-shrink-0 ${enabled ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"}`,
+                className: `p-2.5 rounded-lg transition-all duration-300 ease-out flex-shrink-0 ${enabled ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"}`,
                 children: feat.icon
               }
             ),
@@ -52342,13 +56002,13 @@ function StepFeatures({
             /* @__PURE__ */ jsxRuntimeExports.jsx(
               "div",
               {
-                className: `w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-smooth ${enabled ? "bg-primary border-primary" : "border-border"}`,
+                className: `w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all duration-300 ease-out ${enabled ? "bg-primary border-primary" : "border-border"}`,
                 children: enabled && /* @__PURE__ */ jsxRuntimeExports.jsx(Check, { size: 12, className: "text-primary-foreground" })
               }
             )
           ]
         },
-        feat.key
+        feat.value
       );
     }) })
   ] });
@@ -52361,23 +56021,16 @@ function WizardPage() {
   const { control, watch, setValue, handleSubmit } = useForm({
     defaultValues: {
       siteType: "",
-      businessDescription: "",
-      palette: "modern-dark",
-      fontFamily: "Space Grotesk",
-      features: {
-        contactForm: false,
-        bookings: false,
-        auth: false,
-        blog: false,
-        ecommerce: false,
-        analytics: false
-      }
+      niche: "",
+      vibe: "",
+      features: []
     }
   });
   const values = watch();
   function canAdvance() {
     if (step === 1) return values.siteType !== "";
-    if (step === 2) return values.businessDescription.trim().length > 20;
+    if (step === 2) return values.niche.trim().length > 20;
+    if (step === 3) return values.vibe !== "";
     return true;
   }
   function goNext() {
@@ -52391,24 +56044,18 @@ function WizardPage() {
   }
   async function onSubmit() {
     const data = values;
-    if (!data.siteType) return;
-    const paletteMap = {
-      "modern-dark": "modern",
-      "clean-light": "minimal",
-      "warm-earthy": "elegant",
-      "bold-vibrant": "bold"
-    };
+    if (!data.siteType || !data.vibe) return;
     const input = {
       siteType: data.siteType,
-      businessDescription: data.businessDescription,
-      visualStyle: paletteMap[data.palette] ?? "modern",
-      selectedFeatures: data.features
+      niche: data.niche,
+      vibe: data.vibe,
+      features: data.features
     };
     generateSite.mutate(input, {
-      onSuccess: (site) => {
+      onSuccess: ([siteId]) => {
         navigate({
           to: "/generate/$siteId",
-          params: { siteId: site.id.toString() }
+          params: { siteId: siteId.toString() }
         });
       },
       onError: () => {
@@ -52458,7 +56105,7 @@ function WizardPage() {
             step === 2 && /* @__PURE__ */ jsxRuntimeExports.jsx(
               Controller,
               {
-                name: "businessDescription",
+                name: "niche",
                 control,
                 render: ({ field }) => /* @__PURE__ */ jsxRuntimeExports.jsx(
                   StepDescribeBusiness,
@@ -52470,19 +56117,28 @@ function WizardPage() {
               }
             ),
             step === 3 && /* @__PURE__ */ jsxRuntimeExports.jsx(
-              StepVisualStyle,
+              Controller,
               {
-                palette: values.palette,
-                fontFamily: values.fontFamily,
-                onPaletteChange: (v2) => setValue("palette", v2),
-                onFontChange: (v2) => setValue("fontFamily", v2)
+                name: "vibe",
+                control,
+                render: ({ field }) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  StepVisualStyle,
+                  {
+                    vibe: field.value,
+                    onChange: (v2) => field.onChange(v2)
+                  }
+                )
               }
             ),
             step === 4 && /* @__PURE__ */ jsxRuntimeExports.jsx(
               StepFeatures,
               {
                 features: values.features,
-                onChange: (key, val) => setValue("features", { ...values.features, [key]: val })
+                onChange: (feature) => {
+                  const current = values.features;
+                  const next = current.includes(feature) ? current.filter((f) => f !== feature) : [...current, feature];
+                  setValue("features", next);
+                }
               }
             )
           ]
@@ -52497,7 +56153,7 @@ function WizardPage() {
             "data-ocid": "wizard.back_button",
             onClick: goBack,
             disabled: step === 1,
-            className: "flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border bg-card text-foreground text-sm font-medium transition-smooth hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed",
+            className: "flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border bg-card text-foreground text-sm font-medium transition-all duration-300 ease-out hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed",
             children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronLeft, { size: 16 }),
               "Back"
@@ -52511,7 +56167,7 @@ function WizardPage() {
             "data-ocid": "wizard.next_button",
             onClick: goNext,
             disabled: !canAdvance(),
-            className: "flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold transition-smooth hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed shadow-subtle",
+            className: "flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold transition-all duration-300 ease-out hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed shadow-subtle",
             children: [
               "Continue",
               /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronRight, { size: 16 })
@@ -52524,7 +56180,7 @@ function WizardPage() {
             "data-ocid": "wizard.generate_button",
             onClick: handleSubmit(onSubmit),
             disabled: generateSite.isPending,
-            className: "flex items-center gap-2 px-7 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold transition-smooth hover:bg-primary/90 disabled:opacity-60 shadow-elevated",
+            className: "flex items-center gap-2 px-7 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold transition-all duration-300 ease-out hover:bg-primary/90 disabled:opacity-60 shadow-elevated",
             children: generateSite.isPending ? /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx(
                 "span",
@@ -52541,7 +56197,7 @@ function WizardPage() {
           }
         )
       ] }),
-      step === 2 && values.businessDescription.trim().length < 20 && values.businessDescription.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx(
+      step === 2 && values.niche.trim().length < 20 && values.niche.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx(
         motion.p,
         {
           initial: { opacity: 0, y: 4 },
@@ -52606,6 +56262,22 @@ const publishRoute = createRoute({
   path: "/publish/$siteId",
   component: PublishPage
 });
+const signupRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/signup",
+  component: SignupPage,
+  validateSearch: (search) => ({
+    siteId: typeof search.siteId === "string" ? search.siteId : void 0
+  })
+});
+const liveRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/live",
+  component: LivePage,
+  validateSearch: (search) => ({
+    siteUrl: typeof search.siteUrl === "string" ? search.siteUrl : void 0
+  })
+});
 const routeTree = rootRoute.addChildren([
   indexRoute,
   loginRoute,
@@ -52613,7 +56285,9 @@ const routeTree = rootRoute.addChildren([
   wizardRoute,
   generateRoute,
   editorRoute,
-  publishRoute
+  publishRoute,
+  signupRoute,
+  liveRoute
 ]);
 const router = createRouter({ routeTree });
 function App() {

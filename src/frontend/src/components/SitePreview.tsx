@@ -1,4 +1,9 @@
-import type { ColorPalette, GeneratedSite, SiteSection } from "@/types";
+import type {
+  ColorPalette,
+  GeneratedSite,
+  SectionType,
+  SiteSection,
+} from "@/types";
 import { useCallback, useEffect, useRef } from "react";
 
 interface SitePreviewProps {
@@ -13,7 +18,7 @@ interface SitePreviewProps {
 
 export interface EditingField {
   sectionIndex: number;
-  field: "heading" | "body";
+  field: "heading" | "subheading" | "content";
   originalValue: string;
 }
 
@@ -133,29 +138,29 @@ function HeroSection({
         />
         <EditableText
           as="p"
-          value={section.body}
+          value={section.subheading}
           className="text-lg md:text-xl opacity-90 mb-8 leading-relaxed"
           isEditing={
             editingField?.sectionIndex === index &&
-            editingField.field === "body"
+            editingField.field === "subheading"
           }
           onStartEdit={() =>
             onStartEdit({
               sectionIndex: index,
-              field: "body",
-              originalValue: section.body,
+              field: "subheading",
+              originalValue: section.subheading,
             })
           }
           onSaveEdit={onSaveEdit}
           onCancelEdit={onCancelEdit}
         />
-        {section.ctaText && (
+        {section.content && (
           <button
             type="button"
             className="inline-flex items-center gap-2 px-8 py-3 rounded-full font-semibold text-sm transition-all hover:opacity-90 active:scale-95"
             style={{ background: palette.accent, color: palette.text }}
           >
-            {section.ctaText}
+            {section.content}
           </button>
         )}
       </div>
@@ -202,17 +207,17 @@ function AboutSection({
           />
           <EditableText
             as="p"
-            value={section.body}
+            value={section.subheading}
             className="text-base leading-relaxed opacity-80"
             isEditing={
               editingField?.sectionIndex === index &&
-              editingField.field === "body"
+              editingField.field === "subheading"
             }
             onStartEdit={() =>
               onStartEdit({
                 sectionIndex: index,
-                field: "body",
-                originalValue: section.body,
+                field: "subheading",
+                originalValue: section.subheading,
               })
             }
             onSaveEdit={onSaveEdit}
@@ -274,17 +279,17 @@ function FeaturesSection({
           />
           <EditableText
             as="p"
-            value={section.body}
+            value={section.subheading}
             className="text-base opacity-70 max-w-xl mx-auto"
             isEditing={
               editingField?.sectionIndex === index &&
-              editingField.field === "body"
+              editingField.field === "subheading"
             }
             onStartEdit={() =>
               onStartEdit({
                 sectionIndex: index,
-                field: "body",
-                originalValue: section.body,
+                field: "subheading",
+                originalValue: section.subheading,
               })
             }
             onSaveEdit={onSaveEdit}
@@ -292,21 +297,12 @@ function FeaturesSection({
           />
         </div>
         <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {(
-            section.items ?? [
-              { title: "Speed", description: "Deploy in minutes, not weeks" },
-              {
-                title: "Design",
-                description: "AI-generated layouts that impress",
-              },
-              {
-                title: "Scale",
-                description: "Built to grow with your business",
-              },
-            ]
-          ).map((item) => (
+          {(section.content
+            ? section.content.split(",")
+            : ["Speed", "Design", "Scale"]
+          ).map((item, i) => (
             <div
-              key={item.title}
+              key={`${item.trim()}-${i}`}
               className="rounded-xl p-6 border"
               style={{
                 background: palette.background,
@@ -326,11 +322,8 @@ function FeaturesSection({
                 className="font-semibold text-sm mb-1"
                 style={{ color: palette.text }}
               >
-                {item.title}
+                {item.trim()}
               </h3>
-              <p className="text-xs opacity-60" style={{ color: palette.text }}>
-                {item.description}
-              </p>
             </div>
           ))}
         </div>
@@ -377,17 +370,17 @@ function ContactSection({
         />
         <EditableText
           as="p"
-          value={section.body}
+          value={section.subheading}
           className="text-sm opacity-70 mb-8"
           isEditing={
             editingField?.sectionIndex === index &&
-            editingField.field === "body"
+            editingField.field === "subheading"
           }
           onStartEdit={() =>
             onStartEdit({
               sectionIndex: index,
-              field: "body",
-              originalValue: section.body,
+              field: "subheading",
+              originalValue: section.subheading,
             })
           }
           onSaveEdit={onSaveEdit}
@@ -508,17 +501,17 @@ function GenericSection({
         />
         <EditableText
           as="p"
-          value={section.body}
+          value={section.subheading}
           className="text-base opacity-70 leading-relaxed"
           isEditing={
             editingField?.sectionIndex === index &&
-            editingField.field === "body"
+            editingField.field === "subheading"
           }
           onStartEdit={() =>
             onStartEdit({
               sectionIndex: index,
-              field: "body",
-              originalValue: section.body,
+              field: "subheading",
+              originalValue: section.subheading,
             })
           }
           onSaveEdit={onSaveEdit}
@@ -579,7 +572,7 @@ export default function SitePreview({
   );
 
   const renderSection = (section: SiteSection, index: number) => {
-    const key = `${section.type}-${index}`;
+    const key = `${section.sectionType}-${index}`;
     const isHighlighted = highlightedSection === key;
     const commonProps: SectionProps = {
       section,
@@ -593,14 +586,14 @@ export default function SitePreview({
       sectionRef: setSectionRef(key),
     };
 
-    switch (section.type) {
-      case "hero":
+    switch (section.sectionType) {
+      case "hero" as SectionType:
         return <HeroSection key={key} {...commonProps} />;
-      case "about":
+      case "about" as SectionType:
         return <AboutSection key={key} {...commonProps} />;
-      case "features":
+      case "services" as SectionType:
         return <FeaturesSection key={key} {...commonProps} />;
-      case "contact":
+      case "contact" as SectionType:
         return <ContactSection key={key} {...commonProps} />;
       default:
         return <GenericSection key={key} {...commonProps} />;

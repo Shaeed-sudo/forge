@@ -1,26 +1,8 @@
-// Version: 1.0.0
-type ColorPalette__439870225 =
-  {
-    accent : Text;
-    background : Text;
-    primary : Text;
-    secondary : Text;
-    text : Text
-  };
+// Version: 3.0.0
 type Data__791452850<K, V> =
   {var count : Nat__490723111; kvs : [var ?(K, V)]};
-type GeneratedSite__139566011 =
-  {
-    colorPalette : ColorPalette__439870225;
-    layout : LayoutMetadata__818319923;
-    sections : [SiteSection__320144168];
-    siteTitle : Text;
-    tagline : Text
-  };
 type Internal__8484328<K, V> =
   {children : [var ?Node__46230540<K, V>]; data : Data__791452850<K, V>};
-type LayoutMetadata__818319923 =
-  {borderRadius : Text; fontFamily : Text; layoutStyle : Text};
 type Leaf__809889148<K, V> = {data : Data__791452850<K, V>};
 type Map__158565046<K, V> = Map__297112838<K, V>;
 type Map__297112838<K, V> =
@@ -30,34 +12,115 @@ type Nat__490723111 = Nat__920180692;
 type Nat__920180692 = Nat;
 type Node__46230540<K, V> =
   {#internal : Internal__8484328<K, V>; #leaf : Leaf__809889148<K, V>};
-type PublishStatus__584198415 =
+type OldColorPalette__1024632843 =
+  {
+    accent : Text;
+    background : Text;
+    primary : Text;
+    secondary : Text;
+    text : Text
+  };
+type OldGeneratedSite__686057244 =
+  {
+    colorPalette : OldColorPalette__1024632843;
+    layout : OldLayoutMetadata__903337387;
+    sections : [OldSiteSection__847526180];
+    siteTitle : Text;
+    tagline : Text
+  };
+type OldLayoutMetadata__903337387 =
+  {borderRadius : Text; fontFamily : Text; layoutStyle : Text};
+type OldPublishStatus__777651833 =
   {#failed; #published; #publishing; #unpublished};
-type SectionType__109905165 = {#about; #contact; #footer; #hero; #services};
-type SiteId__825323133 = Nat;
-type SiteSection__320144168 =
+type OldSiteId__3335563 = Nat;
+type OldSiteSection__847526180 =
   {
     content : Text;
     heading : Text;
-    sectionType : SectionType__109905165;
+    sectionType : {#about; #contact; #footer; #hero; #services};
     subheading : Text
+  };
+type OldSite__861237704 =
+  {
+    createdAt : OldTimestamp__27916213;
+    var generatedData : ?OldGeneratedSite__686057244;
+    id : OldSiteId__3335563;
+    owner : OldUserId__580276348;
+    var publishedUrl : ?Text;
+    var status : OldPublishStatus__777651833;
+    var subdomain : ?Text;
+    var title : Text;
+    var updatedAt : OldTimestamp__27916213
+  };
+type OldTimestamp__27916213 = Int;
+type OldUserId__580276348 = Principal;
+type OldUserProfile__416069324 = {email : Text; name : Text};
+type PublishStatus__584198415 = {#draft; #live};
+type SelectedFeature__726233152 =
+  {
+    #blog;
+    #bookingCalendar;
+    #contactForm;
+    #imageGallery;
+    #liveChat;
+    #newsletter;
+    #payments;
+    #testimonials;
+    #userAccounts
+  };
+type SiteId__825323133 = Nat;
+type SiteType__11204312 =
+  {
+    #agency;
+    #blog;
+    #booking;
+    #ecommerce;
+    #landingPage;
+    #portfolio;
+    #restaurant;
+    #saas
   };
 type Site__220223407 =
   {
     createdAt : Timestamp__301639476;
-    var generatedData : ?GeneratedSite__139566011;
+    features : [SelectedFeature__726233152];
+    var formSubmissions : Nat;
     id : SiteId__825323133;
+    var lighthouseScore : Nat;
+    var name : Text;
+    var niche : Text;
     owner : UserId__158757552;
-    var publishedUrl : ?Text;
+    var publishedAt : ?Timestamp__301639476;
+    siteType : SiteType__11204312;
+    var siteUrl : ?Text;
+    var slug : Text;
     var status : PublishStatus__584198415;
-    var subdomain : ?Text;
-    var title : Text;
-    var updatedAt : Timestamp__301639476
+    var updatedAt : Timestamp__301639476;
+    vibe : VisualStyle__809373889;
+    var visitors : Nat
   };
 type Timestamp__301639476 = Int;
 type UserId__158757552 = Principal;
-type UserProfile__129828592 = {email : Text; name : Text};
+type UserProfile__129828592 =
+  {
+    createdAt : Timestamp__301639476;
+    email : Text;
+    name : Text;
+    plan : {#free; #pro}
+  };
 type UserRole__1073662873 = {#admin; #guest; #user};
-actor {
+type VisualStyle__809373889 = {#bold; #luxury; #minimal; #playful; #warm};
+actor ({
+  stable accessControlState :
+    {
+      var adminAssigned : Bool;
+      userRoles : Map__605269027<Principal, UserRole__1073662873>
+    };
+  in siteState : {var nextSiteId : Nat};
+  in sites : Map__605269027<OldSiteId__3335563, OldSite__861237704>;
+  in userProfiles :
+    Map__605269027<OldUserId__580276348, OldUserProfile__416069324>
+}, {
   stable accessControlState :
     {
       var adminAssigned : Bool;
@@ -74,4 +137,4 @@ actor {
       var root : Node__46230540<UserId__158757552, UserProfile__129828592>;
       var size : Nat__490723111
     }
-};
+});

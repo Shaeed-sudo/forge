@@ -14,121 +14,114 @@ export const UserRole = IDL.Variant({
   'guest' : IDL.Null,
 });
 export const SiteId = IDL.Nat;
-export const VisualStyle = IDL.Record({
-  'primaryColor' : IDL.Text,
-  'fontFamily' : IDL.Text,
-  'secondaryColor' : IDL.Text,
+export const SelectedFeature = IDL.Variant({
+  'contactForm' : IDL.Null,
+  'userAccounts' : IDL.Null,
+  'payments' : IDL.Null,
+  'blog' : IDL.Null,
+  'liveChat' : IDL.Null,
+  'newsletter' : IDL.Null,
+  'testimonials' : IDL.Null,
+  'bookingCalendar' : IDL.Null,
+  'imageGallery' : IDL.Null,
+});
+export const VisualStyle = IDL.Variant({
+  'bold' : IDL.Null,
+  'minimal' : IDL.Null,
+  'warm' : IDL.Null,
+  'playful' : IDL.Null,
+  'luxury' : IDL.Null,
 });
 export const SiteType = IDL.Variant({
   'portfolio' : IDL.Null,
   'blog' : IDL.Null,
-  'business' : IDL.Null,
-  'landing' : IDL.Null,
+  'saas' : IDL.Null,
+  'agency' : IDL.Null,
+  'booking' : IDL.Null,
+  'landingPage' : IDL.Null,
+  'restaurant' : IDL.Null,
   'ecommerce' : IDL.Null,
 });
-export const SelectedFeatures = IDL.Record({
-  'contactForm' : IDL.Bool,
-  'bookings' : IDL.Bool,
-  'auth' : IDL.Bool,
-});
 export const WizardInput = IDL.Record({
-  'visualStyle' : VisualStyle,
+  'features' : IDL.Vec(SelectedFeature),
+  'vibe' : VisualStyle,
   'siteType' : SiteType,
-  'businessDescription' : IDL.Text,
-  'selectedFeatures' : SelectedFeatures,
+  'niche' : IDL.Text,
 });
-export const PublishStatus = IDL.Variant({
-  'published' : IDL.Null,
-  'publishing' : IDL.Null,
-  'unpublished' : IDL.Null,
-  'failed' : IDL.Null,
-});
-export const UserId = IDL.Principal;
 export const Timestamp = IDL.Int;
-export const LayoutMetadata = IDL.Record({
-  'borderRadius' : IDL.Text,
-  'layoutStyle' : IDL.Text,
-  'fontFamily' : IDL.Text,
-});
-export const ColorPalette = IDL.Record({
-  'accent' : IDL.Text,
-  'background' : IDL.Text,
-  'text' : IDL.Text,
-  'secondary' : IDL.Text,
-  'primary' : IDL.Text,
-});
-export const SectionType = IDL.Variant({
-  'contact' : IDL.Null,
-  'about' : IDL.Null,
-  'hero' : IDL.Null,
-  'services' : IDL.Null,
-  'footer' : IDL.Null,
-});
-export const SiteSection = IDL.Record({
-  'subheading' : IDL.Text,
-  'content' : IDL.Text,
-  'sectionType' : SectionType,
-  'heading' : IDL.Text,
-});
-export const GeneratedSite = IDL.Record({
-  'siteTitle' : IDL.Text,
-  'tagline' : IDL.Text,
-  'layout' : LayoutMetadata,
-  'colorPalette' : ColorPalette,
-  'sections' : IDL.Vec(SiteSection),
-});
-export const SitePublic = IDL.Record({
-  'id' : SiteId,
-  'status' : PublishStatus,
-  'title' : IDL.Text,
-  'owner' : UserId,
-  'createdAt' : Timestamp,
-  'publishedUrl' : IDL.Opt(IDL.Text),
-  'updatedAt' : Timestamp,
-  'generatedData' : IDL.Opt(GeneratedSite),
-  'subdomain' : IDL.Opt(IDL.Text),
-});
 export const UserProfile = IDL.Record({
   'name' : IDL.Text,
+  'createdAt' : Timestamp,
+  'plan' : IDL.Variant({ 'pro' : IDL.Null, 'free' : IDL.Null }),
   'email' : IDL.Text,
 });
 export const PreLaunchChecks = IDL.Record({
   'seo' : IDL.Bool,
-  'formsValid' : IDL.Bool,
-  'performanceHint' : IDL.Bool,
-  'mobileReady' : IDL.Bool,
+  'forms' : IDL.Bool,
+  'seoNote' : IDL.Text,
+  'speedNote' : IDL.Text,
+  'formsNote' : IDL.Text,
+  'speed' : IDL.Nat,
+  'mobile' : IDL.Bool,
+  'mobileNote' : IDL.Text,
+});
+export const PublishStatus = IDL.Variant({
+  'live' : IDL.Null,
+  'draft' : IDL.Null,
+});
+export const UserId = IDL.Principal;
+export const SitePublic = IDL.Record({
+  'id' : SiteId,
+  'status' : PublishStatus,
+  'features' : IDL.Vec(SelectedFeature),
+  'formSubmissions' : IDL.Nat,
+  'visitors' : IDL.Nat,
+  'owner' : UserId,
+  'name' : IDL.Text,
+  'createdAt' : Timestamp,
+  'slug' : IDL.Text,
+  'vibe' : VisualStyle,
+  'publishedAt' : IDL.Opt(Timestamp),
+  'siteType' : SiteType,
+  'updatedAt' : Timestamp,
+  'niche' : IDL.Text,
+  'lighthouseScore' : IDL.Nat,
+  'siteUrl' : IDL.Opt(IDL.Text),
 });
 export const SiteSummary = IDL.Record({
   'id' : SiteId,
   'status' : PublishStatus,
-  'title' : IDL.Text,
-  'createdAt' : Timestamp,
-  'subdomain' : IDL.Opt(IDL.Text),
+  'formSubmissions' : IDL.Nat,
+  'visitors' : IDL.Nat,
+  'name' : IDL.Text,
+  'slug' : IDL.Text,
+  'updatedAt' : Timestamp,
+  'lighthouseScore' : IDL.Nat,
+  'siteUrl' : IDL.Opt(IDL.Text),
+});
+export const SiteUpdate = IDL.Record({
+  'name' : IDL.Opt(IDL.Text),
+  'niche' : IDL.Opt(IDL.Text),
 });
 
 export const idlService = IDL.Service({
   '_initializeAccessControl' : IDL.Func([], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
-  'deleteSite' : IDL.Func([SiteId], [], []),
-  'generateSite' : IDL.Func([WizardInput], [SitePublic], []),
-  'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
+  'deleteSite' : IDL.Func([SiteId], [IDL.Bool], []),
+  'generateSite' : IDL.Func([WizardInput], [SiteId, IDL.Text], []),
+  'getCallerProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
-  'getPreLaunchChecks' : IDL.Func([SiteId], [PreLaunchChecks], ['query']),
-  'getSite' : IDL.Func([SiteId], [IDL.Opt(SitePublic)], ['query']),
-  'getUserProfile' : IDL.Func(
-      [IDL.Principal],
-      [IDL.Opt(UserProfile)],
+  'getPreLaunchChecks' : IDL.Func(
+      [SiteId],
+      [IDL.Opt(PreLaunchChecks)],
       ['query'],
     ),
+  'getSite' : IDL.Func([SiteId], [IDL.Opt(SitePublic)], ['query']),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
   'listMySites' : IDL.Func([], [IDL.Vec(SiteSummary)], ['query']),
-  'publishSite' : IDL.Func([SiteId], [SitePublic], []),
-  'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
-  'updateSite' : IDL.Func(
-      [SiteId, IDL.Opt(IDL.Text), IDL.Opt(GeneratedSite)],
-      [SitePublic],
-      [],
-    ),
+  'publishSite' : IDL.Func([SiteId], [IDL.Opt(SitePublic)], []),
+  'saveCallerProfile' : IDL.Func([IDL.Text, IDL.Text], [UserProfile], []),
+  'updateSite' : IDL.Func([SiteId, SiteUpdate], [IDL.Opt(SitePublic)], []),
 });
 
 export const idlInitArgs = [];
@@ -140,118 +133,111 @@ export const idlFactory = ({ IDL }) => {
     'guest' : IDL.Null,
   });
   const SiteId = IDL.Nat;
-  const VisualStyle = IDL.Record({
-    'primaryColor' : IDL.Text,
-    'fontFamily' : IDL.Text,
-    'secondaryColor' : IDL.Text,
+  const SelectedFeature = IDL.Variant({
+    'contactForm' : IDL.Null,
+    'userAccounts' : IDL.Null,
+    'payments' : IDL.Null,
+    'blog' : IDL.Null,
+    'liveChat' : IDL.Null,
+    'newsletter' : IDL.Null,
+    'testimonials' : IDL.Null,
+    'bookingCalendar' : IDL.Null,
+    'imageGallery' : IDL.Null,
+  });
+  const VisualStyle = IDL.Variant({
+    'bold' : IDL.Null,
+    'minimal' : IDL.Null,
+    'warm' : IDL.Null,
+    'playful' : IDL.Null,
+    'luxury' : IDL.Null,
   });
   const SiteType = IDL.Variant({
     'portfolio' : IDL.Null,
     'blog' : IDL.Null,
-    'business' : IDL.Null,
-    'landing' : IDL.Null,
+    'saas' : IDL.Null,
+    'agency' : IDL.Null,
+    'booking' : IDL.Null,
+    'landingPage' : IDL.Null,
+    'restaurant' : IDL.Null,
     'ecommerce' : IDL.Null,
   });
-  const SelectedFeatures = IDL.Record({
-    'contactForm' : IDL.Bool,
-    'bookings' : IDL.Bool,
-    'auth' : IDL.Bool,
-  });
   const WizardInput = IDL.Record({
-    'visualStyle' : VisualStyle,
+    'features' : IDL.Vec(SelectedFeature),
+    'vibe' : VisualStyle,
     'siteType' : SiteType,
-    'businessDescription' : IDL.Text,
-    'selectedFeatures' : SelectedFeatures,
+    'niche' : IDL.Text,
   });
-  const PublishStatus = IDL.Variant({
-    'published' : IDL.Null,
-    'publishing' : IDL.Null,
-    'unpublished' : IDL.Null,
-    'failed' : IDL.Null,
-  });
-  const UserId = IDL.Principal;
   const Timestamp = IDL.Int;
-  const LayoutMetadata = IDL.Record({
-    'borderRadius' : IDL.Text,
-    'layoutStyle' : IDL.Text,
-    'fontFamily' : IDL.Text,
+  const UserProfile = IDL.Record({
+    'name' : IDL.Text,
+    'createdAt' : Timestamp,
+    'plan' : IDL.Variant({ 'pro' : IDL.Null, 'free' : IDL.Null }),
+    'email' : IDL.Text,
   });
-  const ColorPalette = IDL.Record({
-    'accent' : IDL.Text,
-    'background' : IDL.Text,
-    'text' : IDL.Text,
-    'secondary' : IDL.Text,
-    'primary' : IDL.Text,
+  const PreLaunchChecks = IDL.Record({
+    'seo' : IDL.Bool,
+    'forms' : IDL.Bool,
+    'seoNote' : IDL.Text,
+    'speedNote' : IDL.Text,
+    'formsNote' : IDL.Text,
+    'speed' : IDL.Nat,
+    'mobile' : IDL.Bool,
+    'mobileNote' : IDL.Text,
   });
-  const SectionType = IDL.Variant({
-    'contact' : IDL.Null,
-    'about' : IDL.Null,
-    'hero' : IDL.Null,
-    'services' : IDL.Null,
-    'footer' : IDL.Null,
-  });
-  const SiteSection = IDL.Record({
-    'subheading' : IDL.Text,
-    'content' : IDL.Text,
-    'sectionType' : SectionType,
-    'heading' : IDL.Text,
-  });
-  const GeneratedSite = IDL.Record({
-    'siteTitle' : IDL.Text,
-    'tagline' : IDL.Text,
-    'layout' : LayoutMetadata,
-    'colorPalette' : ColorPalette,
-    'sections' : IDL.Vec(SiteSection),
-  });
+  const PublishStatus = IDL.Variant({ 'live' : IDL.Null, 'draft' : IDL.Null });
+  const UserId = IDL.Principal;
   const SitePublic = IDL.Record({
     'id' : SiteId,
     'status' : PublishStatus,
-    'title' : IDL.Text,
+    'features' : IDL.Vec(SelectedFeature),
+    'formSubmissions' : IDL.Nat,
+    'visitors' : IDL.Nat,
     'owner' : UserId,
+    'name' : IDL.Text,
     'createdAt' : Timestamp,
-    'publishedUrl' : IDL.Opt(IDL.Text),
+    'slug' : IDL.Text,
+    'vibe' : VisualStyle,
+    'publishedAt' : IDL.Opt(Timestamp),
+    'siteType' : SiteType,
     'updatedAt' : Timestamp,
-    'generatedData' : IDL.Opt(GeneratedSite),
-    'subdomain' : IDL.Opt(IDL.Text),
-  });
-  const UserProfile = IDL.Record({ 'name' : IDL.Text, 'email' : IDL.Text });
-  const PreLaunchChecks = IDL.Record({
-    'seo' : IDL.Bool,
-    'formsValid' : IDL.Bool,
-    'performanceHint' : IDL.Bool,
-    'mobileReady' : IDL.Bool,
+    'niche' : IDL.Text,
+    'lighthouseScore' : IDL.Nat,
+    'siteUrl' : IDL.Opt(IDL.Text),
   });
   const SiteSummary = IDL.Record({
     'id' : SiteId,
     'status' : PublishStatus,
-    'title' : IDL.Text,
-    'createdAt' : Timestamp,
-    'subdomain' : IDL.Opt(IDL.Text),
+    'formSubmissions' : IDL.Nat,
+    'visitors' : IDL.Nat,
+    'name' : IDL.Text,
+    'slug' : IDL.Text,
+    'updatedAt' : Timestamp,
+    'lighthouseScore' : IDL.Nat,
+    'siteUrl' : IDL.Opt(IDL.Text),
+  });
+  const SiteUpdate = IDL.Record({
+    'name' : IDL.Opt(IDL.Text),
+    'niche' : IDL.Opt(IDL.Text),
   });
   
   return IDL.Service({
     '_initializeAccessControl' : IDL.Func([], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
-    'deleteSite' : IDL.Func([SiteId], [], []),
-    'generateSite' : IDL.Func([WizardInput], [SitePublic], []),
-    'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
+    'deleteSite' : IDL.Func([SiteId], [IDL.Bool], []),
+    'generateSite' : IDL.Func([WizardInput], [SiteId, IDL.Text], []),
+    'getCallerProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
-    'getPreLaunchChecks' : IDL.Func([SiteId], [PreLaunchChecks], ['query']),
-    'getSite' : IDL.Func([SiteId], [IDL.Opt(SitePublic)], ['query']),
-    'getUserProfile' : IDL.Func(
-        [IDL.Principal],
-        [IDL.Opt(UserProfile)],
+    'getPreLaunchChecks' : IDL.Func(
+        [SiteId],
+        [IDL.Opt(PreLaunchChecks)],
         ['query'],
       ),
+    'getSite' : IDL.Func([SiteId], [IDL.Opt(SitePublic)], ['query']),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'listMySites' : IDL.Func([], [IDL.Vec(SiteSummary)], ['query']),
-    'publishSite' : IDL.Func([SiteId], [SitePublic], []),
-    'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
-    'updateSite' : IDL.Func(
-        [SiteId, IDL.Opt(IDL.Text), IDL.Opt(GeneratedSite)],
-        [SitePublic],
-        [],
-      ),
+    'publishSite' : IDL.Func([SiteId], [IDL.Opt(SitePublic)], []),
+    'saveCallerProfile' : IDL.Func([IDL.Text, IDL.Text], [UserProfile], []),
+    'updateSite' : IDL.Func([SiteId, SiteUpdate], [IDL.Opt(SitePublic)], []),
   });
 };
 

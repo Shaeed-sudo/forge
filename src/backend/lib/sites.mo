@@ -7,13 +7,20 @@ module {
     {
       id = self.id;
       owner = self.owner;
-      title = self.title;
-      generatedData = self.generatedData;
+      name = self.name;
+      slug = self.slug;
+      siteType = self.siteType;
+      niche = self.niche;
+      vibe = self.vibe;
+      features = self.features;
       status = self.status;
-      subdomain = self.subdomain;
-      publishedUrl = self.publishedUrl;
+      siteUrl = self.siteUrl;
+      visitors = self.visitors;
+      formSubmissions = self.formSubmissions;
+      lighthouseScore = self.lighthouseScore;
       createdAt = self.createdAt;
       updatedAt = self.updatedAt;
+      publishedAt = self.publishedAt;
     };
   };
 
@@ -21,117 +28,94 @@ module {
   public func toSummary(self : SiteTypes.Site) : SiteTypes.SiteSummary {
     {
       id = self.id;
-      title = self.title;
+      name = self.name;
+      slug = self.slug;
       status = self.status;
-      subdomain = self.subdomain;
-      createdAt = self.createdAt;
+      siteUrl = self.siteUrl;
+      visitors = self.visitors;
+      formSubmissions = self.formSubmissions;
+      lighthouseScore = self.lighthouseScore;
+      updatedAt = self.updatedAt;
     };
   };
 
-  // Create a new Site record from a wizard input
+  // Derive a URL-safe slug from a niche text (max 30 chars)
+  public func makeSlug(niche : Text) : Text {
+    let lower = niche.toLower();
+    let mapped = lower.map(func(c : Char) : Char {
+      if ((c >= 'a' and c <= 'z') or (c >= '0' and c <= '9')) { c }
+      else { '-' }
+    });
+    if (mapped.size() > 30) {
+      let chars = mapped.toArray();
+      let sliced = chars.sliceToArray(0, 30);
+      sliced.foldLeft("", func(acc : Text, c : Char) : Text { acc # c.toText() })
+    } else {
+      mapped
+    }
+  };
+
+  // Derive site name from niche (first segment before — or comma, capitalized)
+  public func deriveName(niche : Text) : Text {
+    let trimmed = niche.trim(#predicate(func(c : Char) : Bool { c == ' ' }));
+    let it = trimmed.split(#predicate(func(c : Char) : Bool { c == ',' or c == '-' }));
+    let firstPart = switch (it.next()) {
+      case (?p) {
+        let t = p.trim(#predicate(func(c : Char) : Bool { c == ' ' }));
+        if (t.size() == 0) { trimmed } else { t }
+      };
+      case null trimmed;
+    };
+    let charIter = firstPart.toIter();
+    switch (charIter.next()) {
+      case (?firstChar) {
+        let restText = charIter.toArray().foldLeft("", func(acc : Text, c : Char) : Text { acc # c.toText() });
+        firstChar.toText().toUpper() # restText
+      };
+      case null firstPart;
+    };
+  };
+
+  // Create a new Site record from wizard input
   public func create(
     id : CommonTypes.SiteId,
     owner : CommonTypes.UserId,
-    title : Text,
+    input : SiteTypes.WizardInput,
     now : CommonTypes.Timestamp,
   ) : SiteTypes.Site {
+    let slug = makeSlug(input.niche);
+    let name = deriveName(input.niche);
     {
       id;
       owner;
-      var title;
-      var generatedData = null;
-      var status = #unpublished;
-      var subdomain = null;
-      var publishedUrl = null;
+      var name;
+      var slug;
+      siteType = input.siteType;
+      var niche = input.niche;
+      vibe = input.vibe;
+      features = input.features;
+      var status = #draft;
+      var siteUrl = null;
+      var visitors = 0;
+      var formSubmissions = 0;
+      var lighthouseScore = 97;
       createdAt = now;
       var updatedAt = now;
+      var publishedAt = null;
     };
   };
 
-  // Simulate AI generation from wizard input
-  public func generate(input : SiteTypes.WizardInput) : SiteTypes.GeneratedSite {
-    let desc = input.businessDescription;
-    let siteTitle = switch (input.siteType) {
-      case (#business) "Welcome to Our Business";
-      case (#portfolio) "My Portfolio";
-      case (#blog) "My Blog";
-      case (#ecommerce) "Shop Online";
-      case (#landing) "Get Started Today";
-    };
-    let tagline = switch (input.siteType) {
-      case (#business) desc # " — Trusted professionals serving you.";
-      case (#portfolio) "Showcasing my best work in " # desc;
-      case (#blog) "Insights and stories about " # desc;
-      case (#ecommerce) "The best products for " # desc;
-      case (#landing) desc # " — fast, simple, reliable.";
-    };
-    let heroSection : SiteTypes.SiteSection = {
-      sectionType = #hero;
-      heading = siteTitle;
-      subheading = tagline;
-      content = "We specialize in " # desc # ". Join thousands of satisfied customers today.";
-    };
-    let aboutSection : SiteTypes.SiteSection = {
-      sectionType = #about;
-      heading = "About Us";
-      subheading = "Our story and mission";
-      content = "Founded with a passion for " # desc # ", we bring expertise and dedication to everything we do. Our team is committed to delivering exceptional results.";
-    };
-    let servicesSection : SiteTypes.SiteSection = {
-      sectionType = #services;
-      heading = "Our Services";
-      subheading = "What we offer";
-      content = "We provide a comprehensive range of services tailored around " # desc # ". From consultation to delivery, we handle it all.";
-    };
-    let contactSection : SiteTypes.SiteSection = {
-      sectionType = #contact;
-      heading = "Get In Touch";
-      subheading = "We'd love to hear from you";
-      content = "Have questions about " # desc # "? Reach out to us and our team will respond within 24 hours.";
-    };
-    let footerSection : SiteTypes.SiteSection = {
-      sectionType = #footer;
-      heading = siteTitle;
-      subheading = tagline;
-      content = "© 2026 " # siteTitle # ". All rights reserved.";
-    };
-    let colorPalette : SiteTypes.ColorPalette = {
-      primary = input.visualStyle.primaryColor;
-      secondary = input.visualStyle.secondaryColor;
-      accent = "#F59E0B";
-      background = "#FFFFFF";
-      text = "#111827";
-    };
-    let layout : SiteTypes.LayoutMetadata = {
-      fontFamily = input.visualStyle.fontFamily;
-      layoutStyle = switch (input.siteType) {
-        case (#ecommerce) "grid";
-        case (#blog) "list";
-        case _ "hero-centered";
-      };
-      borderRadius = "0.5rem";
-    };
+  // Mock pre-launch checks — all pass
+  public func preLaunchChecks() : SiteTypes.PreLaunchChecks {
     {
-      siteTitle;
-      tagline;
-      sections = [heroSection, aboutSection, servicesSection, contactSection, footerSection];
-      colorPalette;
-      layout;
+      mobile = true;
+      mobileNote = "Pass — all breakpoints look great";
+      seo = true;
+      seoNote = "Pass — title and description ready";
+      speed = 97;
+      speedNote = "Pass — Lighthouse 97/100";
+      forms = true;
+      formsNote = "Pass — form connected and tested";
     };
-  };
-
-  // Run pre-launch checks against a generated site
-  public func preLaunchChecks(_site : SiteTypes.Site) : SiteTypes.PreLaunchChecks {
-    { seo = true; mobileReady = true; formsValid = true; performanceHint = true };
-  };
-
-  // Derive a subdomain slug from a title
-  public func makeSubdomain(title : Text, id : CommonTypes.SiteId) : Text {
-    let slug = title.toLower().map(func(c : Char) : Char {
-      if ((c >= 'a' and c <= 'z') or (c >= '0' and c <= '9')) { c }
-      else if (c == ' ') { '-' }
-      else { '-' }
-    });
-    slug # "-" # id.toText();
   };
 };

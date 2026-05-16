@@ -1,65 +1,24 @@
-// ─── Shared Types mirroring backend contracts ───────────────────────────────
+// ─── Re-exports from backend ─────────────────────────────────────────────────
+export type {
+  SiteId,
+  UserId,
+  Timestamp,
+  SiteSummary,
+  SitePublic,
+  PreLaunchChecks,
+  UserProfile,
+  WizardInput,
+  SiteUpdate,
+} from "@/backend";
 
-export type SiteType =
-  | "business"
-  | "portfolio"
-  | "ecommerce"
-  | "blog"
-  | "landing"
-  | "saas";
+export {
+  SiteType,
+  PublishStatus,
+  SelectedFeature,
+  VisualStyle,
+} from "@/backend";
 
-export type VisualStyle =
-  | "modern"
-  | "minimal"
-  | "bold"
-  | "elegant"
-  | "playful"
-  | "corporate";
-
-export interface SelectedFeatures {
-  contactForm: boolean;
-  bookings: boolean;
-  auth: boolean;
-  blog: boolean;
-  ecommerce: boolean;
-  analytics: boolean;
-}
-
-export interface WizardInput {
-  siteType: SiteType;
-  businessDescription: string;
-  visualStyle: VisualStyle;
-  selectedFeatures: SelectedFeatures;
-}
-
-export type SectionType =
-  | "hero"
-  | "about"
-  | "features"
-  | "pricing"
-  | "testimonials"
-  | "contact"
-  | "gallery"
-  | "team"
-  | "faq"
-  | "cta";
-
-export interface SiteSection {
-  type: SectionType;
-  heading: string;
-  body: string;
-  ctaText?: string;
-  ctaUrl?: string;
-  imageUrl?: string;
-  items?: SectionItem[];
-}
-
-export interface SectionItem {
-  title: string;
-  description: string;
-  icon?: string;
-  imageUrl?: string;
-}
+// ─── Frontend-only: GeneratedSite types (not in backend) ─────────────────────
 
 export interface ColorPalette {
   primary: string;
@@ -70,56 +29,31 @@ export interface ColorPalette {
 }
 
 export interface LayoutMetadata {
-  headerStyle: "centered" | "split" | "minimal";
-  footerStyle: "full" | "minimal" | "none";
-  contentWidth: "wide" | "standard" | "narrow";
-  sectionSpacing: "compact" | "standard" | "spacious";
+  borderRadius: string;
+  layoutStyle: string;
+  fontFamily: string;
 }
 
-export interface PreLaunchChecks {
-  seoTitle: boolean;
-  seoDescription: boolean;
-  mobileLayout: boolean;
-  performance: boolean;
-  formsWorking: boolean;
-  customDomain: boolean;
-}
+export type SectionType = "hero" | "about" | "services" | "contact" | "footer";
 
-export type PublishStatus =
-  | "unpublished"
-  | "publishing"
-  | "published"
-  | "failed";
+export interface SiteSection {
+  sectionType: SectionType;
+  heading: string;
+  subheading: string;
+  content: string;
+}
 
 export interface GeneratedSite {
   siteTitle: string;
   tagline: string;
-  sections: SiteSection[];
   colorPalette: ColorPalette;
   layout: LayoutMetadata;
+  sections: SiteSection[];
 }
 
-export interface SiteSummary {
-  id: bigint;
-  title: string;
-  status: PublishStatus;
-  subdomain?: string;
-  createdAt: bigint;
-}
-
-export interface SitePublic {
-  id: bigint;
-  owner: unknown; // Principal
-  title: string;
-  generatedData?: GeneratedSite;
-  status: PublishStatus;
-  subdomain?: string;
-  publishedUrl?: string;
-  createdAt: bigint;
-  updatedAt: bigint;
-}
-
-export interface UserProfile {
-  name: string;
-  email: string;
+// ─── Frontend wizard form state ───────────────────────────────────────────────
+export interface WizardFormData {
+  siteType: import("@/backend").SiteType | "";
+  niche: string;
+  vibe: import("@/backend").VisualStyle | "";
 }

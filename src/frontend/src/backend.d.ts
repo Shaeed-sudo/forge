@@ -8,95 +8,86 @@ export interface None {
 }
 export type Option<T> = Some<T> | None;
 export interface WizardInput {
-    visualStyle: VisualStyle;
+    features: Array<SelectedFeature>;
+    vibe: VisualStyle;
     siteType: SiteType;
-    businessDescription: string;
-    selectedFeatures: SelectedFeatures;
+    niche: string;
 }
 export type Timestamp = bigint;
-export interface SiteSection {
-    subheading: string;
-    content: string;
-    sectionType: SectionType;
-    heading: string;
-}
-export interface VisualStyle {
-    primaryColor: string;
-    fontFamily: string;
-    secondaryColor: string;
-}
 export interface SiteSummary {
     id: SiteId;
     status: PublishStatus;
-    title: string;
-    createdAt: Timestamp;
-    subdomain?: string;
+    formSubmissions: bigint;
+    visitors: bigint;
+    name: string;
+    slug: string;
+    updatedAt: Timestamp;
+    lighthouseScore: bigint;
+    siteUrl?: string;
 }
-export interface LayoutMetadata {
-    borderRadius: string;
-    layoutStyle: string;
-    fontFamily: string;
+export interface SiteUpdate {
+    name?: string;
+    niche?: string;
 }
 export type SiteId = bigint;
 export type UserId = Principal;
 export interface SitePublic {
     id: SiteId;
     status: PublishStatus;
-    title: string;
+    features: Array<SelectedFeature>;
+    formSubmissions: bigint;
+    visitors: bigint;
     owner: UserId;
+    name: string;
     createdAt: Timestamp;
-    publishedUrl?: string;
+    slug: string;
+    vibe: VisualStyle;
+    publishedAt?: Timestamp;
+    siteType: SiteType;
     updatedAt: Timestamp;
-    generatedData?: GeneratedSite;
-    subdomain?: string;
-}
-export interface GeneratedSite {
-    siteTitle: string;
-    tagline: string;
-    layout: LayoutMetadata;
-    colorPalette: ColorPalette;
-    sections: Array<SiteSection>;
+    niche: string;
+    lighthouseScore: bigint;
+    siteUrl?: string;
 }
 export interface PreLaunchChecks {
     seo: boolean;
-    formsValid: boolean;
-    performanceHint: boolean;
-    mobileReady: boolean;
-}
-export interface ColorPalette {
-    accent: string;
-    background: string;
-    text: string;
-    secondary: string;
-    primary: string;
-}
-export interface SelectedFeatures {
-    contactForm: boolean;
-    bookings: boolean;
-    auth: boolean;
+    forms: boolean;
+    seoNote: string;
+    speedNote: string;
+    formsNote: string;
+    speed: bigint;
+    mobile: boolean;
+    mobileNote: string;
 }
 export interface UserProfile {
     name: string;
+    createdAt: Timestamp;
+    plan: Variant_pro_free;
     email: string;
 }
 export enum PublishStatus {
-    published = "published",
-    publishing = "publishing",
-    unpublished = "unpublished",
-    failed = "failed"
+    live = "live",
+    draft = "draft"
 }
-export enum SectionType {
-    contact = "contact",
-    about = "about",
-    hero = "hero",
-    services = "services",
-    footer = "footer"
+export enum SelectedFeature {
+    contactForm = "contactForm",
+    userAccounts = "userAccounts",
+    payments = "payments",
+    blog = "blog",
+    liveChat = "liveChat",
+    newsletter = "newsletter",
+    testimonials = "testimonials",
+    bookingCalendar = "bookingCalendar",
+    imageGallery = "imageGallery"
 }
 export enum SiteType {
     portfolio = "portfolio",
     blog = "blog",
-    business = "business",
-    landing = "landing",
+    saas = "saas",
+    agency = "agency",
+    booking = "booking",
+    landingPage = "landingPage",
+    restaurant = "restaurant",
     ecommerce = "ecommerce"
 }
 export enum UserRole {
@@ -104,18 +95,28 @@ export enum UserRole {
     user = "user",
     guest = "guest"
 }
+export enum Variant_pro_free {
+    pro = "pro",
+    free = "free"
+}
+export enum VisualStyle {
+    bold = "bold",
+    minimal = "minimal",
+    warm = "warm",
+    playful = "playful",
+    luxury = "luxury"
+}
 export interface backendInterface {
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
-    deleteSite(id: SiteId): Promise<void>;
-    generateSite(input: WizardInput): Promise<SitePublic>;
-    getCallerUserProfile(): Promise<UserProfile | null>;
+    deleteSite(id: SiteId): Promise<boolean>;
+    generateSite(input: WizardInput): Promise<[SiteId, string]>;
+    getCallerProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
-    getPreLaunchChecks(id: SiteId): Promise<PreLaunchChecks>;
+    getPreLaunchChecks(id: SiteId): Promise<PreLaunchChecks | null>;
     getSite(id: SiteId): Promise<SitePublic | null>;
-    getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
     listMySites(): Promise<Array<SiteSummary>>;
-    publishSite(id: SiteId): Promise<SitePublic>;
-    saveCallerUserProfile(profile: UserProfile): Promise<void>;
-    updateSite(id: SiteId, title: string | null, generatedData: GeneratedSite | null): Promise<SitePublic>;
+    publishSite(id: SiteId): Promise<SitePublic | null>;
+    saveCallerProfile(name: string, email: string): Promise<UserProfile>;
+    updateSite(id: SiteId, updates: SiteUpdate): Promise<SitePublic | null>;
 }

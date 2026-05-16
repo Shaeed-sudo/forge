@@ -90,95 +90,86 @@ export class ExternalBlob {
     }
 }
 export interface WizardInput {
-    visualStyle: VisualStyle;
+    features: Array<SelectedFeature>;
+    vibe: VisualStyle;
     siteType: SiteType;
-    businessDescription: string;
-    selectedFeatures: SelectedFeatures;
+    niche: string;
 }
 export type Timestamp = bigint;
-export interface SiteSection {
-    subheading: string;
-    content: string;
-    sectionType: SectionType;
-    heading: string;
-}
-export interface VisualStyle {
-    primaryColor: string;
-    fontFamily: string;
-    secondaryColor: string;
-}
 export interface SiteSummary {
     id: SiteId;
     status: PublishStatus;
-    title: string;
-    createdAt: Timestamp;
-    subdomain?: string;
+    formSubmissions: bigint;
+    visitors: bigint;
+    name: string;
+    slug: string;
+    updatedAt: Timestamp;
+    lighthouseScore: bigint;
+    siteUrl?: string;
 }
-export interface LayoutMetadata {
-    borderRadius: string;
-    layoutStyle: string;
-    fontFamily: string;
+export interface SiteUpdate {
+    name?: string;
+    niche?: string;
 }
 export type SiteId = bigint;
 export type UserId = Principal;
 export interface SitePublic {
     id: SiteId;
     status: PublishStatus;
-    title: string;
+    features: Array<SelectedFeature>;
+    formSubmissions: bigint;
+    visitors: bigint;
     owner: UserId;
+    name: string;
     createdAt: Timestamp;
-    publishedUrl?: string;
+    slug: string;
+    vibe: VisualStyle;
+    publishedAt?: Timestamp;
+    siteType: SiteType;
     updatedAt: Timestamp;
-    generatedData?: GeneratedSite;
-    subdomain?: string;
-}
-export interface GeneratedSite {
-    siteTitle: string;
-    tagline: string;
-    layout: LayoutMetadata;
-    colorPalette: ColorPalette;
-    sections: Array<SiteSection>;
+    niche: string;
+    lighthouseScore: bigint;
+    siteUrl?: string;
 }
 export interface PreLaunchChecks {
     seo: boolean;
-    formsValid: boolean;
-    performanceHint: boolean;
-    mobileReady: boolean;
-}
-export interface ColorPalette {
-    accent: string;
-    background: string;
-    text: string;
-    secondary: string;
-    primary: string;
-}
-export interface SelectedFeatures {
-    contactForm: boolean;
-    bookings: boolean;
-    auth: boolean;
+    forms: boolean;
+    seoNote: string;
+    speedNote: string;
+    formsNote: string;
+    speed: bigint;
+    mobile: boolean;
+    mobileNote: string;
 }
 export interface UserProfile {
     name: string;
+    createdAt: Timestamp;
+    plan: Variant_pro_free;
     email: string;
 }
 export enum PublishStatus {
-    published = "published",
-    publishing = "publishing",
-    unpublished = "unpublished",
-    failed = "failed"
+    live = "live",
+    draft = "draft"
 }
-export enum SectionType {
-    contact = "contact",
-    about = "about",
-    hero = "hero",
-    services = "services",
-    footer = "footer"
+export enum SelectedFeature {
+    contactForm = "contactForm",
+    userAccounts = "userAccounts",
+    payments = "payments",
+    blog = "blog",
+    liveChat = "liveChat",
+    newsletter = "newsletter",
+    testimonials = "testimonials",
+    bookingCalendar = "bookingCalendar",
+    imageGallery = "imageGallery"
 }
 export enum SiteType {
     portfolio = "portfolio",
     blog = "blog",
-    business = "business",
-    landing = "landing",
+    saas = "saas",
+    agency = "agency",
+    booking = "booking",
+    landingPage = "landingPage",
+    restaurant = "restaurant",
     ecommerce = "ecommerce"
 }
 export enum UserRole {
@@ -186,23 +177,33 @@ export enum UserRole {
     user = "user",
     guest = "guest"
 }
+export enum Variant_pro_free {
+    pro = "pro",
+    free = "free"
+}
+export enum VisualStyle {
+    bold = "bold",
+    minimal = "minimal",
+    warm = "warm",
+    playful = "playful",
+    luxury = "luxury"
+}
 export interface backendInterface {
     _initializeAccessControl(): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
-    deleteSite(id: SiteId): Promise<void>;
-    generateSite(input: WizardInput): Promise<SitePublic>;
-    getCallerUserProfile(): Promise<UserProfile | null>;
+    deleteSite(id: SiteId): Promise<boolean>;
+    generateSite(input: WizardInput): Promise<[SiteId, string]>;
+    getCallerProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
-    getPreLaunchChecks(id: SiteId): Promise<PreLaunchChecks>;
+    getPreLaunchChecks(id: SiteId): Promise<PreLaunchChecks | null>;
     getSite(id: SiteId): Promise<SitePublic | null>;
-    getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
     listMySites(): Promise<Array<SiteSummary>>;
-    publishSite(id: SiteId): Promise<SitePublic>;
-    saveCallerUserProfile(profile: UserProfile): Promise<void>;
-    updateSite(id: SiteId, title: string | null, generatedData: GeneratedSite | null): Promise<SitePublic>;
+    publishSite(id: SiteId): Promise<SitePublic | null>;
+    saveCallerProfile(name: string, email: string): Promise<UserProfile>;
+    updateSite(id: SiteId, updates: SiteUpdate): Promise<SitePublic | null>;
 }
-import type { ColorPalette as _ColorPalette, GeneratedSite as _GeneratedSite, LayoutMetadata as _LayoutMetadata, PublishStatus as _PublishStatus, SectionType as _SectionType, SelectedFeatures as _SelectedFeatures, SiteId as _SiteId, SitePublic as _SitePublic, SiteSection as _SiteSection, SiteSummary as _SiteSummary, SiteType as _SiteType, Timestamp as _Timestamp, UserId as _UserId, UserProfile as _UserProfile, UserRole as _UserRole, VisualStyle as _VisualStyle, WizardInput as _WizardInput } from "./declarations/backend.did.d.ts";
+import type { PreLaunchChecks as _PreLaunchChecks, PublishStatus as _PublishStatus, SelectedFeature as _SelectedFeature, SiteId as _SiteId, SitePublic as _SitePublic, SiteSummary as _SiteSummary, SiteType as _SiteType, SiteUpdate as _SiteUpdate, Timestamp as _Timestamp, UserId as _UserId, UserProfile as _UserProfile, UserRole as _UserRole, VisualStyle as _VisualStyle, WizardInput as _WizardInput } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
     async _initializeAccessControl(): Promise<void> {
@@ -233,7 +234,7 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async deleteSite(arg0: SiteId): Promise<void> {
+    async deleteSite(arg0: SiteId): Promise<boolean> {
         if (this.processError) {
             try {
                 const result = await this.actor.deleteSite(arg0);
@@ -247,88 +248,80 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async generateSite(arg0: WizardInput): Promise<SitePublic> {
+    async generateSite(arg0: WizardInput): Promise<[SiteId, string]> {
         if (this.processError) {
             try {
                 const result = await this.actor.generateSite(to_candid_WizardInput_n3(this._uploadFile, this._downloadFile, arg0));
-                return from_candid_SitePublic_n7(this._uploadFile, this._downloadFile, result);
+                return [
+                    result[0],
+                    result[1]
+                ];
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.generateSite(to_candid_WizardInput_n3(this._uploadFile, this._downloadFile, arg0));
-            return from_candid_SitePublic_n7(this._uploadFile, this._downloadFile, result);
+            return [
+                result[0],
+                result[1]
+            ];
         }
     }
-    async getCallerUserProfile(): Promise<UserProfile | null> {
+    async getCallerProfile(): Promise<UserProfile | null> {
         if (this.processError) {
             try {
-                const result = await this.actor.getCallerUserProfile();
-                return from_candid_opt_n20(this._uploadFile, this._downloadFile, result);
+                const result = await this.actor.getCallerProfile();
+                return from_candid_opt_n12(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.getCallerUserProfile();
-            return from_candid_opt_n20(this._uploadFile, this._downloadFile, result);
+            const result = await this.actor.getCallerProfile();
+            return from_candid_opt_n12(this._uploadFile, this._downloadFile, result);
         }
     }
     async getCallerUserRole(): Promise<UserRole> {
         if (this.processError) {
             try {
                 const result = await this.actor.getCallerUserRole();
-                return from_candid_UserRole_n21(this._uploadFile, this._downloadFile, result);
+                return from_candid_UserRole_n16(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getCallerUserRole();
-            return from_candid_UserRole_n21(this._uploadFile, this._downloadFile, result);
+            return from_candid_UserRole_n16(this._uploadFile, this._downloadFile, result);
         }
     }
-    async getPreLaunchChecks(arg0: SiteId): Promise<PreLaunchChecks> {
+    async getPreLaunchChecks(arg0: SiteId): Promise<PreLaunchChecks | null> {
         if (this.processError) {
             try {
                 const result = await this.actor.getPreLaunchChecks(arg0);
-                return result;
+                return from_candid_opt_n18(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getPreLaunchChecks(arg0);
-            return result;
+            return from_candid_opt_n18(this._uploadFile, this._downloadFile, result);
         }
     }
     async getSite(arg0: SiteId): Promise<SitePublic | null> {
         if (this.processError) {
             try {
                 const result = await this.actor.getSite(arg0);
-                return from_candid_opt_n23(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n19(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getSite(arg0);
-            return from_candid_opt_n23(this._uploadFile, this._downloadFile, result);
-        }
-    }
-    async getUserProfile(arg0: Principal): Promise<UserProfile | null> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.getUserProfile(arg0);
-                return from_candid_opt_n20(this._uploadFile, this._downloadFile, result);
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.getUserProfile(arg0);
-            return from_candid_opt_n20(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n19(this._uploadFile, this._downloadFile, result);
         }
     }
     async isCallerAdmin(): Promise<boolean> {
@@ -349,210 +342,215 @@ export class Backend implements backendInterface {
         if (this.processError) {
             try {
                 const result = await this.actor.listMySites();
-                return from_candid_vec_n24(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n33(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.listMySites();
-            return from_candid_vec_n24(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n33(this._uploadFile, this._downloadFile, result);
         }
     }
-    async publishSite(arg0: SiteId): Promise<SitePublic> {
+    async publishSite(arg0: SiteId): Promise<SitePublic | null> {
         if (this.processError) {
             try {
                 const result = await this.actor.publishSite(arg0);
-                return from_candid_SitePublic_n7(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n19(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.publishSite(arg0);
-            return from_candid_SitePublic_n7(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n19(this._uploadFile, this._downloadFile, result);
         }
     }
-    async saveCallerUserProfile(arg0: UserProfile): Promise<void> {
+    async saveCallerProfile(arg0: string, arg1: string): Promise<UserProfile> {
         if (this.processError) {
             try {
-                const result = await this.actor.saveCallerUserProfile(arg0);
-                return result;
+                const result = await this.actor.saveCallerProfile(arg0, arg1);
+                return from_candid_UserProfile_n13(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.saveCallerUserProfile(arg0);
-            return result;
+            const result = await this.actor.saveCallerProfile(arg0, arg1);
+            return from_candid_UserProfile_n13(this._uploadFile, this._downloadFile, result);
         }
     }
-    async updateSite(arg0: SiteId, arg1: string | null, arg2: GeneratedSite | null): Promise<SitePublic> {
+    async updateSite(arg0: SiteId, arg1: SiteUpdate): Promise<SitePublic | null> {
         if (this.processError) {
             try {
-                const result = await this.actor.updateSite(arg0, to_candid_opt_n27(this._uploadFile, this._downloadFile, arg1), to_candid_opt_n28(this._uploadFile, this._downloadFile, arg2));
-                return from_candid_SitePublic_n7(this._uploadFile, this._downloadFile, result);
+                const result = await this.actor.updateSite(arg0, to_candid_SiteUpdate_n36(this._uploadFile, this._downloadFile, arg1));
+                return from_candid_opt_n19(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.updateSite(arg0, to_candid_opt_n27(this._uploadFile, this._downloadFile, arg1), to_candid_opt_n28(this._uploadFile, this._downloadFile, arg2));
-            return from_candid_SitePublic_n7(this._uploadFile, this._downloadFile, result);
+            const result = await this.actor.updateSite(arg0, to_candid_SiteUpdate_n36(this._uploadFile, this._downloadFile, arg1));
+            return from_candid_opt_n19(this._uploadFile, this._downloadFile, result);
         }
     }
 }
-function from_candid_GeneratedSite_n13(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _GeneratedSite): GeneratedSite {
+function from_candid_PublishStatus_n22(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _PublishStatus): PublishStatus {
+    return from_candid_variant_n23(_uploadFile, _downloadFile, value);
+}
+function from_candid_SelectedFeature_n25(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _SelectedFeature): SelectedFeature {
+    return from_candid_variant_n26(_uploadFile, _downloadFile, value);
+}
+function from_candid_SitePublic_n20(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _SitePublic): SitePublic {
+    return from_candid_record_n21(_uploadFile, _downloadFile, value);
+}
+function from_candid_SiteSummary_n34(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _SiteSummary): SiteSummary {
+    return from_candid_record_n35(_uploadFile, _downloadFile, value);
+}
+function from_candid_SiteType_n30(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _SiteType): SiteType {
+    return from_candid_variant_n31(_uploadFile, _downloadFile, value);
+}
+function from_candid_UserProfile_n13(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserProfile): UserProfile {
     return from_candid_record_n14(_uploadFile, _downloadFile, value);
 }
-function from_candid_PublishStatus_n9(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _PublishStatus): PublishStatus {
-    return from_candid_variant_n10(_uploadFile, _downloadFile, value);
+function from_candid_UserRole_n16(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserRole): UserRole {
+    return from_candid_variant_n17(_uploadFile, _downloadFile, value);
 }
-function from_candid_SectionType_n18(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _SectionType): SectionType {
-    return from_candid_variant_n19(_uploadFile, _downloadFile, value);
+function from_candid_VisualStyle_n27(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _VisualStyle): VisualStyle {
+    return from_candid_variant_n28(_uploadFile, _downloadFile, value);
 }
-function from_candid_SitePublic_n7(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _SitePublic): SitePublic {
-    return from_candid_record_n8(_uploadFile, _downloadFile, value);
+function from_candid_opt_n12(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_UserProfile]): UserProfile | null {
+    return value.length === 0 ? null : from_candid_UserProfile_n13(_uploadFile, _downloadFile, value[0]);
 }
-function from_candid_SiteSection_n16(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _SiteSection): SiteSection {
-    return from_candid_record_n17(_uploadFile, _downloadFile, value);
-}
-function from_candid_SiteSummary_n25(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _SiteSummary): SiteSummary {
-    return from_candid_record_n26(_uploadFile, _downloadFile, value);
-}
-function from_candid_UserRole_n21(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserRole): UserRole {
-    return from_candid_variant_n22(_uploadFile, _downloadFile, value);
-}
-function from_candid_opt_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [string]): string | null {
+function from_candid_opt_n18(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_PreLaunchChecks]): PreLaunchChecks | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_opt_n12(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_GeneratedSite]): GeneratedSite | null {
-    return value.length === 0 ? null : from_candid_GeneratedSite_n13(_uploadFile, _downloadFile, value[0]);
+function from_candid_opt_n19(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_SitePublic]): SitePublic | null {
+    return value.length === 0 ? null : from_candid_SitePublic_n20(_uploadFile, _downloadFile, value[0]);
 }
-function from_candid_opt_n20(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_UserProfile]): UserProfile | null {
+function from_candid_opt_n29(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Timestamp]): Timestamp | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_opt_n23(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_SitePublic]): SitePublic | null {
-    return value.length === 0 ? null : from_candid_SitePublic_n7(_uploadFile, _downloadFile, value[0]);
+function from_candid_opt_n32(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [string]): string | null {
+    return value.length === 0 ? null : value[0];
 }
 function from_candid_record_n14(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
-    siteTitle: string;
-    tagline: string;
-    layout: _LayoutMetadata;
-    colorPalette: _ColorPalette;
-    sections: Array<_SiteSection>;
-}): {
-    siteTitle: string;
-    tagline: string;
-    layout: LayoutMetadata;
-    colorPalette: ColorPalette;
-    sections: Array<SiteSection>;
-} {
-    return {
-        siteTitle: value.siteTitle,
-        tagline: value.tagline,
-        layout: value.layout,
-        colorPalette: value.colorPalette,
-        sections: from_candid_vec_n15(_uploadFile, _downloadFile, value.sections)
-    };
-}
-function from_candid_record_n17(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
-    subheading: string;
-    content: string;
-    sectionType: _SectionType;
-    heading: string;
-}): {
-    subheading: string;
-    content: string;
-    sectionType: SectionType;
-    heading: string;
-} {
-    return {
-        subheading: value.subheading,
-        content: value.content,
-        sectionType: from_candid_SectionType_n18(_uploadFile, _downloadFile, value.sectionType),
-        heading: value.heading
-    };
-}
-function from_candid_record_n26(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
-    id: _SiteId;
-    status: _PublishStatus;
-    title: string;
+    name: string;
     createdAt: _Timestamp;
-    subdomain: [] | [string];
+    plan: {
+        pro: null;
+    } | {
+        free: null;
+    };
+    email: string;
 }): {
-    id: SiteId;
-    status: PublishStatus;
-    title: string;
+    name: string;
     createdAt: Timestamp;
-    subdomain?: string;
+    plan: Variant_pro_free;
+    email: string;
 } {
     return {
-        id: value.id,
-        status: from_candid_PublishStatus_n9(_uploadFile, _downloadFile, value.status),
-        title: value.title,
+        name: value.name,
         createdAt: value.createdAt,
-        subdomain: record_opt_to_undefined(from_candid_opt_n11(_uploadFile, _downloadFile, value.subdomain))
+        plan: from_candid_variant_n15(_uploadFile, _downloadFile, value.plan),
+        email: value.email
     };
 }
-function from_candid_record_n8(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_record_n21(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     id: _SiteId;
     status: _PublishStatus;
-    title: string;
+    features: Array<_SelectedFeature>;
+    formSubmissions: bigint;
+    visitors: bigint;
     owner: _UserId;
+    name: string;
     createdAt: _Timestamp;
-    publishedUrl: [] | [string];
+    slug: string;
+    vibe: _VisualStyle;
+    publishedAt: [] | [_Timestamp];
+    siteType: _SiteType;
     updatedAt: _Timestamp;
-    generatedData: [] | [_GeneratedSite];
-    subdomain: [] | [string];
+    niche: string;
+    lighthouseScore: bigint;
+    siteUrl: [] | [string];
 }): {
     id: SiteId;
     status: PublishStatus;
-    title: string;
+    features: Array<SelectedFeature>;
+    formSubmissions: bigint;
+    visitors: bigint;
     owner: UserId;
+    name: string;
     createdAt: Timestamp;
-    publishedUrl?: string;
+    slug: string;
+    vibe: VisualStyle;
+    publishedAt?: Timestamp;
+    siteType: SiteType;
     updatedAt: Timestamp;
-    generatedData?: GeneratedSite;
-    subdomain?: string;
+    niche: string;
+    lighthouseScore: bigint;
+    siteUrl?: string;
 } {
     return {
         id: value.id,
-        status: from_candid_PublishStatus_n9(_uploadFile, _downloadFile, value.status),
-        title: value.title,
+        status: from_candid_PublishStatus_n22(_uploadFile, _downloadFile, value.status),
+        features: from_candid_vec_n24(_uploadFile, _downloadFile, value.features),
+        formSubmissions: value.formSubmissions,
+        visitors: value.visitors,
         owner: value.owner,
+        name: value.name,
         createdAt: value.createdAt,
-        publishedUrl: record_opt_to_undefined(from_candid_opt_n11(_uploadFile, _downloadFile, value.publishedUrl)),
+        slug: value.slug,
+        vibe: from_candid_VisualStyle_n27(_uploadFile, _downloadFile, value.vibe),
+        publishedAt: record_opt_to_undefined(from_candid_opt_n29(_uploadFile, _downloadFile, value.publishedAt)),
+        siteType: from_candid_SiteType_n30(_uploadFile, _downloadFile, value.siteType),
         updatedAt: value.updatedAt,
-        generatedData: record_opt_to_undefined(from_candid_opt_n12(_uploadFile, _downloadFile, value.generatedData)),
-        subdomain: record_opt_to_undefined(from_candid_opt_n11(_uploadFile, _downloadFile, value.subdomain))
+        niche: value.niche,
+        lighthouseScore: value.lighthouseScore,
+        siteUrl: record_opt_to_undefined(from_candid_opt_n32(_uploadFile, _downloadFile, value.siteUrl))
     };
 }
-function from_candid_variant_n10(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
-    published: null;
-} | {
-    publishing: null;
-} | {
-    unpublished: null;
-} | {
-    failed: null;
-}): PublishStatus {
-    return "published" in value ? PublishStatus.published : "publishing" in value ? PublishStatus.publishing : "unpublished" in value ? PublishStatus.unpublished : "failed" in value ? PublishStatus.failed : value;
+function from_candid_record_n35(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    id: _SiteId;
+    status: _PublishStatus;
+    formSubmissions: bigint;
+    visitors: bigint;
+    name: string;
+    slug: string;
+    updatedAt: _Timestamp;
+    lighthouseScore: bigint;
+    siteUrl: [] | [string];
+}): {
+    id: SiteId;
+    status: PublishStatus;
+    formSubmissions: bigint;
+    visitors: bigint;
+    name: string;
+    slug: string;
+    updatedAt: Timestamp;
+    lighthouseScore: bigint;
+    siteUrl?: string;
+} {
+    return {
+        id: value.id,
+        status: from_candid_PublishStatus_n22(_uploadFile, _downloadFile, value.status),
+        formSubmissions: value.formSubmissions,
+        visitors: value.visitors,
+        name: value.name,
+        slug: value.slug,
+        updatedAt: value.updatedAt,
+        lighthouseScore: value.lighthouseScore,
+        siteUrl: record_opt_to_undefined(from_candid_opt_n32(_uploadFile, _downloadFile, value.siteUrl))
+    };
 }
-function from_candid_variant_n19(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
-    contact: null;
+function from_candid_variant_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    pro: null;
 } | {
-    about: null;
-} | {
-    hero: null;
-} | {
-    services: null;
-} | {
-    footer: null;
-}): SectionType {
-    return "contact" in value ? SectionType.contact : "about" in value ? SectionType.about : "hero" in value ? SectionType.hero : "services" in value ? SectionType.services : "footer" in value ? SectionType.footer : value;
+    free: null;
+}): Variant_pro_free {
+    return "pro" in value ? Variant_pro_free.pro : "free" in value ? Variant_pro_free.free : value;
 }
-function from_candid_variant_n22(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_variant_n17(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     admin: null;
 } | {
     user: null;
@@ -561,92 +559,154 @@ function from_candid_variant_n22(_uploadFile: (file: ExternalBlob) => Promise<Ui
 }): UserRole {
     return "admin" in value ? UserRole.admin : "user" in value ? UserRole.user : "guest" in value ? UserRole.guest : value;
 }
-function from_candid_vec_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_SiteSection>): Array<SiteSection> {
-    return value.map((x)=>from_candid_SiteSection_n16(_uploadFile, _downloadFile, x));
+function from_candid_variant_n23(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    live: null;
+} | {
+    draft: null;
+}): PublishStatus {
+    return "live" in value ? PublishStatus.live : "draft" in value ? PublishStatus.draft : value;
 }
-function from_candid_vec_n24(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_SiteSummary>): Array<SiteSummary> {
-    return value.map((x)=>from_candid_SiteSummary_n25(_uploadFile, _downloadFile, x));
+function from_candid_variant_n26(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    contactForm: null;
+} | {
+    userAccounts: null;
+} | {
+    payments: null;
+} | {
+    blog: null;
+} | {
+    liveChat: null;
+} | {
+    newsletter: null;
+} | {
+    testimonials: null;
+} | {
+    bookingCalendar: null;
+} | {
+    imageGallery: null;
+}): SelectedFeature {
+    return "contactForm" in value ? SelectedFeature.contactForm : "userAccounts" in value ? SelectedFeature.userAccounts : "payments" in value ? SelectedFeature.payments : "blog" in value ? SelectedFeature.blog : "liveChat" in value ? SelectedFeature.liveChat : "newsletter" in value ? SelectedFeature.newsletter : "testimonials" in value ? SelectedFeature.testimonials : "bookingCalendar" in value ? SelectedFeature.bookingCalendar : "imageGallery" in value ? SelectedFeature.imageGallery : value;
 }
-function to_candid_GeneratedSite_n29(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: GeneratedSite): _GeneratedSite {
-    return to_candid_record_n30(_uploadFile, _downloadFile, value);
+function from_candid_variant_n28(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    bold: null;
+} | {
+    minimal: null;
+} | {
+    warm: null;
+} | {
+    playful: null;
+} | {
+    luxury: null;
+}): VisualStyle {
+    return "bold" in value ? VisualStyle.bold : "minimal" in value ? VisualStyle.minimal : "warm" in value ? VisualStyle.warm : "playful" in value ? VisualStyle.playful : "luxury" in value ? VisualStyle.luxury : value;
 }
-function to_candid_SectionType_n34(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: SectionType): _SectionType {
-    return to_candid_variant_n35(_uploadFile, _downloadFile, value);
+function from_candid_variant_n31(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    portfolio: null;
+} | {
+    blog: null;
+} | {
+    saas: null;
+} | {
+    agency: null;
+} | {
+    booking: null;
+} | {
+    landingPage: null;
+} | {
+    restaurant: null;
+} | {
+    ecommerce: null;
+}): SiteType {
+    return "portfolio" in value ? SiteType.portfolio : "blog" in value ? SiteType.blog : "saas" in value ? SiteType.saas : "agency" in value ? SiteType.agency : "booking" in value ? SiteType.booking : "landingPage" in value ? SiteType.landingPage : "restaurant" in value ? SiteType.restaurant : "ecommerce" in value ? SiteType.ecommerce : value;
 }
-function to_candid_SiteSection_n32(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: SiteSection): _SiteSection {
-    return to_candid_record_n33(_uploadFile, _downloadFile, value);
+function from_candid_vec_n24(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_SelectedFeature>): Array<SelectedFeature> {
+    return value.map((x)=>from_candid_SelectedFeature_n25(_uploadFile, _downloadFile, x));
 }
-function to_candid_SiteType_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: SiteType): _SiteType {
-    return to_candid_variant_n6(_uploadFile, _downloadFile, value);
+function from_candid_vec_n33(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_SiteSummary>): Array<SiteSummary> {
+    return value.map((x)=>from_candid_SiteSummary_n34(_uploadFile, _downloadFile, x));
+}
+function to_candid_SelectedFeature_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: SelectedFeature): _SelectedFeature {
+    return to_candid_variant_n7(_uploadFile, _downloadFile, value);
+}
+function to_candid_SiteType_n10(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: SiteType): _SiteType {
+    return to_candid_variant_n11(_uploadFile, _downloadFile, value);
+}
+function to_candid_SiteUpdate_n36(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: SiteUpdate): _SiteUpdate {
+    return to_candid_record_n37(_uploadFile, _downloadFile, value);
 }
 function to_candid_UserRole_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserRole): _UserRole {
     return to_candid_variant_n2(_uploadFile, _downloadFile, value);
 }
+function to_candid_VisualStyle_n8(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: VisualStyle): _VisualStyle {
+    return to_candid_variant_n9(_uploadFile, _downloadFile, value);
+}
 function to_candid_WizardInput_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: WizardInput): _WizardInput {
     return to_candid_record_n4(_uploadFile, _downloadFile, value);
 }
-function to_candid_opt_n27(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: string | null): [] | [string] {
-    return value === null ? candid_none() : candid_some(value);
-}
-function to_candid_opt_n28(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: GeneratedSite | null): [] | [_GeneratedSite] {
-    return value === null ? candid_none() : candid_some(to_candid_GeneratedSite_n29(_uploadFile, _downloadFile, value));
-}
-function to_candid_record_n30(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
-    siteTitle: string;
-    tagline: string;
-    layout: LayoutMetadata;
-    colorPalette: ColorPalette;
-    sections: Array<SiteSection>;
+function to_candid_record_n37(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    name?: string;
+    niche?: string;
 }): {
-    siteTitle: string;
-    tagline: string;
-    layout: _LayoutMetadata;
-    colorPalette: _ColorPalette;
-    sections: Array<_SiteSection>;
+    name: [] | [string];
+    niche: [] | [string];
 } {
     return {
-        siteTitle: value.siteTitle,
-        tagline: value.tagline,
-        layout: value.layout,
-        colorPalette: value.colorPalette,
-        sections: to_candid_vec_n31(_uploadFile, _downloadFile, value.sections)
-    };
-}
-function to_candid_record_n33(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
-    subheading: string;
-    content: string;
-    sectionType: SectionType;
-    heading: string;
-}): {
-    subheading: string;
-    content: string;
-    sectionType: _SectionType;
-    heading: string;
-} {
-    return {
-        subheading: value.subheading,
-        content: value.content,
-        sectionType: to_candid_SectionType_n34(_uploadFile, _downloadFile, value.sectionType),
-        heading: value.heading
+        name: value.name ? candid_some(value.name) : candid_none(),
+        niche: value.niche ? candid_some(value.niche) : candid_none()
     };
 }
 function to_candid_record_n4(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
-    visualStyle: VisualStyle;
+    features: Array<SelectedFeature>;
+    vibe: VisualStyle;
     siteType: SiteType;
-    businessDescription: string;
-    selectedFeatures: SelectedFeatures;
+    niche: string;
 }): {
-    visualStyle: _VisualStyle;
+    features: Array<_SelectedFeature>;
+    vibe: _VisualStyle;
     siteType: _SiteType;
-    businessDescription: string;
-    selectedFeatures: _SelectedFeatures;
+    niche: string;
 } {
     return {
-        visualStyle: value.visualStyle,
-        siteType: to_candid_SiteType_n5(_uploadFile, _downloadFile, value.siteType),
-        businessDescription: value.businessDescription,
-        selectedFeatures: value.selectedFeatures
+        features: to_candid_vec_n5(_uploadFile, _downloadFile, value.features),
+        vibe: to_candid_VisualStyle_n8(_uploadFile, _downloadFile, value.vibe),
+        siteType: to_candid_SiteType_n10(_uploadFile, _downloadFile, value.siteType),
+        niche: value.niche
     };
+}
+function to_candid_variant_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: SiteType): {
+    portfolio: null;
+} | {
+    blog: null;
+} | {
+    saas: null;
+} | {
+    agency: null;
+} | {
+    booking: null;
+} | {
+    landingPage: null;
+} | {
+    restaurant: null;
+} | {
+    ecommerce: null;
+} {
+    return value == SiteType.portfolio ? {
+        portfolio: null
+    } : value == SiteType.blog ? {
+        blog: null
+    } : value == SiteType.saas ? {
+        saas: null
+    } : value == SiteType.agency ? {
+        agency: null
+    } : value == SiteType.booking ? {
+        booking: null
+    } : value == SiteType.landingPage ? {
+        landingPage: null
+    } : value == SiteType.restaurant ? {
+        restaurant: null
+    } : value == SiteType.ecommerce ? {
+        ecommerce: null
+    } : value;
 }
 function to_candid_variant_n2(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserRole): {
     admin: null;
@@ -663,54 +723,70 @@ function to_candid_variant_n2(_uploadFile: (file: ExternalBlob) => Promise<Uint8
         guest: null
     } : value;
 }
-function to_candid_variant_n35(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: SectionType): {
-    contact: null;
+function to_candid_variant_n7(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: SelectedFeature): {
+    contactForm: null;
 } | {
-    about: null;
+    userAccounts: null;
 } | {
-    hero: null;
-} | {
-    services: null;
-} | {
-    footer: null;
-} {
-    return value == SectionType.contact ? {
-        contact: null
-    } : value == SectionType.about ? {
-        about: null
-    } : value == SectionType.hero ? {
-        hero: null
-    } : value == SectionType.services ? {
-        services: null
-    } : value == SectionType.footer ? {
-        footer: null
-    } : value;
-}
-function to_candid_variant_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: SiteType): {
-    portfolio: null;
+    payments: null;
 } | {
     blog: null;
 } | {
-    business: null;
+    liveChat: null;
 } | {
-    landing: null;
+    newsletter: null;
 } | {
-    ecommerce: null;
+    testimonials: null;
+} | {
+    bookingCalendar: null;
+} | {
+    imageGallery: null;
 } {
-    return value == SiteType.portfolio ? {
-        portfolio: null
-    } : value == SiteType.blog ? {
+    return value == SelectedFeature.contactForm ? {
+        contactForm: null
+    } : value == SelectedFeature.userAccounts ? {
+        userAccounts: null
+    } : value == SelectedFeature.payments ? {
+        payments: null
+    } : value == SelectedFeature.blog ? {
         blog: null
-    } : value == SiteType.business ? {
-        business: null
-    } : value == SiteType.landing ? {
-        landing: null
-    } : value == SiteType.ecommerce ? {
-        ecommerce: null
+    } : value == SelectedFeature.liveChat ? {
+        liveChat: null
+    } : value == SelectedFeature.newsletter ? {
+        newsletter: null
+    } : value == SelectedFeature.testimonials ? {
+        testimonials: null
+    } : value == SelectedFeature.bookingCalendar ? {
+        bookingCalendar: null
+    } : value == SelectedFeature.imageGallery ? {
+        imageGallery: null
     } : value;
 }
-function to_candid_vec_n31(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<SiteSection>): Array<_SiteSection> {
-    return value.map((x)=>to_candid_SiteSection_n32(_uploadFile, _downloadFile, x));
+function to_candid_variant_n9(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: VisualStyle): {
+    bold: null;
+} | {
+    minimal: null;
+} | {
+    warm: null;
+} | {
+    playful: null;
+} | {
+    luxury: null;
+} {
+    return value == VisualStyle.bold ? {
+        bold: null
+    } : value == VisualStyle.minimal ? {
+        minimal: null
+    } : value == VisualStyle.warm ? {
+        warm: null
+    } : value == VisualStyle.playful ? {
+        playful: null
+    } : value == VisualStyle.luxury ? {
+        luxury: null
+    } : value;
+}
+function to_candid_vec_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<SelectedFeature>): Array<_SelectedFeature> {
+    return value.map((x)=>to_candid_SelectedFeature_n6(_uploadFile, _downloadFile, x));
 }
 export interface CreateActorOptions {
     agent?: Agent;

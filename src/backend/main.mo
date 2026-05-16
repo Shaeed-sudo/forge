@@ -5,7 +5,9 @@ import CommonTypes "types/common";
 import SiteTypes "types/sites";
 import ProfileMixin "mixins/profile-api";
 import SitesMixin "mixins/sites-api";
+import Migration "migration";
 
+(with migration = Migration.run)
 actor {
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);

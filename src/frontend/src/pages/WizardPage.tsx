@@ -1,11 +1,6 @@
+import { SelectedFeature, SiteType, VisualStyle } from "@/backend";
 import { useGenerateSite } from "@/hooks/useQueries";
-import type {
-  SelectedFeatures,
-  SitePublic,
-  SiteType,
-  VisualStyle,
-  WizardInput,
-} from "@/types";
+import type { WizardInput } from "@/types";
 import { useNavigate } from "@tanstack/react-router";
 import {
   BookOpen,
@@ -30,10 +25,9 @@ import { toast } from "sonner";
 
 interface FormData {
   siteType: SiteType | "";
-  businessDescription: string;
-  palette: string;
-  fontFamily: string;
-  features: SelectedFeatures;
+  niche: string;
+  vibe: VisualStyle | "";
+  features: SelectedFeature[];
 }
 
 const TOTAL_STEPS = 4;
@@ -47,31 +41,31 @@ const SITE_TYPES: {
   desc: string;
 }[] = [
   {
-    value: "business",
-    label: "Business",
+    value: SiteType.agency,
+    label: "Agency",
     icon: <Monitor size={28} />,
     desc: "Professional company site",
   },
   {
-    value: "portfolio",
+    value: SiteType.portfolio,
     label: "Portfolio",
     icon: <User size={28} />,
     desc: "Showcase your work",
   },
   {
-    value: "blog",
+    value: SiteType.blog,
     label: "Blog",
     icon: <BookOpen size={28} />,
     desc: "Share your story",
   },
   {
-    value: "ecommerce",
+    value: SiteType.ecommerce,
     label: "E-commerce",
     icon: <ShoppingBag size={28} />,
     desc: "Sell products online",
   },
   {
-    value: "landing",
+    value: SiteType.landingPage,
     label: "Landing Page",
     icon: <Zap size={28} />,
     desc: "High-conversion single page",
@@ -80,65 +74,57 @@ const SITE_TYPES: {
 
 // ─── Step 3 data ─────────────────────────────────────────────────────────────
 
-const PALETTES: { value: string; label: string; colors: string[] }[] = [
-  {
-    value: "modern-dark",
-    label: "Modern Dark",
-    colors: ["#7c3aed", "#4f46e5", "#1e1b4b"],
-  },
-  {
-    value: "clean-light",
-    label: "Clean Light",
-    colors: ["#0ea5e9", "#38bdf8", "#f0f9ff"],
-  },
-  {
-    value: "warm-earthy",
-    label: "Warm Earthy",
-    colors: ["#d97706", "#92400e", "#fffbeb"],
-  },
-  {
-    value: "bold-vibrant",
-    label: "Bold Vibrant",
-    colors: ["#db2777", "#7c3aed", "#fff"],
-  },
-];
-
-const FONTS: { value: string; label: string; preview: string }[] = [
-  { value: "Inter", label: "Inter", preview: "Clean & Modern" },
-  {
-    value: "Playfair Display",
-    label: "Playfair + Inter",
-    preview: "Elegant Editorial",
-  },
-  { value: "Space Grotesk", label: "Space Grotesk", preview: "Techy & Bold" },
-  { value: "Roboto", label: "Roboto + Georgia", preview: "Reliable Classic" },
+const VIBES: { value: VisualStyle; label: string; desc: string }[] = [
+  { value: VisualStyle.minimal, label: "Minimal", desc: "Clean and simple" },
+  { value: VisualStyle.bold, label: "Bold", desc: "High-impact and striking" },
+  { value: VisualStyle.warm, label: "Warm", desc: "Friendly and approachable" },
+  { value: VisualStyle.luxury, label: "Luxury", desc: "Premium and refined" },
+  { value: VisualStyle.playful, label: "Playful", desc: "Fun and colourful" },
 ];
 
 // ─── Step 4 data ─────────────────────────────────────────────────────────────
 
 const FEATURE_LIST: {
-  key: keyof SelectedFeatures;
+  value: SelectedFeature;
   label: string;
   desc: string;
   icon: React.ReactNode;
 }[] = [
   {
-    key: "contactForm",
+    value: SelectedFeature.contactForm,
     label: "Contact Form",
     desc: "Let visitors reach you easily",
     icon: <Mail size={22} />,
   },
   {
-    key: "bookings",
+    value: SelectedFeature.bookingCalendar,
     label: "Bookings",
     desc: "Accept appointments or reservations",
     icon: <Calendar size={22} />,
   },
   {
-    key: "auth",
-    label: "Authentication",
+    value: SelectedFeature.userAccounts,
+    label: "User Accounts",
     desc: "User accounts and protected areas",
     icon: <Lock size={22} />,
+  },
+  {
+    value: SelectedFeature.newsletter,
+    label: "Newsletter",
+    desc: "Email signup and notifications",
+    icon: <Mail size={22} />,
+  },
+  {
+    value: SelectedFeature.blog,
+    label: "Blog",
+    desc: "Articles and content publishing",
+    icon: <BookOpen size={22} />,
+  },
+  {
+    value: SelectedFeature.payments,
+    label: "Payments",
+    desc: "Accept payments online",
+    icon: <ShoppingBag size={22} />,
   },
 ];
 
@@ -159,7 +145,7 @@ function ProgressBar({ step }: { step: number }) {
               className="flex flex-col items-center gap-1.5 flex-1"
             >
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-smooth ${
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300 ease-out ${
                   done
                     ? "bg-primary text-primary-foreground"
                     : active
@@ -220,14 +206,14 @@ function StepSiteType({
               type="button"
               data-ocid={`wizard.site_type.${t.value}`}
               onClick={() => onChange(t.value)}
-              className={`relative flex flex-col items-start gap-3 p-5 rounded-xl border-2 text-left transition-smooth group ${
+              className={`relative flex flex-col items-start gap-3 p-5 rounded-xl border-2 text-left transition-all duration-300 ease-out group ${
                 selected
                   ? "border-primary bg-primary/10"
                   : "border-border bg-card hover:border-primary/50 hover:bg-muted/60"
               }`}
             >
               <div
-                className={`p-2.5 rounded-lg transition-smooth ${
+                className={`p-2.5 rounded-lg transition-all duration-300 ease-out ${
                   selected
                     ? "bg-primary/20 text-primary"
                     : "bg-muted text-muted-foreground group-hover:text-primary"
@@ -284,7 +270,7 @@ function StepDescribeBusiness({
           maxLength={maxLength}
           rows={7}
           placeholder="e.g. We're a boutique coffee roastery in Portland crafting single-origin beans for home enthusiasts. Our monthly subscription delivers freshly roasted bags right to your door."
-          className="w-full resize-none rounded-xl border border-input bg-card text-foreground placeholder:text-muted-foreground/60 p-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-smooth"
+          className="w-full resize-none rounded-xl border border-input bg-card text-foreground placeholder:text-muted-foreground/60 p-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all duration-300 ease-out"
         />
         <span
           className={`absolute bottom-3 right-4 text-xs transition-colors ${
@@ -301,15 +287,11 @@ function StepDescribeBusiness({
 // ─── Step 3 ───────────────────────────────────────────────────────────────────
 
 function StepVisualStyle({
-  palette,
-  fontFamily,
-  onPaletteChange,
-  onFontChange,
+  vibe,
+  onChange,
 }: {
-  palette: string;
-  fontFamily: string;
-  onPaletteChange: (v: string) => void;
-  onFontChange: (v: string) => void;
+  vibe: VisualStyle | "";
+  onChange: (v: VisualStyle) => void;
 }) {
   return (
     <div>
@@ -317,80 +299,33 @@ function StepVisualStyle({
         Pick your visual style
       </h2>
       <p className="text-muted-foreground mb-8">
-        Choose a color palette and typography that feel right for your brand.
+        Choose the vibe that feels right for your brand.
       </p>
-
-      <div className="mb-8">
-        <p className="text-sm font-semibold text-foreground mb-3">
-          Color Palette
-        </p>
-        <div className="grid grid-cols-2 gap-3">
-          {PALETTES.map((p) => {
-            const selected = palette === p.value;
-            return (
-              <button
-                key={p.value}
-                type="button"
-                data-ocid={`wizard.palette.${p.value}`}
-                onClick={() => onPaletteChange(p.value)}
-                className={`flex items-center gap-3 p-3.5 rounded-xl border-2 text-left transition-smooth ${
-                  selected
-                    ? "border-primary bg-primary/10"
-                    : "border-border bg-card hover:border-primary/50"
-                }`}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        {VIBES.map((v) => {
+          const selected = vibe === v.value;
+          return (
+            <button
+              key={v.value}
+              type="button"
+              data-ocid={`wizard.vibe.${v.value}`}
+              onClick={() => onChange(v.value)}
+              className={`flex flex-col p-4 rounded-xl border-2 text-left transition-all duration-300 ease-out ${
+                selected
+                  ? "border-primary bg-primary/10"
+                  : "border-border bg-card hover:border-primary/50"
+              }`}
+            >
+              <span
+                className={`text-sm font-semibold mb-1 ${selected ? "text-primary" : "text-foreground"}`}
               >
-                <div className="flex gap-1">
-                  {p.colors.map((c, ci) => (
-                    <span
-                      key={`${p.value}-color-${ci}`}
-                      className="w-5 h-5 rounded-full border border-border/40"
-                      style={{ backgroundColor: c }}
-                    />
-                  ))}
-                </div>
-                <span
-                  className={`text-sm font-medium ${selected ? "text-primary" : "text-foreground"}`}
-                >
-                  {p.label}
-                </span>
-                {selected && (
-                  <Check size={14} className="ml-auto text-primary shrink-0" />
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      <div>
-        <p className="text-sm font-semibold text-foreground mb-3">Typography</p>
-        <div className="grid grid-cols-2 gap-3">
-          {FONTS.map((f) => {
-            const selected = fontFamily === f.value;
-            return (
-              <button
-                key={f.value}
-                type="button"
-                data-ocid={`wizard.font.${f.value.toLowerCase().replace(/\s+/g, "-")}`}
-                onClick={() => onFontChange(f.value)}
-                className={`flex flex-col p-3.5 rounded-xl border-2 text-left transition-smooth ${
-                  selected
-                    ? "border-primary bg-primary/10"
-                    : "border-border bg-card hover:border-primary/50"
-                }`}
-              >
-                <span
-                  className={`text-sm font-semibold ${selected ? "text-primary" : "text-foreground"}`}
-                >
-                  {f.label}
-                </span>
-                <span className="text-xs text-muted-foreground mt-0.5">
-                  {f.preview}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+                {v.label}
+              </span>
+              <span className="text-xs text-muted-foreground">{v.desc}</span>
+              {selected && <Check size={14} className="mt-2 text-primary" />}
+            </button>
+          );
+        })}
       </div>
     </div>
   );
@@ -402,8 +337,8 @@ function StepFeatures({
   features,
   onChange,
 }: {
-  features: SelectedFeatures;
-  onChange: (key: keyof SelectedFeatures, val: boolean) => void;
+  features: SelectedFeature[];
+  onChange: (feature: SelectedFeature) => void;
 }) {
   return (
     <div>
@@ -415,21 +350,21 @@ function StepFeatures({
       </p>
       <div className="flex flex-col gap-4">
         {FEATURE_LIST.map((feat) => {
-          const enabled = features[feat.key];
+          const enabled = features.includes(feat.value);
           return (
             <button
-              key={feat.key}
+              key={feat.value}
               type="button"
-              data-ocid={`wizard.feature.${feat.key}`}
-              onClick={() => onChange(feat.key, !enabled)}
-              className={`flex items-center gap-4 p-5 rounded-xl border-2 text-left transition-smooth ${
+              data-ocid={`wizard.feature.${feat.value}`}
+              onClick={() => onChange(feat.value)}
+              className={`flex items-center gap-4 p-5 rounded-xl border-2 text-left transition-all duration-300 ease-out ${
                 enabled
                   ? "border-primary bg-primary/10"
                   : "border-border bg-card hover:border-primary/50 hover:bg-muted/40"
               }`}
             >
               <div
-                className={`p-2.5 rounded-lg transition-smooth flex-shrink-0 ${
+                className={`p-2.5 rounded-lg transition-all duration-300 ease-out flex-shrink-0 ${
                   enabled
                     ? "bg-primary/20 text-primary"
                     : "bg-muted text-muted-foreground"
@@ -444,7 +379,7 @@ function StepFeatures({
                 </p>
               </div>
               <div
-                className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-smooth ${
+                className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all duration-300 ease-out ${
                   enabled ? "bg-primary border-primary" : "border-border"
                 }`}
               >
@@ -471,17 +406,9 @@ export default function WizardPage() {
   const { control, watch, setValue, handleSubmit } = useForm<FormData>({
     defaultValues: {
       siteType: "",
-      businessDescription: "",
-      palette: "modern-dark",
-      fontFamily: "Space Grotesk",
-      features: {
-        contactForm: false,
-        bookings: false,
-        auth: false,
-        blog: false,
-        ecommerce: false,
-        analytics: false,
-      },
+      niche: "",
+      vibe: "",
+      features: [],
     },
   });
 
@@ -489,7 +416,8 @@ export default function WizardPage() {
 
   function canAdvance() {
     if (step === 1) return values.siteType !== "";
-    if (step === 2) return values.businessDescription.trim().length > 20;
+    if (step === 2) return values.niche.trim().length > 20;
+    if (step === 3) return values.vibe !== "";
     return true;
   }
 
@@ -506,27 +434,20 @@ export default function WizardPage() {
 
   async function onSubmit() {
     const data = values;
-    if (!data.siteType) return;
-
-    const paletteMap: Record<string, string> = {
-      "modern-dark": "modern",
-      "clean-light": "minimal",
-      "warm-earthy": "elegant",
-      "bold-vibrant": "bold",
-    };
+    if (!data.siteType || !data.vibe) return;
 
     const input: WizardInput = {
       siteType: data.siteType as SiteType,
-      businessDescription: data.businessDescription,
-      visualStyle: (paletteMap[data.palette] ?? "modern") as VisualStyle,
-      selectedFeatures: data.features,
+      niche: data.niche,
+      vibe: data.vibe as VisualStyle,
+      features: data.features,
     };
 
     generateSite.mutate(input, {
-      onSuccess: (site: SitePublic) => {
+      onSuccess: ([siteId]: [bigint, string]) => {
         navigate({
           to: "/generate/$siteId",
-          params: { siteId: site.id.toString() },
+          params: { siteId: siteId.toString() },
         });
       },
       onError: () => {
@@ -589,7 +510,7 @@ export default function WizardPage() {
                 )}
                 {step === 2 && (
                   <Controller
-                    name="businessDescription"
+                    name="niche"
                     control={control}
                     render={({ field }) => (
                       <StepDescribeBusiness
@@ -600,19 +521,27 @@ export default function WizardPage() {
                   />
                 )}
                 {step === 3 && (
-                  <StepVisualStyle
-                    palette={values.palette}
-                    fontFamily={values.fontFamily}
-                    onPaletteChange={(v) => setValue("palette", v)}
-                    onFontChange={(v) => setValue("fontFamily", v)}
+                  <Controller
+                    name="vibe"
+                    control={control}
+                    render={({ field }) => (
+                      <StepVisualStyle
+                        vibe={field.value}
+                        onChange={(v) => field.onChange(v)}
+                      />
+                    )}
                   />
                 )}
                 {step === 4 && (
                   <StepFeatures
                     features={values.features}
-                    onChange={(key, val) =>
-                      setValue("features", { ...values.features, [key]: val })
-                    }
+                    onChange={(feature) => {
+                      const current = values.features;
+                      const next = current.includes(feature)
+                        ? current.filter((f) => f !== feature)
+                        : [...current, feature];
+                      setValue("features", next);
+                    }}
                   />
                 )}
               </motion.div>
@@ -626,7 +555,7 @@ export default function WizardPage() {
               data-ocid="wizard.back_button"
               onClick={goBack}
               disabled={step === 1}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border bg-card text-foreground text-sm font-medium transition-smooth hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border bg-card text-foreground text-sm font-medium transition-all duration-300 ease-out hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <ChevronLeft size={16} />
               Back
@@ -638,7 +567,7 @@ export default function WizardPage() {
                 data-ocid="wizard.next_button"
                 onClick={goNext}
                 disabled={!canAdvance()}
-                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold transition-smooth hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed shadow-subtle"
+                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold transition-all duration-300 ease-out hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed shadow-subtle"
               >
                 Continue
                 <ChevronRight size={16} />
@@ -649,7 +578,7 @@ export default function WizardPage() {
                 data-ocid="wizard.generate_button"
                 onClick={handleSubmit(onSubmit)}
                 disabled={generateSite.isPending}
-                className="flex items-center gap-2 px-7 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold transition-smooth hover:bg-primary/90 disabled:opacity-60 shadow-elevated"
+                className="flex items-center gap-2 px-7 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold transition-all duration-300 ease-out hover:bg-primary/90 disabled:opacity-60 shadow-elevated"
               >
                 {generateSite.isPending ? (
                   <>
@@ -670,8 +599,8 @@ export default function WizardPage() {
           </div>
 
           {step === 2 &&
-            values.businessDescription.trim().length < 20 &&
-            values.businessDescription.length > 0 && (
+            values.niche.trim().length < 20 &&
+            values.niche.length > 0 && (
               <motion.p
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}

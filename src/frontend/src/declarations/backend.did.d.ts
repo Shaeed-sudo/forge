@@ -10,110 +10,103 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
-export interface ColorPalette {
-  'accent' : string,
-  'background' : string,
-  'text' : string,
-  'secondary' : string,
-  'primary' : string,
-}
-export interface GeneratedSite {
-  'siteTitle' : string,
-  'tagline' : string,
-  'layout' : LayoutMetadata,
-  'colorPalette' : ColorPalette,
-  'sections' : Array<SiteSection>,
-}
-export interface LayoutMetadata {
-  'borderRadius' : string,
-  'layoutStyle' : string,
-  'fontFamily' : string,
-}
 export interface PreLaunchChecks {
   'seo' : boolean,
-  'formsValid' : boolean,
-  'performanceHint' : boolean,
-  'mobileReady' : boolean,
+  'forms' : boolean,
+  'seoNote' : string,
+  'speedNote' : string,
+  'formsNote' : string,
+  'speed' : bigint,
+  'mobile' : boolean,
+  'mobileNote' : string,
 }
-export type PublishStatus = { 'published' : null } |
-  { 'publishing' : null } |
-  { 'unpublished' : null } |
-  { 'failed' : null };
-export type SectionType = { 'contact' : null } |
-  { 'about' : null } |
-  { 'hero' : null } |
-  { 'services' : null } |
-  { 'footer' : null };
-export interface SelectedFeatures {
-  'contactForm' : boolean,
-  'bookings' : boolean,
-  'auth' : boolean,
-}
+export type PublishStatus = { 'live' : null } |
+  { 'draft' : null };
+export type SelectedFeature = { 'contactForm' : null } |
+  { 'userAccounts' : null } |
+  { 'payments' : null } |
+  { 'blog' : null } |
+  { 'liveChat' : null } |
+  { 'newsletter' : null } |
+  { 'testimonials' : null } |
+  { 'bookingCalendar' : null } |
+  { 'imageGallery' : null };
 export type SiteId = bigint;
 export interface SitePublic {
   'id' : SiteId,
   'status' : PublishStatus,
-  'title' : string,
+  'features' : Array<SelectedFeature>,
+  'formSubmissions' : bigint,
+  'visitors' : bigint,
   'owner' : UserId,
+  'name' : string,
   'createdAt' : Timestamp,
-  'publishedUrl' : [] | [string],
+  'slug' : string,
+  'vibe' : VisualStyle,
+  'publishedAt' : [] | [Timestamp],
+  'siteType' : SiteType,
   'updatedAt' : Timestamp,
-  'generatedData' : [] | [GeneratedSite],
-  'subdomain' : [] | [string],
-}
-export interface SiteSection {
-  'subheading' : string,
-  'content' : string,
-  'sectionType' : SectionType,
-  'heading' : string,
+  'niche' : string,
+  'lighthouseScore' : bigint,
+  'siteUrl' : [] | [string],
 }
 export interface SiteSummary {
   'id' : SiteId,
   'status' : PublishStatus,
-  'title' : string,
-  'createdAt' : Timestamp,
-  'subdomain' : [] | [string],
+  'formSubmissions' : bigint,
+  'visitors' : bigint,
+  'name' : string,
+  'slug' : string,
+  'updatedAt' : Timestamp,
+  'lighthouseScore' : bigint,
+  'siteUrl' : [] | [string],
 }
 export type SiteType = { 'portfolio' : null } |
   { 'blog' : null } |
-  { 'business' : null } |
-  { 'landing' : null } |
+  { 'saas' : null } |
+  { 'agency' : null } |
+  { 'booking' : null } |
+  { 'landingPage' : null } |
+  { 'restaurant' : null } |
   { 'ecommerce' : null };
+export interface SiteUpdate { 'name' : [] | [string], 'niche' : [] | [string] }
 export type Timestamp = bigint;
 export type UserId = Principal;
-export interface UserProfile { 'name' : string, 'email' : string }
+export interface UserProfile {
+  'name' : string,
+  'createdAt' : Timestamp,
+  'plan' : { 'pro' : null } |
+    { 'free' : null },
+  'email' : string,
+}
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
   { 'guest' : null };
-export interface VisualStyle {
-  'primaryColor' : string,
-  'fontFamily' : string,
-  'secondaryColor' : string,
-}
+export type VisualStyle = { 'bold' : null } |
+  { 'minimal' : null } |
+  { 'warm' : null } |
+  { 'playful' : null } |
+  { 'luxury' : null };
 export interface WizardInput {
-  'visualStyle' : VisualStyle,
+  'features' : Array<SelectedFeature>,
+  'vibe' : VisualStyle,
   'siteType' : SiteType,
-  'businessDescription' : string,
-  'selectedFeatures' : SelectedFeatures,
+  'niche' : string,
 }
 export interface _SERVICE {
   '_initializeAccessControl' : ActorMethod<[], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
-  'deleteSite' : ActorMethod<[SiteId], undefined>,
-  'generateSite' : ActorMethod<[WizardInput], SitePublic>,
-  'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
+  'deleteSite' : ActorMethod<[SiteId], boolean>,
+  'generateSite' : ActorMethod<[WizardInput], [SiteId, string]>,
+  'getCallerProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
-  'getPreLaunchChecks' : ActorMethod<[SiteId], PreLaunchChecks>,
+  'getPreLaunchChecks' : ActorMethod<[SiteId], [] | [PreLaunchChecks]>,
   'getSite' : ActorMethod<[SiteId], [] | [SitePublic]>,
-  'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'listMySites' : ActorMethod<[], Array<SiteSummary>>,
-  'publishSite' : ActorMethod<[SiteId], SitePublic>,
-  'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
-  'updateSite' : ActorMethod<
-    [SiteId, [] | [string], [] | [GeneratedSite]],
-    SitePublic
-  >,
+  'publishSite' : ActorMethod<[SiteId], [] | [SitePublic]>,
+  'saveCallerProfile' : ActorMethod<[string, string], UserProfile>,
+  'updateSite' : ActorMethod<[SiteId, SiteUpdate], [] | [SitePublic]>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

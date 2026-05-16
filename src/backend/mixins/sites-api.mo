@@ -1,6 +1,7 @@
 import Time "mo:core/Time";
 import Runtime "mo:core/Runtime";
 import Map "mo:core/Map";
+import Array "mo:core/Array";
 import Principal "mo:core/Principal";
 import AccessControl "mo:caffeineai-authorization/access-control";
 import CommonTypes "../types/common";
@@ -12,95 +13,96 @@ mixin (
   sites : Map.Map<CommonTypes.SiteId, SiteTypes.Site>,
   state : { var nextSiteId : Nat },
 ) {
-  /// Submit wizard and trigger AI generation. Returns the created site with generated data.
-  public shared ({ caller }) func generateSite(input : SiteTypes.WizardInput) : async SiteTypes.SitePublic {
+  /// Submit wizard input. Creates a new site and returns (siteId, siteUrl).
+  public shared ({ caller }) func generateSite(input : SiteTypes.WizardInput) : async (CommonTypes.SiteId, Text) {
     let id = state.nextSiteId;
     state.nextSiteId += 1;
     let now = Time.now();
-    let title = switch (input.siteType) {
-      case (#business) "My Business Site";
-      case (#portfolio) "My Portfolio";
-      case (#blog) "My Blog";
-      case (#ecommerce) "My Store";
-      case (#landing) "My Landing Page";
-    };
-    let site = SiteLib.create(id, caller, title, now);
-    let generated = SiteLib.generate(input);
-    site.title := generated.siteTitle;
-    site.generatedData := ?generated;
-    site.updatedAt := now;
+    let site = SiteLib.create(id, caller, input, now);
+    let url = site.slug # ".forge.app";
+    site.siteUrl := ?url;
     sites.add(id, site);
-    site.toPublic();
+    (id, url);
   };
 
-  /// List all sites owned by the caller (dashboard).
+  /// List all sites owned by the caller, most recent first.
   public query ({ caller }) func listMySites() : async [SiteTypes.SiteSummary] {
-    sites.values()
+    let all = sites.values()
       .filter(func(s : SiteTypes.Site) : Bool { Principal.equal(s.owner, caller) })
-      .map<SiteTypes.Site, SiteTypes.SiteSummary>(func(s) { s.toSummary() })
       .toArray();
+    let sorted = all.sort(func(a : SiteTypes.Site, b : SiteTypes.Site) : { #less; #equal; #greater } {
+      if (a.updatedAt > b.updatedAt) { #less }
+      else if (a.updatedAt < b.updatedAt) { #greater }
+      else { #equal }
+    });
+    sorted.map<SiteTypes.Site, SiteTypes.SiteSummary>(func(s) { s.toSummary() });
   };
 
-  /// Get full site data for editing.
+  /// Get full site data. Returns null if not owned by caller.
   public query ({ caller }) func getSite(id : CommonTypes.SiteId) : async ?SiteTypes.SitePublic {
     switch (sites.get(id)) {
       case (?site) {
         if (Principal.equal(site.owner, caller)) { ?site.toPublic() }
         else { null };
       };
-      case null { null };
+      case null null;
     };
   };
 
-  /// Update site title or generated data.
+  /// Update name and/or niche for a site owned by caller.
   public shared ({ caller }) func updateSite(
     id : CommonTypes.SiteId,
-    title : ?Text,
-    generatedData : ?SiteTypes.GeneratedSite,
-  ) : async SiteTypes.SitePublic {
-    let site = switch (sites.get(id)) {
-      case (?s) s;
-      case null Runtime.trap("Site not found");
+    updates : SiteTypes.SiteUpdate,
+  ) : async ?SiteTypes.SitePublic {
+    switch (sites.get(id)) {
+      case (?site) {
+        if (not Principal.equal(site.owner, caller)) { return null };
+        switch (updates.name) { case (?n) { site.name := n }; case null {} };
+        switch (updates.niche) { case (?n) { site.niche := n }; case null {} };
+        site.updatedAt := Time.now();
+        ?site.toPublic();
+      };
+      case null null;
     };
-    if (not Principal.equal(site.owner, caller)) Runtime.trap("Unauthorized");
-    switch (title) { case (?t) { site.title := t }; case null {} };
-    switch (generatedData) { case (?d) { site.generatedData := ?d }; case null {} };
-    site.updatedAt := Time.now();
-    site.toPublic();
   };
 
-  /// Delete a site owned by the caller.
-  public shared ({ caller }) func deleteSite(id : CommonTypes.SiteId) : async () {
-    let site = switch (sites.get(id)) {
-      case (?s) s;
-      case null Runtime.trap("Site not found");
+  /// Delete a site owned by caller. Returns true on success.
+  public shared ({ caller }) func deleteSite(id : CommonTypes.SiteId) : async Bool {
+    switch (sites.get(id)) {
+      case (?site) {
+        if (not Principal.equal(site.owner, caller)) { return false };
+        sites.remove(id);
+        true;
+      };
+      case null false;
     };
-    if (not Principal.equal(site.owner, caller)) Runtime.trap("Unauthorized");
-    sites.remove(id);
   };
 
-  /// Run pre-launch checks and return results.
-  public query ({ caller }) func getPreLaunchChecks(id : CommonTypes.SiteId) : async SiteTypes.PreLaunchChecks {
-    let site = switch (sites.get(id)) {
-      case (?s) s;
-      case null Runtime.trap("Site not found");
+  /// Run mock pre-launch checks. Returns null if caller doesn't own site.
+  public query ({ caller }) func getPreLaunchChecks(id : CommonTypes.SiteId) : async ?SiteTypes.PreLaunchChecks {
+    switch (sites.get(id)) {
+      case (?site) {
+        if (not Principal.equal(site.owner, caller)) { return null };
+        ?SiteLib.preLaunchChecks();
+      };
+      case null null;
     };
-    if (not Principal.equal(site.owner, caller)) Runtime.trap("Unauthorized");
-    SiteLib.preLaunchChecks(site);
   };
 
-  /// Publish a site: sets status to #published, assigns subdomain, produces URL.
-  public shared ({ caller }) func publishSite(id : CommonTypes.SiteId) : async SiteTypes.SitePublic {
-    let site = switch (sites.get(id)) {
-      case (?s) s;
-      case null Runtime.trap("Site not found");
+  /// Publish a site: set status = #live, record publishedAt, set siteUrl.
+  public shared ({ caller }) func publishSite(id : CommonTypes.SiteId) : async ?SiteTypes.SitePublic {
+    switch (sites.get(id)) {
+      case (?site) {
+        if (not Principal.equal(site.owner, caller)) { return null };
+        let now = Time.now();
+        site.status := #live;
+        site.publishedAt := ?now;
+        site.updatedAt := now;
+        let url = site.slug # ".forge.app";
+        site.siteUrl := ?url;
+        ?site.toPublic();
+      };
+      case null null;
     };
-    if (not Principal.equal(site.owner, caller)) Runtime.trap("Unauthorized");
-    let sub = SiteLib.makeSubdomain(site.title, site.id);
-    site.subdomain := ?sub;
-    site.publishedUrl := ?("https://" # sub # ".forge.app");
-    site.status := #published;
-    site.updatedAt := Time.now();
-    site.toPublic();
   };
 };

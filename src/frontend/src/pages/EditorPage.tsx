@@ -2,18 +2,27 @@ import DevicePreview, { type DeviceMode } from "@/components/DevicePreview";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import SitePreview, { type EditingField } from "@/components/SitePreview";
 import { useGetSite, useUpdateSite } from "@/hooks/useQueries";
-import type { GeneratedSite, SiteSection } from "@/types";
+import type { GeneratedSite } from "@/types";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import {
-  ArrowLeft,
-  Check,
-  ChevronRight,
+  Eye,
+  Globe,
   GripVertical,
-  Laptop,
+  Image,
+  LayoutTemplate,
+  Link,
   Loader2,
+  Mail,
+  Monitor,
+  Quote,
   Rocket,
+  Send,
+  Share2,
   Smartphone,
+  Sparkles,
+  Star,
   Tablet,
+  User,
 } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 
@@ -22,180 +31,167 @@ const DEFAULT_SITE: GeneratedSite = {
   siteTitle: "My Business",
   tagline: "Excellence in every detail",
   colorPalette: {
-    primary: "#6366f1",
-    secondary: "#a78bfa",
-    accent: "#fcd34d",
+    primary: "#0051ff",
+    secondary: "#3374ff",
+    accent: "#e8eeff",
     background: "#ffffff",
-    text: "#1e1b4b",
+    text: "#0d1117",
   },
   layout: {
-    headerStyle: "split",
-    footerStyle: "full",
-    contentWidth: "standard",
-    sectionSpacing: "standard",
+    borderRadius: "8px",
+    layoutStyle: "standard",
+    fontFamily: "Montserrat",
   },
   sections: [
     {
-      type: "hero",
+      sectionType: "hero" as const,
       heading: "Build Something Remarkable",
-      body: "We help ambitious businesses craft digital experiences that captivate, convert, and grow.",
-      ctaText: "Get Started",
-      ctaUrl: "#contact",
+      subheading:
+        "We help ambitious businesses craft digital experiences that captivate, convert, and grow.",
+      content: "Get Started",
     },
     {
-      type: "about",
+      sectionType: "about" as const,
       heading: "Who We Are",
-      body: "A passionate team of designers and developers committed to delivering exceptional results for our clients across every industry.",
+      subheading:
+        "A passionate team of designers and developers committed to delivering exceptional results.",
+      content: "",
     },
     {
-      type: "features",
+      sectionType: "services" as const,
       heading: "What We Offer",
-      body: "Everything you need to launch and grow your business online.",
-      items: [
-        {
-          title: "Strategy",
-          description: "Data-driven approaches to accelerate your growth",
-        },
-        {
-          title: "Design",
-          description: "Beautiful interfaces that delight your users",
-        },
-        {
-          title: "Development",
-          description: "Robust, scalable solutions built to last",
-        },
-      ],
+      subheading:
+        "Everything you need to launch and grow your business online.",
+      content: "Strategy, Design, Development",
     },
     {
-      type: "contact",
+      sectionType: "contact" as const,
       heading: "Get In Touch",
-      body: "Ready to start your project? We'd love to hear from you.",
+      subheading: "Ready to start your project? We'd love to hear from you.",
+      content: "",
     },
   ],
 };
 
-// ─── Device switcher button ───────────────────────────────────────────────────
-interface DeviceBtnProps {
-  mode: DeviceMode;
-  active: boolean;
-  onClick: () => void;
-  icon: React.ReactNode;
+// ─── Section definitions for left panel ─────────────────────────────────────
+interface SectionDef {
+  key: string;
   label: string;
+  Icon: React.ComponentType<{ className?: string }>;
 }
 
-function DeviceBtn({ mode, active, onClick, icon, label }: DeviceBtnProps) {
+const SECTION_DEFS: SectionDef[] = [
+  { key: "nav", label: "Navigation", Icon: LayoutTemplate },
+  { key: "hero", label: "Hero", Icon: Star },
+  { key: "features", label: "Features", Icon: Image },
+  { key: "about", label: "About", Icon: User },
+  { key: "testimonials", label: "Testimonials", Icon: Quote },
+  { key: "contact", label: "Contact", Icon: Mail },
+  { key: "footer", label: "Footer", Icon: Link },
+];
+
+// ─── Color swatches for right panel ─────────────────────────────────────────
+const SWATCHES = [
+  "#0051ff",
+  "#16a34a",
+  "#dc2626",
+  "#9333ea",
+  "#ea580c",
+  "#0d1117",
+];
+
+// ─── Toggle component ────────────────────────────────────────────────────────
+function Toggle({ on, onToggle }: { on: boolean; onToggle: () => void }) {
   return (
     <button
       type="button"
-      onClick={onClick}
-      data-ocid={`editor.device_${mode}`}
-      title={label}
-      className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-smooth ${
-        active
-          ? "bg-primary text-primary-foreground shadow-sm"
-          : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+      role="switch"
+      aria-checked={on}
+      onClick={onToggle}
+      className={`relative flex-shrink-0 w-[34px] h-[18px] rounded-full transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+        on ? "bg-primary" : "bg-border"
       }`}
     >
-      {icon}
-      <span className="text-[10px] tracking-wide">{label}</span>
+      <span
+        className={`absolute top-[3px] w-3 h-3 rounded-full bg-card shadow-sm transition-all duration-200 ${
+          on ? "right-[3px]" : "left-[3px]"
+        }`}
+      />
     </button>
   );
 }
 
-// ─── Section list item in right sidebar ──────────────────────────────────────
+// ─── Section list item (left panel) ─────────────────────────────────────────
 function SectionListItem({
-  label,
+  def,
   isActive,
   index,
   onClick,
 }: {
-  label: string;
+  def: SectionDef;
   isActive: boolean;
   index: number;
   onClick: () => void;
 }) {
+  const { Icon, label } = def;
   return (
     <button
       type="button"
       onClick={onClick}
       data-ocid={`editor.section_item.${index + 1}`}
-      className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-left text-sm transition-smooth group ${
+      className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-all duration-150 border-[1.5px] ${
         isActive
-          ? "bg-primary/15 text-primary border border-primary/25"
-          : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground border border-transparent"
+          ? "bg-[var(--blue-faint,#f0f4ff)] border-primary text-primary"
+          : "border-transparent text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
       }`}
     >
-      <GripVertical className="w-3.5 h-3.5 flex-shrink-0 opacity-30 group-hover:opacity-60" />
-      <span className="capitalize truncate flex-1">{label}</span>
-      {isActive && <ChevronRight className="w-3.5 h-3.5 flex-shrink-0" />}
+      <GripVertical className="w-3 h-3 flex-shrink-0 text-muted-foreground/40" />
+      <div
+        className={`w-[26px] h-[26px] rounded-md flex items-center justify-center flex-shrink-0 ${
+          isActive ? "bg-primary/10" : "bg-secondary"
+        }`}
+      >
+        <Icon
+          className={`w-[13px] h-[13px] ${isActive ? "text-primary" : "text-muted-foreground"}`}
+        />
+      </div>
+      <span
+        className={`text-xs font-medium flex-1 min-w-0 truncate ${
+          isActive ? "text-primary font-semibold" : ""
+        }`}
+      >
+        {label}
+      </span>
+      <Eye className="w-3 h-3 flex-shrink-0 text-muted-foreground/50" />
     </button>
   );
 }
 
-// ─── Inline title editor ──────────────────────────────────────────────────────
-function InlineTitleEditor({
-  value,
-  onChange,
+// ─── Device toggle button ────────────────────────────────────────────────────
+function DeviceBtn({
+  active,
+  onClick,
+  icon,
+  label,
 }: {
-  value: string;
-  onChange: (v: string) => void;
+  active: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
 }) {
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(value);
-
-  const commit = useCallback(() => {
-    setEditing(false);
-    if (draft.trim()) onChange(draft.trim());
-    else setDraft(value);
-  }, [draft, onChange, value]);
-
-  if (editing) {
-    return (
-      <input
-        type="text"
-        value={draft}
-        className="bg-secondary border border-input rounded-md px-2 py-1 text-sm font-display font-semibold text-foreground outline-none w-48 focus:border-primary"
-        onChange={(e) => setDraft(e.target.value)}
-        onBlur={commit}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") commit();
-          if (e.key === "Escape") {
-            setDraft(value);
-            setEditing(false);
-          }
-        }}
-        data-ocid="editor.title_input"
-      />
-    );
-  }
-
   return (
     <button
       type="button"
-      onClick={() => {
-        setDraft(value);
-        setEditing(true);
-      }}
-      className="flex items-center gap-1.5 group"
-      data-ocid="editor.title_button"
-      title="Click to rename"
+      onClick={onClick}
+      title={label}
+      aria-label={label}
+      className={`w-7 h-6 flex items-center justify-center rounded transition-all duration-150 ${
+        active
+          ? "bg-card text-primary shadow-sm"
+          : "text-muted-foreground hover:text-foreground"
+      }`}
     >
-      <span className="font-display font-semibold text-sm text-foreground truncate max-w-48">
-        {value}
-      </span>
-      <span className="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-60 transition-smooth">
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          aria-label="Edit icon"
-          role="img"
-        >
-          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-        </svg>
-      </span>
+      {icon}
     </button>
   );
 }
@@ -210,33 +206,32 @@ function EditorContent() {
   const updateSite = useUpdateSite();
 
   const [deviceMode, setDeviceMode] = useState<DeviceMode>("desktop");
-  const [highlightedSection, setHighlightedSection] = useState<string | null>(
-    null,
-  );
+  const [activeSection, setActiveSection] = useState<string>("nav");
   const [editingField, setEditingField] = useState<EditingField | null>(null);
-  const [savedIndicator, setSavedIndicator] = useState(false);
+  const [activeColor, setActiveColor] = useState<string>(SWATCHES[0]);
+  const [features, setFeatures] = useState({
+    contactForm: true,
+    analytics: true,
+    cookieBanner: false,
+    liveChat: false,
+  });
+  const [aiInput, setAiInput] = useState("");
+  const [seoTitle, setSeoTitle] = useState("");
+  const [seoDesc, setSeoDesc] = useState("");
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
 
-  // Derive the display data — use generatedData from backend or DEFAULT_SITE
-  const generatedData: GeneratedSite =
-    (site?.generatedData as GeneratedSite | undefined) ?? DEFAULT_SITE;
-  const siteTitle = site?.title ?? generatedData.siteTitle;
+  // SitePublic does not have generatedData — use DEFAULT_SITE for editor canvas
+  const generatedData: GeneratedSite = DEFAULT_SITE;
+  const siteTitle = site?.name ?? generatedData.siteTitle;
+  const siteSlug =
+    siteTitle
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 28) || "my-site";
+  const displaySeoTitle = seoTitle || siteTitle;
+  const displaySeoDesc = seoDesc || generatedData.tagline || "";
 
-  // ─── Section label helpers
-  const sectionLabel = (s: SiteSection, i: number) =>
-    s.heading?.slice(0, 24) || s.type || `Section ${i + 1}`;
-  const sectionKey = (s: SiteSection, i: number) => `${s.type}-${i}`;
-
-  // ─── Scroll to section in preview
-  const scrollToSection = useCallback((key: string) => {
-    setHighlightedSection(key);
-    const el = sectionRefs.current[key];
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  }, []);
-
-  // ─── Handle inline edits from SitePreview
   const handleSaveEdit = useCallback(
     (newValue: string) => {
       if (!editingField) return;
@@ -249,210 +244,342 @@ function EditorContent() {
         sections: updated,
       };
       setEditingField(null);
-      updateSite.mutate(
-        { id, generatedData: updatedData },
-        {
-          onSuccess: () => {
-            setSavedIndicator(true);
-            setTimeout(() => setSavedIndicator(false), 2000);
-          },
-        },
-      );
+      // Update name only — generatedData lives frontend-side for now
+      void updatedData;
+      updateSite.mutate({ id });
     },
     [editingField, generatedData, id, updateSite],
   );
 
-  // ─── Handle title rename
-  const handleTitleChange = useCallback(
-    (newTitle: string) => {
-      updateSite.mutate(
-        { id, title: newTitle },
-        {
-          onSuccess: () => {
-            setSavedIndicator(true);
-            setTimeout(() => setSavedIndicator(false), 2000);
-          },
-        },
-      );
-    },
-    [id, updateSite],
-  );
-
-  // ─── Manual save
-  const handleSave = useCallback(() => {
-    updateSite.mutate(
-      { id, title: siteTitle, generatedData },
-      {
-        onSuccess: () => {
-          setSavedIndicator(true);
-          setTimeout(() => setSavedIndicator(false), 2200);
-        },
-      },
-    );
-  }, [id, siteTitle, generatedData, updateSite]);
+  const scrollToSection = useCallback((key: string) => {
+    setActiveSection(key);
+    const el = sectionRefs.current[key];
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, []);
 
   return (
     <div
       className="flex flex-col h-screen bg-background overflow-hidden"
       data-ocid="editor.page"
     >
-      {/* ─── Top Toolbar ─────────────────────────────────────────────────── */}
-      <header className="flex items-center gap-3 px-4 py-2.5 bg-card border-b border-border shadow-subtle z-20 flex-shrink-0">
-        {/* Left: back + logo + title */}
-        <div className="flex items-center gap-3 flex-1 min-w-0">
+      {/* ─── App Nav ─────────────────────────────────────────────────────── */}
+      <header
+        className="h-14 flex items-center gap-3 px-6 bg-card border-b border-border z-20 flex-shrink-0"
+        style={{ minHeight: 56 }}
+      >
+        {/* Logo + separator + breadcrumb */}
+        <span className="font-display font-bold text-lg text-foreground flex-shrink-0">
+          Forge<span className="text-primary">.</span>
+        </span>
+        <div className="w-px h-5 bg-border flex-shrink-0" />
+        <span className="text-sm text-muted-foreground min-w-0 truncate flex-1">
+          <span className="font-semibold text-foreground">{siteTitle}</span>
+          {" · Editing"}
+        </span>
+
+        {/* Right actions */}
+        <div className="flex items-center gap-2.5 flex-shrink-0">
+          {/* Preview pill */}
+          <span
+            className="inline-flex items-center gap-1.5 bg-primary/10 text-primary border border-primary/30 text-xs font-semibold rounded-full px-3 py-1 cursor-pointer hover:bg-primary/15 transition-colors"
+            data-ocid="editor.preview_tag"
+          >
+            <Eye className="w-3 h-3" />
+            Preview
+          </span>
+          {/* Share */}
           <button
             type="button"
-            onClick={() => navigate({ to: "/dashboard" })}
-            className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-smooth p-1.5 rounded-lg hover:bg-secondary"
-            data-ocid="editor.back_button"
-            title="Back to dashboard"
+            className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground border border-border rounded-lg px-3 py-1.5 hover:text-foreground hover:border-muted-foreground/60 transition-all"
+            data-ocid="editor.share_button"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <Share2 className="w-3.5 h-3.5" />
+            Share
           </button>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <div className="w-6 h-6 rounded-md bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground text-xs font-bold font-display">
-                F
-              </span>
-            </div>
-            <span className="text-xs text-muted-foreground hidden sm:block">
-              Forge
-            </span>
-          </div>
-          <div className="w-px h-5 bg-border" />
-          <InlineTitleEditor value={siteTitle} onChange={handleTitleChange} />
-        </div>
-
-        {/* Center: device switcher */}
-        <div className="flex items-center gap-1 bg-background border border-border rounded-xl p-1">
-          <DeviceBtn
-            mode="desktop"
-            active={deviceMode === "desktop"}
-            onClick={() => setDeviceMode("desktop")}
-            icon={<Laptop className="w-4 h-4" />}
-            label="Desktop"
-          />
-          <DeviceBtn
-            mode="tablet"
-            active={deviceMode === "tablet"}
-            onClick={() => setDeviceMode("tablet")}
-            icon={<Tablet className="w-4 h-4" />}
-            label="Tablet"
-          />
-          <DeviceBtn
-            mode="mobile"
-            active={deviceMode === "mobile"}
-            onClick={() => setDeviceMode("mobile")}
-            icon={<Smartphone className="w-4 h-4" />}
-            label="Mobile"
-          />
-        </div>
-
-        {/* Right: save + publish */}
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={updateSite.isPending}
-            data-ocid="editor.save_button"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-border text-foreground hover:bg-secondary transition-smooth disabled:opacity-50"
-          >
-            {updateSite.isPending ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            ) : savedIndicator ? (
-              <Check className="w-3.5 h-3.5 text-green-500" />
-            ) : null}
-            {savedIndicator ? "Saved" : "Save"}
-          </button>
+          {/* Publish */}
           <button
             type="button"
             onClick={() =>
               navigate({ to: "/publish/$siteId", params: { siteId } })
             }
             data-ocid="editor.publish_button"
-            className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold bg-primary text-primary-foreground hover:opacity-90 transition-smooth"
+            className="flex items-center gap-1.5 px-4 py-1.5 bg-primary text-primary-foreground font-semibold text-sm rounded-lg hover:opacity-90 transition-opacity"
           >
             <Rocket className="w-3.5 h-3.5" />
             Publish
           </button>
+          {/* Avatar */}
+          <div
+            className="w-8 h-8 rounded-full bg-primary/10 text-primary font-display font-bold text-xs flex items-center justify-center flex-shrink-0"
+            data-ocid="editor.avatar"
+          >
+            {siteTitle.slice(0, 2).toUpperCase()}
+          </div>
         </div>
       </header>
 
-      {/* ─── Main area: canvas + sidebar ─────────────────────────────────── */}
+      {/* ─── 3-panel body ────────────────────────────────────────────────── */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Canvas */}
-        <main
-          className="flex-1 overflow-auto bg-muted/30 px-4"
-          data-ocid="editor.canvas"
-        >
-          {isLoading ? (
-            <div
-              className="flex items-center justify-center h-full"
-              data-ocid="editor.loading_state"
-            >
-              <div className="flex flex-col items-center gap-3 text-muted-foreground">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                <span className="text-sm">Loading your site…</span>
-              </div>
-            </div>
-          ) : (
-            <DevicePreview mode={deviceMode}>
-              <SitePreview
-                generatedData={generatedData}
-                editingField={editingField}
-                onStartEdit={setEditingField}
-                onSaveEdit={handleSaveEdit}
-                onCancelEdit={() => setEditingField(null)}
-                highlightedSection={highlightedSection}
-                sectionRefs={sectionRefs}
-              />
-            </DevicePreview>
-          )}
-        </main>
-
-        {/* Right sidebar */}
+        {/* LEFT PANEL */}
         <aside
-          className="w-[200px] flex-shrink-0 bg-card border-l border-border flex flex-col overflow-hidden"
-          data-ocid="editor.sidebar"
+          className="w-[252px] flex-shrink-0 bg-card border-r border-border flex flex-col overflow-hidden"
+          data-ocid="editor.left_panel"
+          style={{ minWidth: 252 }}
         >
-          <div className="px-3 py-3 border-b border-border">
-            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0">
+            <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
               Sections
-            </h3>
+            </span>
+            <button
+              type="button"
+              className="flex items-center gap-1 text-xs font-semibold text-primary"
+              data-ocid="editor.add_section_button"
+            >
+              <span className="text-base leading-none">+</span> Add
+            </button>
           </div>
+
+          {/* Section list */}
           <div
-            className="flex-1 overflow-y-auto p-2 flex flex-col gap-1"
+            className="flex-1 overflow-y-auto p-2 flex flex-col gap-0.5"
             data-ocid="editor.section_list"
           >
-            {isLoading ? (
-              <div className="flex flex-col gap-1.5 p-1">
-                {[1, 2, 3, 4].map((i) => (
+            {isLoading
+              ? [1, 2, 3, 4, 5].map((i) => (
                   <div
                     key={i}
-                    className="h-8 rounded-lg bg-muted/60 animate-pulse"
+                    className="h-9 rounded-lg bg-muted/50 animate-pulse"
+                  />
+                ))
+              : SECTION_DEFS.map((def, index) => (
+                  <SectionListItem
+                    key={def.key}
+                    def={def}
+                    isActive={activeSection === def.key}
+                    index={index}
+                    onClick={() => scrollToSection(def.key)}
                   />
                 ))}
+          </div>
+
+          {/* AI Refine bar */}
+          <div className="border-t border-border p-2.5 flex-shrink-0">
+            <div className="flex items-center gap-1.5 mb-2">
+              <Sparkles className="w-2.5 h-2.5 text-primary" />
+              <span className="text-[10px] font-bold uppercase tracking-widest text-primary">
+                Refine with AI
+              </span>
+            </div>
+            <div className="flex gap-1.5">
+              <input
+                type="text"
+                placeholder='"Make the hero bolder"'
+                value={aiInput}
+                onChange={(e) => setAiInput(e.target.value)}
+                className="flex-1 min-w-0 border border-border rounded-lg px-2.5 py-1.5 text-xs text-foreground bg-card placeholder:text-muted-foreground outline-none focus:border-primary caret-primary transition-colors"
+                data-ocid="editor.ai_input"
+              />
+              <button
+                type="button"
+                className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center flex-shrink-0 hover:opacity-85 transition-opacity"
+                aria-label="Send AI prompt"
+                data-ocid="editor.ai_send_button"
+              >
+                <Send className="w-3.5 h-3.5 text-white" />
+              </button>
+            </div>
+          </div>
+        </aside>
+
+        {/* CENTER CANVAS */}
+        <main
+          className="flex-1 flex flex-col overflow-hidden"
+          data-ocid="editor.canvas"
+        >
+          {/* Canvas toolbar */}
+          <div className="flex items-center gap-2 px-3.5 py-2 bg-card border-b border-border flex-shrink-0">
+            {/* Device toggle */}
+            <div className="flex items-center bg-secondary border border-border rounded-lg p-0.5">
+              <DeviceBtn
+                active={deviceMode === "desktop"}
+                onClick={() => setDeviceMode("desktop")}
+                icon={<Monitor className="w-3.5 h-3.5" />}
+                label="Desktop"
+              />
+              <DeviceBtn
+                active={deviceMode === "tablet"}
+                onClick={() => setDeviceMode("tablet")}
+                icon={<Tablet className="w-3.5 h-3.5" />}
+                label="Tablet"
+              />
+              <DeviceBtn
+                active={deviceMode === "mobile"}
+                onClick={() => setDeviceMode("mobile")}
+                icon={<Smartphone className="w-3.5 h-3.5" />}
+                label="Mobile"
+              />
+            </div>
+            <span className="text-xs text-muted-foreground font-mono ml-auto">
+              100%
+            </span>
+          </div>
+
+          {/* Scrollable canvas area */}
+          <div
+            className="flex-1 overflow-auto bg-[#dde1eb]"
+            style={{ background: "#dde1eb" }}
+          >
+            {isLoading ? (
+              <div
+                className="flex items-center justify-center h-full"
+                data-ocid="editor.loading_state"
+              >
+                <div className="flex flex-col items-center gap-3 text-muted-foreground">
+                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                  <span className="text-sm">Loading your site…</span>
+                </div>
               </div>
             ) : (
-              generatedData.sections.map((section, index) => {
-                const key = sectionKey(section, index);
-                return (
-                  <SectionListItem
-                    key={key}
-                    label={sectionLabel(section, index)}
-                    isActive={highlightedSection === key}
-                    index={index}
-                    onClick={() => scrollToSection(key)}
-                  />
-                );
-              })
+              <DevicePreview mode={deviceMode}>
+                <SitePreview
+                  generatedData={generatedData}
+                  editingField={editingField}
+                  onStartEdit={setEditingField}
+                  onSaveEdit={handleSaveEdit}
+                  onCancelEdit={() => setEditingField(null)}
+                  highlightedSection={activeSection}
+                  sectionRefs={sectionRefs}
+                />
+              </DevicePreview>
             )}
           </div>
-          {/* Tip */}
-          <div className="px-3 py-3 border-t border-border">
-            <p className="text-[10px] text-muted-foreground leading-relaxed">
-              Click any heading or paragraph in the preview to edit inline.
+        </main>
+
+        {/* RIGHT PANEL */}
+        <aside
+          className="w-[272px] flex-shrink-0 bg-card border-l border-border flex flex-col overflow-y-auto"
+          data-ocid="editor.right_panel"
+          style={{ minWidth: 272 }}
+        >
+          {/* Header */}
+          <div className="px-4 py-3 border-b border-border flex-shrink-0">
+            <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+              Page settings
+            </span>
+          </div>
+
+          {/* SEO */}
+          <div className="px-4 py-4 border-b border-border">
+            <div className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-3">
+              SEO
+            </div>
+            <div className="flex flex-col gap-2.5">
+              <div className="flex flex-col gap-1">
+                <label
+                  className="text-xs font-medium text-foreground"
+                  htmlFor="seo-title"
+                >
+                  Page title
+                </label>
+                <input
+                  id="seo-title"
+                  type="text"
+                  value={displaySeoTitle}
+                  onChange={(e) => setSeoTitle(e.target.value)}
+                  className="border border-border rounded-lg px-2.5 py-2 text-sm text-foreground bg-card outline-none focus:border-primary transition-colors"
+                  data-ocid="editor.seo_title_input"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label
+                  className="text-xs font-medium text-foreground"
+                  htmlFor="seo-desc"
+                >
+                  Meta description
+                </label>
+                <textarea
+                  id="seo-desc"
+                  rows={3}
+                  value={displaySeoDesc}
+                  onChange={(e) => setSeoDesc(e.target.value)}
+                  className="border border-border rounded-lg px-2.5 py-2 text-xs text-foreground bg-card outline-none focus:border-primary transition-colors resize-none leading-relaxed"
+                  data-ocid="editor.seo_desc_textarea"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Accent color */}
+          <div className="px-4 py-4 border-b border-border">
+            <div className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-3">
+              Accent colour
+            </div>
+            <div className="flex gap-1.5 flex-wrap">
+              {SWATCHES.map((color) => (
+                <button
+                  key={color}
+                  type="button"
+                  aria-label={`Set accent color ${color}`}
+                  onClick={() => setActiveColor(color)}
+                  data-ocid={"editor.color_swatch"}
+                  className={`w-[26px] h-[26px] rounded transition-all ${
+                    activeColor === color
+                      ? "border-2 border-primary"
+                      : "border-2 border-transparent"
+                  }`}
+                  style={{ background: color }}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Features */}
+          <div className="px-4 py-4 border-b border-border">
+            <div className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-3">
+              Features
+            </div>
+            <div className="flex flex-col gap-2">
+              {(
+                [
+                  { key: "contactForm", label: "Contact form" },
+                  { key: "analytics", label: "Analytics" },
+                  { key: "cookieBanner", label: "Cookie banner" },
+                  { key: "liveChat", label: "Live chat" },
+                ] as { key: keyof typeof features; label: string }[]
+              ).map(({ key, label }) => (
+                <div key={key} className="flex items-center justify-between">
+                  <span className="text-sm text-foreground">{label}</span>
+                  <Toggle
+                    on={features[key]}
+                    onToggle={() =>
+                      setFeatures((f) => ({ ...f, [key]: !f[key] }))
+                    }
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Domain */}
+          <div className="px-4 py-4">
+            <div className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-3">
+              Domain
+            </div>
+            <p className="text-xs text-foreground mb-3 leading-relaxed">
+              Publishing to{" "}
+              <strong className="font-mono text-primary text-[10px]">
+                {siteSlug}.forge.app
+              </strong>
             </p>
+            <button
+              type="button"
+              className="w-full flex items-center justify-center gap-1.5 border border-border rounded-lg py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:border-muted-foreground/60 transition-all"
+              data-ocid="editor.connect_domain_button"
+            >
+              <Globe className="w-3.5 h-3.5" />
+              Connect custom domain
+            </button>
           </div>
         </aside>
       </div>

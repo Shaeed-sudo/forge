@@ -1,15 +1,17 @@
 type WizardInput = 
  record {
-   businessDescription: text;
-   selectedFeatures: SelectedFeatures;
+   features: vec SelectedFeature;
+   niche: text;
    siteType: SiteType;
-   visualStyle: VisualStyle;
+   vibe: VisualStyle;
  };
 type VisualStyle = 
- record {
-   fontFamily: text;
-   primaryColor: text;
-   secondaryColor: text;
+ variant {
+   bold;
+   luxury;
+   minimal;
+   playful;
+   warm;
  };
 type UserRole = 
  variant {
@@ -19,111 +21,104 @@ type UserRole =
  };
 type UserProfile = 
  record {
+   createdAt: Timestamp;
    email: text;
    name: text;
+   plan: variant {
+           free;
+           pro;
+         };
  };
 type UserId = principal;
 type Timestamp = int;
+type SiteUpdate = 
+ record {
+   name: opt text;
+   niche: opt text;
+ };
 type SiteType = 
  variant {
+   agency;
    blog;
-   business;
+   booking;
    ecommerce;
-   landing;
+   landingPage;
    portfolio;
+   restaurant;
+   saas;
  };
 type SiteSummary = 
  record {
-   createdAt: Timestamp;
+   formSubmissions: nat;
    id: SiteId;
+   lighthouseScore: nat;
+   name: text;
+   siteUrl: opt text;
+   slug: text;
    status: PublishStatus;
-   subdomain: opt text;
-   title: text;
- };
-type SiteSection = 
- record {
-   content: text;
-   heading: text;
-   sectionType: SectionType;
-   subheading: text;
+   updatedAt: Timestamp;
+   visitors: nat;
  };
 type SitePublic = 
  record {
    createdAt: Timestamp;
-   generatedData: opt GeneratedSite;
+   features: vec SelectedFeature;
+   formSubmissions: nat;
    id: SiteId;
+   lighthouseScore: nat;
+   name: text;
+   niche: text;
    owner: UserId;
-   publishedUrl: opt text;
+   publishedAt: opt Timestamp;
+   siteType: SiteType;
+   siteUrl: opt text;
+   slug: text;
    status: PublishStatus;
-   subdomain: opt text;
-   title: text;
    updatedAt: Timestamp;
+   vibe: VisualStyle;
+   visitors: nat;
  };
 type SiteId = nat;
-type SelectedFeatures = 
- record {
-   auth: bool;
-   bookings: bool;
-   contactForm: bool;
- };
-type SectionType = 
+type SelectedFeature = 
  variant {
-   about;
-   contact;
-   footer;
-   hero;
-   services;
+   blog;
+   bookingCalendar;
+   contactForm;
+   imageGallery;
+   liveChat;
+   newsletter;
+   payments;
+   testimonials;
+   userAccounts;
  };
 type PublishStatus = 
  variant {
-   failed;
-   published;
-   publishing;
-   unpublished;
+   draft;
+   live;
  };
 type PreLaunchChecks = 
  record {
-   formsValid: bool;
-   mobileReady: bool;
-   performanceHint: bool;
+   forms: bool;
+   formsNote: text;
+   mobile: bool;
+   mobileNote: text;
    seo: bool;
- };
-type LayoutMetadata = 
- record {
-   borderRadius: text;
-   fontFamily: text;
-   layoutStyle: text;
- };
-type GeneratedSite = 
- record {
-   colorPalette: ColorPalette;
-   layout: LayoutMetadata;
-   sections: vec SiteSection;
-   siteTitle: text;
-   tagline: text;
- };
-type ColorPalette = 
- record {
-   accent: text;
-   background: text;
-   primary: text;
-   secondary: text;
-   "text": text;
+   seoNote: text;
+   speed: nat;
+   speedNote: text;
  };
 service : {
   _initializeAccessControl: () -> ();
   assignCallerUserRole: (user: principal, role: UserRole) -> ();
-  deleteSite: (id: SiteId) -> ();
-  generateSite: (input: WizardInput) -> (SitePublic);
-  getCallerUserProfile: () -> (opt UserProfile) query;
+  deleteSite: (id: SiteId) -> (bool);
+  generateSite: (input: WizardInput) -> (SiteId, text);
+  getCallerProfile: () -> (opt UserProfile) query;
   getCallerUserRole: () -> (UserRole) query;
-  getPreLaunchChecks: (id: SiteId) -> (PreLaunchChecks) query;
+  getPreLaunchChecks: (id: SiteId) -> (opt PreLaunchChecks) query;
   getSite: (id: SiteId) -> (opt SitePublic) query;
-  getUserProfile: (user: principal) -> (opt UserProfile) query;
   isCallerAdmin: () -> (bool) query;
   listMySites: () -> (vec SiteSummary) query;
-  publishSite: (id: SiteId) -> (SitePublic);
-  saveCallerUserProfile: (profile: UserProfile) -> ();
-  updateSite: (id: SiteId, title: opt text, generatedData:
-   opt GeneratedSite) -> (SitePublic);
+  publishSite: (id: SiteId) -> (opt SitePublic);
+  saveCallerProfile: (name: text, email: text) -> (UserProfile);
+  updateSite: (id: SiteId, updates: SiteUpdate) -> (opt SitePublic);
 }
