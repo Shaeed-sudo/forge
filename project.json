@@ -1,0 +1,23 @@
+{
+  "overview": "Forge is an AI-powered website and app builder that takes anyone from a plain-language description to a live, production-ready site in minutes. A guided wizard captures site type, business description, visual style, and desired features. Forge then auto-generates the full site — design, layout, content, and functionality — in one shot. Users land in a visual editor with desktop/tablet/mobile preview, make tweaks, run automated pre-launch checks (SEO, performance, forms), and publish to a free subdomain or custom domain.",
+  "features": [
+    "Guided 4-step wizard (site type, business description, visual style, feature selection)",
+    "AI-powered site generation with simulated generation loading flow",
+    "Visual editor with desktop / tablet / mobile device preview",
+    "Inline text editing for generated site sections",
+    "Pre-launch checklist (SEO, mobile layout, performance, forms)",
+    "One-click publish to Forge subdomain",
+    "Dashboard listing all generated sites",
+    "User authentication via Internet Identity"
+  ],
+  "category": "website-builder",
+  "tags": [
+    "website-builder",
+    "no-code",
+    "ai",
+    "site-generator",
+    "visual-editor",
+    "publish"
+  ],
+  "last_updated": "2026-05-16T19:22:31.930Z"
+}

@@ -1,0 +1,129 @@
+type WizardInput = 
+ record {
+   businessDescription: text;
+   selectedFeatures: SelectedFeatures;
+   siteType: SiteType;
+   visualStyle: VisualStyle;
+ };
+type VisualStyle = 
+ record {
+   fontFamily: text;
+   primaryColor: text;
+   secondaryColor: text;
+ };
+type UserRole = 
+ variant {
+   admin;
+   guest;
+   user;
+ };
+type UserProfile = 
+ record {
+   email: text;
+   name: text;
+ };
+type UserId = principal;
+type Timestamp = int;
+type SiteType = 
+ variant {
+   blog;
+   business;
+   ecommerce;
+   landing;
+   portfolio;
+ };
+type SiteSummary = 
+ record {
+   createdAt: Timestamp;
+   id: SiteId;
+   status: PublishStatus;
+   subdomain: opt text;
+   title: text;
+ };
+type SiteSection = 
+ record {
+   content: text;
+   heading: text;
+   sectionType: SectionType;
+   subheading: text;
+ };
+type SitePublic = 
+ record {
+   createdAt: Timestamp;
+   generatedData: opt GeneratedSite;
+   id: SiteId;
+   owner: UserId;
+   publishedUrl: opt text;
+   status: PublishStatus;
+   subdomain: opt text;
+   title: text;
+   updatedAt: Timestamp;
+ };
+type SiteId = nat;
+type SelectedFeatures = 
+ record {
+   auth: bool;
+   bookings: bool;
+   contactForm: bool;
+ };
+type SectionType = 
+ variant {
+   about;
+   contact;
+   footer;
+   hero;
+   services;
+ };
+type PublishStatus = 
+ variant {
+   failed;
+   published;
+   publishing;
+   unpublished;
+ };
+type PreLaunchChecks = 
+ record {
+   formsValid: bool;
+   mobileReady: bool;
+   performanceHint: bool;
+   seo: bool;
+ };
+type LayoutMetadata = 
+ record {
+   borderRadius: text;
+   fontFamily: text;
+   layoutStyle: text;
+ };
+type GeneratedSite = 
+ record {
+   colorPalette: ColorPalette;
+   layout: LayoutMetadata;
+   sections: vec SiteSection;
+   siteTitle: text;
+   tagline: text;
+ };
+type ColorPalette = 
+ record {
+   accent: text;
+   background: text;
+   primary: text;
+   secondary: text;
+   "text": text;
+ };
+service : {
+  _initializeAccessControl: () -> ();
+  assignCallerUserRole: (user: principal, role: UserRole) -> ();
+  deleteSite: (id: SiteId) -> ();
+  generateSite: (input: WizardInput) -> (SitePublic);
+  getCallerUserProfile: () -> (opt UserProfile) query;
+  getCallerUserRole: () -> (UserRole) query;
+  getPreLaunchChecks: (id: SiteId) -> (PreLaunchChecks) query;
+  getSite: (id: SiteId) -> (opt SitePublic) query;
+  getUserProfile: (user: principal) -> (opt UserProfile) query;
+  isCallerAdmin: () -> (bool) query;
+  listMySites: () -> (vec SiteSummary) query;
+  publishSite: (id: SiteId) -> (SitePublic);
+  saveCallerUserProfile: (profile: UserProfile) -> ();
+  updateSite: (id: SiteId, title: opt text, generatedData:
+   opt GeneratedSite) -> (SitePublic);
+}
